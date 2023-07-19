@@ -1,5 +1,6 @@
 import {Assets} from "./Assets/Assets";
 import {ConsoleLogger} from "./Logger/ConsoleLogger";
+import {Program} from "./Engine/Program";
 
 const logger = new ConsoleLogger();
 const assets = new Assets(logger);
@@ -11,32 +12,17 @@ function main()
     const canvas = document.querySelector('canvas')!;
     const gl = canvas.getContext('webgl2')!;
 
-    // SHADER
-    const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
-    gl.shaderSource(vertexShader, assets.shaders.get('triangle_vertex').textContent);
-    gl.compileShader(vertexShader);
-    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-        throw new Error(gl.getShaderInfoLog(vertexShader)!);
-    }
+    const triangle = Program.create(
+        'triangle',
+        assets.shaders.get('triangle_vertex'),
+        assets.shaders.get('triangle_fragment'),
+        gl,
+        logger
+    );
 
-    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
-    gl.shaderSource(fragmentShader, assets.shaders.get('triangle_fragment').textContent);
-    gl.compileShader(fragmentShader);
-    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-        throw new Error(gl.getShaderInfoLog(fragmentShader)!);
-    }
-
-    // PROGRAM
-    const program = gl.createProgram()!;
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        throw new Error(gl.getProgramInfoLog(program)!);
-    }
+    triangle.setAttributeLocation('a_position');
 
     // POSITIONS
-    const positionAttrLoc = gl.getAttribLocation(program, 'a_position');
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,   0,0.5,   0.7,0]), gl.STATIC_DRAW);
@@ -44,9 +30,9 @@ function main()
     const vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
 
-    gl.enableVertexAttribArray(positionAttrLoc);
+    gl.enableVertexAttribArray(triangle.getAttributeLocation('a_position'));
     gl.vertexAttribPointer(
-        positionAttrLoc,
+        triangle.getAttributeLocation('a_position'),
         2,
         gl.FLOAT,
         false,
@@ -60,7 +46,7 @@ function main()
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    gl.useProgram(program);
+    gl.useProgram(triangle.program);
     gl.bindVertexArray(vao);
     gl.drawArrays(gl.TRIANGLES, 0, 3)
 }

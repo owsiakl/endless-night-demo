@@ -71,7 +71,7 @@ export class Assets
             this.images.addImage(name, image);
             this.assetsLoaded++;
 
-            this.logger.debug(`Fetch image "${name}" completed.`, {'src': image.src});
+            this.logger.debug(`Fetch image "${name}" completed.`);
 
             this.checkAssets();
         };
