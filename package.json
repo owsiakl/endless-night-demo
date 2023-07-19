@@ -4,11 +4,14 @@
   "description": "",
   "private": true,
   "scripts": {
-    "start": "webpack serve"
+    "start": "webpack serve",
+    "sass:build": "sass ./styles:public/dist",
+    "sass:watch": "sass ./styles:public/dist --watch"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "sass": "^1.63.6",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"

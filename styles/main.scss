@@ -1,0 +1,17 @@
+@import "vendor/bootstrap-reboot.min.css";
+
+html, body {
+  height: 100%;
+  background-color: #EAEFF4;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  border: 1px solid #838FA0;
+  border-radius: 4px;
+}
