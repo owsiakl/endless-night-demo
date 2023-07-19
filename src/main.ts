@@ -6,31 +6,31 @@ document.addEventListener('DOMContentLoaded', () => assets.preload(main));
 
 function main()
 {
-    const canvas = document.querySelector('canvas');
-    const gl = canvas.getContext('webgl2');
+    const canvas = document.querySelector('canvas')!;
+    const gl = canvas.getContext('webgl2')!;
 
     // SHADER
-    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER)!;
     gl.shaderSource(vertexShader, assets.shaders.get('triangle_vertex').textContent);
     gl.compileShader(vertexShader);
     if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-        throw new Error(gl.getShaderInfoLog(vertexShader));
+        throw new Error(gl.getShaderInfoLog(vertexShader)!);
     }
 
-    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!;
     gl.shaderSource(fragmentShader, assets.shaders.get('triangle_fragment').textContent);
     gl.compileShader(fragmentShader);
     if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-        throw new Error(gl.getShaderInfoLog(fragmentShader));
+        throw new Error(gl.getShaderInfoLog(fragmentShader)!);
     }
 
     // PROGRAM
-    const program = gl.createProgram();
+    const program = gl.createProgram()!;
     gl.attachShader(program, vertexShader);
     gl.attachShader(program, fragmentShader);
     gl.linkProgram(program);
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        throw new Error(gl.getProgramInfoLog(program));
+        throw new Error(gl.getProgramInfoLog(program)!);
     }
 
     // POSITIONS
