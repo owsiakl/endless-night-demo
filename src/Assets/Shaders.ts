@@ -4,7 +4,7 @@ export class Shaders
 {
     private shaders: Map<string, Shader> = new Map();
 
-    get(name: string) : Shader
+    public get(name: string) : Shader
     {
         if (!this.shaders.has(name)) {
             throw new Error(`Shader "${name}" not found.`);
@@ -13,7 +13,7 @@ export class Shaders
         return this.shaders.get(name)!;
     }
 
-    addShader(name: string, shader: Shader) : void
+    public addShader(name: string, shader: Shader) : void
     {
         if (this.shaders.has(name)) {
             throw new Error(`Shader "${name}" was already added.`);

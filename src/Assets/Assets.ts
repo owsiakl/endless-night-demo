@@ -2,15 +2,22 @@ import {Images} from './Images';
 import {Shader} from './Shader';
 import {ShaderType} from './ShaderType';
 import {Shaders} from "./Shaders";
+import {Logger} from "../Logger/Logger";
 
 export class Assets
 {
     public shaders = new Shaders();
     public images = new Images();
 
+    private logger: Logger;
     private assetsCount: number = 0;
     private assetsLoaded: number = 0;
     private afterLoad: Function = () => {};
+
+    public constructor(logger: Logger)
+    {
+        this.logger = logger;
+    }
 
     /**
      * @param {() => void} afterLoad
@@ -32,6 +39,8 @@ export class Assets
 
     private importShader(name: string, path: string, type: ShaderType) : void
     {
+        this.logger.debug(`Fetch ${type} shader "${name}".`, {'path': path});
+
         this.assetsCount++;
 
         const request = new XMLHttpRequest();
@@ -42,6 +51,8 @@ export class Assets
             this.shaders.addShader(name, new Shader(request.response, type));
             this.assetsLoaded++;
 
+            this.logger.debug(`Fetch ${type} shader "${name}" completed.`);
+
             this.checkAssets();
         };
 
@@ -50,6 +61,8 @@ export class Assets
 
     private importImage(name: string, path: string) : void
     {
+        this.logger.debug(`Fetch image "${name}".`, {'path': path});
+
         this.assetsCount++;
 
         const image = new Image();
@@ -57,6 +70,8 @@ export class Assets
         image.onload = () => {
             this.images.addImage(name, image);
             this.assetsLoaded++;
+
+            this.logger.debug(`Fetch image "${name}" completed.`, {'src': image.src});
 
             this.checkAssets();
         };

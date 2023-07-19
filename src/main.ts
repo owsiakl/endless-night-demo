@@ -1,6 +1,8 @@
 import {Assets} from "./Assets/Assets";
+import {ConsoleLogger} from "./Logger/ConsoleLogger";
 
-const assets = new Assets();
+const logger = new ConsoleLogger();
+const assets = new Assets(logger);
 
 document.addEventListener('DOMContentLoaded', () => assets.preload(main));
 

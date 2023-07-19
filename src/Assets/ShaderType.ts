@@ -1,5 +1,5 @@
 export enum ShaderType
 {
-    VERTEX,
-    FRAGMENT,
+    VERTEX = 'vertex',
+    FRAGMENT = 'fragment',
 }
