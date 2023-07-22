@@ -1,6 +1,7 @@
 import {Program} from "../Engine/Program";
+import {Mesh} from "./Mesh";
 
-export class Triangle
+export class Triangle implements Mesh
 {
     private readonly vao: WebGLVertexArrayObject
     private readonly program: Program
@@ -37,7 +38,7 @@ export class Triangle
         this.gl.bindVertexArray(null);
     }
 
-    public render(): void
+    public render(time: number): void
     {
         this.gl.useProgram(this.program.program);
         this.gl.bindVertexArray(this.vao);

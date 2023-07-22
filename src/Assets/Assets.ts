@@ -28,6 +28,8 @@ export class Assets
 
         this.importShader('triangle_vertex', '/shaders/triangle/vertex.glsl', ShaderType.VERTEX);
         this.importShader('triangle_fragment', '/shaders/triangle/fragment.glsl', ShaderType.FRAGMENT);
+        this.importShader('cube_vertex', '/shaders/cube/vertex.glsl', ShaderType.VERTEX);
+        this.importShader('cube_fragment', '/shaders/cube/fragment.glsl', ShaderType.FRAGMENT);
     }
 
     private checkAssets()

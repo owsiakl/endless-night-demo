@@ -41,8 +41,6 @@ export class Program
             throw new Error(`Program doesn't have "${attribute}" attribute location.`);
         }
 
-        this.logger.debug(`Get program "${this.name}" attribute location "${attribute}".`);
-
         return this.attributes.get(attribute)!;
     }
 
@@ -68,8 +66,6 @@ export class Program
         if (!this.uniforms.has(uniform)) {
             throw new Error(`Program doesn't have "${uniform}" uniform location.`);
         }
-
-        this.logger.debug(`Get program "${this.name}" uniform location "${uniform}".`);
 
         return this.uniforms.get(uniform)!;
     }
