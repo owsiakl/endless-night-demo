@@ -9,7 +9,7 @@ export class Cube implements Mesh
     private program: Program;
     private vao: WebGLVertexArrayObject | null;
     private rotation: vec3 = vec3.fromValues(0, 0, 0);
-    private position: vec3 = vec3.fromValues(0, 0, -300);
+    private position: vec3 = vec3.fromValues(0, 100, 0);
     public verticesCount = 0;
 
     constructor(program: Program, gl: WebGL2RenderingContext)

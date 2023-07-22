@@ -5,11 +5,9 @@ export class Camera
     public projectionMatrix: mat4;
 
     private cameraMatrix: mat4 = mat4.create();
-    private eye: vec3 = [0, 0, 0];
+    private eye: vec3 = [50, 20, -10];
     private center: vec3 = [0, 0, 0];
-    private up: vec3 = [0, 0, -1];
-
-    private _canvas: HTMLCanvasElement;
+    private up: vec3 = [0, 1, 0];
 
     constructor(canvas: HTMLCanvasElement)
     {
@@ -17,7 +15,6 @@ export class Camera
         const height = canvas.clientHeight;
         const fov = 45 * (Math.PI / 180);
 
-        this._canvas = canvas;
         this.projectionMatrix = mat4.perspective(mat4.create(), fov, width / height, 1, 1000);
 
         this.updateCamera();

@@ -4,6 +4,7 @@ import {Program} from "./Engine/Program";
 import {RenderLoop} from "./Engine/RenderLoop";
 import {Cube} from "./Mesh/Cube";
 import {Camera} from "./Engine/Camera";
+import {Grid} from "./Mesh/Grid";
 
 const logger = new ConsoleLogger();
 const assets = new Assets(logger);
@@ -19,6 +20,17 @@ function main()
     const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
     const camera = new Camera(canvas);
 
+    const grid = new Grid(
+        Program.create(
+            'grid',
+            assets.shaders.get('grid_vertex'),
+            assets.shaders.get('grid_fragment'),
+            gl,
+            logger
+        ),
+        gl
+    );
+
     const cube = new Cube(
         Program.create(
             'cube',
@@ -30,6 +42,7 @@ function main()
         gl
     );
 
+    grid.preRender(camera);
     cube.preRender(camera);
 
     renderLoop.start(time => {
@@ -37,6 +50,7 @@ function main()
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
 
+        grid.render(time, camera);
         cube.render(time, camera);
     });
 
