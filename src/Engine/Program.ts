@@ -14,6 +14,8 @@ export class Program
 
     public static create(name: string, vertexShader: Shader, fragmentShader: Shader, gl: WebGL2RenderingContext, logger: Logger): Program
     {
+        logger.debug(`Creating program "${name}".`);
+
         const program = gl.createProgram();
 
         if (null === program) {

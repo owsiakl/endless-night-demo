@@ -33,6 +33,8 @@ export class Assets
     private checkAssets()
     {
         if (this.assetsLoaded === this.assetsCount) {
+            this.logger.debug(`Assets preload completed.`);
+
             this.afterLoad();
         }
     }

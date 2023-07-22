@@ -27,4 +27,5 @@ module.exports = {
             writeToDisk: true
         }
     },
+    devtool: 'inline-source-map',
 };
