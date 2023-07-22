@@ -16,3 +16,30 @@ canvas {
   border: 1px solid #838FA0;
   border-radius: 4px;
 }
+
+.performace {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  min-width: 100px;
+  background-color: rgba(#838FA0, 0.5);
+  padding: 8px;
+  border-radius: 4px;
+
+  section {
+    display: flex;
+    align-items: center;
+
+    &:not(:last-child) {
+      margin-bottom: 5px;
+    }
+
+    h5 {
+      margin: 0;
+      min-width: 70px;
+      text-align: left;
+      font-size: 14px;
+      font-weight: bold;
+    }
+  }
+}
