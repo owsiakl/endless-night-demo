@@ -1,32 +1,55 @@
 import {vec3, mat4} from "gl-matrix";
 
+const FOV = 45;
+const NEAR = 0.1;
+const FAR = 1000;
+
+const ROTATE_FACTOR = 0.01;
+const ZOOM_FACTOR = 0.005;
+
 export class Camera
 {
     public projectionMatrix: mat4;
+    private cameraMatrix: mat4;
+    private cameraPosition: vec3;
+    private target: vec3;
 
-    private cameraMatrix: mat4 = mat4.create();
-    private eye: vec3 = [50, 20, -10];
-    private center: vec3 = [0, 0, 0];
-    private up: vec3 = [0, 1, 0];
-
-    constructor(canvas: HTMLCanvasElement)
+    public constructor(canvas: HTMLCanvasElement)
     {
         const width = canvas.clientWidth;
         const height = canvas.clientHeight;
-        const fov = 45 * (Math.PI / 180);
+        const fov = FOV * (Math.PI / 180);
 
-        this.projectionMatrix = mat4.perspective(mat4.create(), fov, width / height, 1, 1000);
-
-        this.updateCamera();
+        this.projectionMatrix = mat4.perspective(mat4.create(), fov, width / height, NEAR, FAR);
+        this.cameraMatrix = mat4.create();
+        this.cameraPosition = vec3.fromValues(3, 10, 20);
+        this.target = vec3.fromValues(0, 0, 0);
     }
 
-    get viewMatrix(): mat4
+    public zoom(value: number): void
     {
-        return this.cameraMatrix;
+        let direction = vec3.subtract(vec3.create(), this.cameraPosition, this.target);
+        let move = vec3.scale(vec3.create(), direction, value * ZOOM_FACTOR);
+
+        vec3.add(this.cameraPosition, this.cameraPosition, move);
     }
 
-    private updateCamera(): void
+    public rotate(delta: number): void
     {
-        mat4.lookAt(this.cameraMatrix, this.eye, this.center, this.up);
+        const rotationSpeed = -delta * ROTATE_FACTOR;
+        const currentPosition = mat4.getTranslation(vec3.create(), this.cameraMatrix);
+
+        this.cameraPosition[0] = currentPosition[0] * Math.cos(rotationSpeed) + currentPosition[2] * Math.sin(rotationSpeed);
+        this.cameraPosition[2] = currentPosition[2] * Math.cos(rotationSpeed) - currentPosition[0] * Math.sin(rotationSpeed);
+    }
+
+    public update(): void
+    {
+        mat4.targetTo(this.cameraMatrix, this.cameraPosition, this.target, [0, 1, 0]);
+    }
+
+    public get viewMatrix(): mat4
+    {
+        return mat4.invert(mat4.create(), this.cameraMatrix);
     }
 }

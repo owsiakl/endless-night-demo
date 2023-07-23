@@ -5,6 +5,7 @@ import {RenderLoop} from "./Engine/RenderLoop";
 import {Cube} from "./Mesh/Cube";
 import {Camera} from "./Engine/Camera";
 import {Grid} from "./Mesh/Grid";
+import {MouseCamera} from "./Engine/MouseCamera";
 
 const logger = new ConsoleLogger();
 const assets = new Assets(logger);
@@ -19,6 +20,8 @@ function main()
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
     const camera = new Camera(canvas);
+
+    MouseCamera.control(camera, canvas);
 
     const grid = new Grid(
         Program.create(
@@ -49,6 +52,8 @@ function main()
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
+
+        camera.update();
 
         grid.render(time, camera);
         cube.render(time, camera);

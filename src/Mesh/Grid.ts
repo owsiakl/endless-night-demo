@@ -76,19 +76,19 @@ export class Grid implements Mesh
             currentLine += cellSize;
         }
 
-        // Y direction
+        // Y direction - blue
         vertices.push(-0.0001, 0, 0, 3,  -0.0001, 5, 0, 3);
         vertices.push(0.0001, 0, 0, 3,   0.0001, 5, 0, 3);
         vertices.push(0, 0, -0.0001, 3,  0, 5, -0.0001, 3);
         vertices.push(0, 0, 0.0001, 3,   0, 5, 0.0001, 3);
 
-        // Z direction
+        // X direction - red
         vertices.push(0, -0.0001, 0, 1,  5, -0.0001, 0, 1);
         vertices.push(0, 0.0001, 0, 1,   5, 0.0001, 0, 1);
         vertices.push(0, 0, -0.0001, 1,  5, 0, -0.0001, 1);
         vertices.push(0, 0, 0.0001, 1,   5, 0, 0.0001, 1);
 
-        // X direction
+        // Z direction - green
         vertices.push(-0.0001, 0, 0, 2,  -0.0001, 0, 5, 2);
         vertices.push(0, 0.0001, 0, 2,   0, 0.0001, 5, 2);
         vertices.push(0, -0.0001, 0, 2,  0, -0.0001, 5, 2);
