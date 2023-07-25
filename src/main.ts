@@ -23,6 +23,11 @@ function main()
     const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
     const camera = new Camera(canvas);
 
+    canvas.width = canvas.offsetWidth;
+    canvas.style.width = `${canvas.offsetWidth}px`
+    canvas.height = canvas.offsetHeight;
+    canvas.style.height = `${canvas.offsetHeight}px`;
+
     MouseCamera.control(camera, canvas);
 
     const grid = new Grid(
@@ -66,6 +71,8 @@ function main()
     gltf.preRender(camera);
 
     renderLoop.start(time => {
+
+        gl.viewport(0, 0, canvas.width, canvas.height);
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
