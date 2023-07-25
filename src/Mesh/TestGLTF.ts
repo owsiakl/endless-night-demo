@@ -34,14 +34,14 @@ export class TestGLTF implements Mesh
         this.gl.bindVertexArray(this.vao);
 
 
-        const scene = this.model.scenes[this.model.defaultScene];
-        const node = this.model.nodes[scene.node];
+        // const scene = this.model.scenes[this.model.defaultScene];
+        // const node = this.model.nodes[scene.node];
+        //
+        // if (!node.isMesh) {
+        //     throw new Error('GLTF model is not a mesh.');
+        // }
 
-        if (!node.isMesh) {
-            throw new Error('GLTF model is not a mesh.');
-        }
-
-        const mesh = this.model.meshes[node.mesh!];
+        const mesh = this.model.meshes[0];
         const accessors = this.model.accessors;
         const bufferViews = this.model.bufferViews;
         const buffers = this.model.buffers;
@@ -106,17 +106,36 @@ export class TestGLTF implements Mesh
 
                 const texture = this.model.texture![material.baseTexture!]
                 const sampler = this.model.samplers![texture.sampler];
-                const source = this.model.images![texture.source];
-                const image = this.assets.images.get(source.uri!);
+                const image = this.model.images![texture.source];
 
+                let imageFile: HTMLImageElement|undefined = undefined;
 
-                const modelTexture = this.gl.createTexture();
-                this.gl.bindTexture(this.gl.TEXTURE_2D, modelTexture);
-                this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
-                this.gl.generateMipmap(this.gl.TEXTURE_2D);
+                if (image.isFromFile) {
+                    imageFile = this.assets.images.get(image.uri!);
+
+                    const modelTexture = this.gl.createTexture();
+                    this.gl.bindTexture(this.gl.TEXTURE_2D, modelTexture);
+                    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, imageFile);
+                    this.gl.generateMipmap(this.gl.TEXTURE_2D);
+                }
+
+                if (image.isFromBuffer) {
+                    const bufferView = bufferViews[image.bufferView!];
+                    const buffer = buffers[bufferView.buffer];
+                    const imageData = new Uint8Array(buffer.arrayBuffer(), bufferView.byteOffset, bufferView.byteLength / Uint8Array.BYTES_PER_ELEMENT);
+                    const blob = new Blob([imageData], {type: image.mimeType});
+
+                    imageFile = new Image();
+                    imageFile.onload = () => {
+                        const modelTexture = this.gl.createTexture();
+                        this.gl.bindTexture(this.gl.TEXTURE_2D, modelTexture);
+                        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, imageFile!);
+                        this.gl.generateMipmap(this.gl.TEXTURE_2D);
+                    };
+                    imageFile.src = URL.createObjectURL(blob);
+                }
             }
         }
-
 
 
         this.gl.bindVertexArray(null);

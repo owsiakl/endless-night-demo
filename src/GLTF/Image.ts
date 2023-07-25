@@ -20,4 +20,14 @@ export class Image
             image.uri,
         );
     }
+
+    public get isFromFile(): boolean
+    {
+        return this.uri !== undefined;
+    }
+
+    public get isFromBuffer(): boolean
+    {
+        return this.bufferView !== undefined;
+    }
 }
