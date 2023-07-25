@@ -41,6 +41,7 @@ export class Assets
         this.importModel('gltf_cube_guy', '/gltf/cube-guy.gltf');
 
         this.importImage('gltf_cube_guy_uv', 'image/cube-guy/cube_guy_uv.png');
+        this.importImage('testTexture.png', 'image/triangle/testTexture.png');
     }
 
     private checkAssets()

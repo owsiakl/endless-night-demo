@@ -1,5 +1,5 @@
 import {Assets} from "./Assets/Assets";
-import {ConsoleLogger} from "./Logger/ConsoleLogger";
+import {NullLogger} from "./Logger/NullLogger";
 import {Program} from "./Engine/Program";
 import {RenderLoop} from "./Engine/RenderLoop";
 import {Cube} from "./Mesh/Cube";
@@ -9,7 +9,7 @@ import {MouseCamera} from "./Engine/MouseCamera";
 import {TestGLTF} from "./Mesh/TestGLTF";
 import {Loader} from "./GLTF/Loader";
 
-const logger = new ConsoleLogger();
+const logger = new NullLogger();
 const assets = new Assets(logger);
 const renderLoop = new RenderLoop();
 
@@ -56,7 +56,9 @@ function main()
             logger
         ),
         gl,
-        Loader.parse(JSON.parse(assets.models.get('gltf_triangle')) as GLTF)
+        Loader.parse(JSON.parse(assets.models.get('gltf_triangle')) as GLTF),
+        // Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF),
+        assets
     );
 
     grid.preRender(camera);

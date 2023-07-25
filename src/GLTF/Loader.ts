@@ -4,6 +4,10 @@ import {BufferView} from "./BufferView";
 import {Buffer} from "./Buffer";
 import {Scene} from "./Scene";
 import {Node} from "./Node";
+import {Material} from "./Material";
+import {Texture} from "./Texture";
+import {Image} from "./Image";
+import {Sampler} from "./Sampler";
 
 export class Loader
 {
@@ -15,6 +19,10 @@ export class Loader
         public buffers: Array<Buffer>,
         public scenes: Array<Scene>,
         public nodes: Array<Node>,
+        public materials: Array<Material>,
+        public texture: Array<Texture> | undefined,
+        public images: Array<Image> | undefined,
+        public samplers: Array<Sampler> | undefined,
     ) {
     }
 
@@ -33,7 +41,8 @@ export class Loader
             model.bufferViews === undefined ||
             model.buffers === undefined ||
             model.scenes === undefined ||
-            model.nodes === undefined
+            model.nodes === undefined ||
+            model.materials === undefined
         ) {
             throw new Error(`GLTF file must have some data.`);
         }
@@ -44,6 +53,10 @@ export class Loader
         const buffers = model.buffers.map(buffer => Buffer.fromJson(buffer));
         const scenes = model.scenes.map(scene => Scene.fromJson(scene));
         const nodes = model.nodes.map(node => Node.fromJson(node));
+        const materials = model.materials.map(material => Material.fromJson(material));
+        const textures = model.textures?.map(texture => Texture.fromJson(texture));
+        const images = model.images?.map(image => Image.fromJson(image));
+        const samplers = model.samplers?.map(sampler => Sampler.fromJson(sampler));
 
         return new this(
             model.scene,
@@ -53,6 +66,10 @@ export class Loader
             buffers,
             scenes,
             nodes,
+            materials,
+            textures,
+            images,
+            samplers,
         );
     }
 }

@@ -1,3 +1,6 @@
+/**
+ * @link https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-accessor
+ */
 export class Accessor
 {
     constructor(

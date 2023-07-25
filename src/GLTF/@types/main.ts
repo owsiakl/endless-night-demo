@@ -9,6 +9,10 @@ type GLTF = {
     buffers: Array<GLTF_buffer> | undefined,
     scenes: Array<GLTF_scene> | undefined,
     nodes: Array<GLTF_node> | undefined,
+    materials: Array<GLTF_material> | undefined,
+    textures: Array<GLTF_texture> | undefined,
+    images: Array<GLTF_image> | undefined,
+    samplers: Array<GLTF_sampler> | undefined,
 }
 
 type GLTF_mesh = {
@@ -34,6 +38,7 @@ type GLTF_buffer_view = {
     buffer: number,
     byteOffset: number,
     byteLength: number,
+    byteStride: number | undefined,
     target: GLTF_buffer_view_target | undefined
 }
 
@@ -50,6 +55,40 @@ type GLTF_node = {
     name: string | undefined,
     mesh: number | undefined,
     skin: number | undefined,
+}
+
+type GLTF_material = {
+    name: string | undefined,
+    pbrMetallicRoughness: GLTF_material_pbr_metallic_roughness | undefined,
+}
+
+type GLTF_material_pbr_metallic_roughness = {
+    baseColorFactor: [number, number, number, number] | undefined,
+    baseColorTexture: GLTF_material_pbr_metallic_roughness_base_color_texture | undefined,
+}
+
+type GLTF_material_pbr_metallic_roughness_base_color_texture = {
+    index: number,
+    texCoord: number | undefined,
+}
+
+type GLTF_texture = {
+    sampler: number | undefined,
+    source: number | undefined,
+}
+
+type GLTF_image = {
+    name: string | undefined
+    bufferView: number | undefined,
+    mimeType: string | undefined,
+    uri: string | undefined,
+}
+
+type GLTF_sampler = {
+    minFilter: number | undefined
+    magFilter: number | undefined,
+    wrapS: number | undefined,
+    wrapT: number | undefined,
 }
 
 enum GLTF_accessor_component_type {

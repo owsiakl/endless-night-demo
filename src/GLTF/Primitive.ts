@@ -1,10 +1,13 @@
+/**
+ * @link https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-mesh-primitive
+ */
 export class Primitive
 {
     private constructor(
         public position: number,
         public color: number | undefined,
         public normal: number | undefined,
-        public texture: number | undefined,
+        public texCoord: number | undefined,
         public joints: number | undefined,
         public weights: number | undefined,
         public indices: number | undefined,
@@ -17,7 +20,7 @@ export class Primitive
         let position = undefined,
             color = undefined,
             normal = undefined,
-            texture = undefined,
+            texCoord = undefined,
             joints = undefined,
             weights = undefined;
 
@@ -26,7 +29,7 @@ export class Primitive
                 case 'POSITION': position = index; break;
                 case 'COLOR_0': color = index; break;
                 case 'NORMAL': normal = index; break;
-                case 'TEXCOORD_0': texture = index; break;
+                case 'TEXCOORD_0': texCoord = index; break;
                 case 'JOINTS_0': joints = index; break;
                 case 'WEIGHTS_0': weights = index; break;
                 default: throw new Error(`Mesh primitive attribute "${attribute}" couldn't be recognized.`);
@@ -41,7 +44,7 @@ export class Primitive
             position,
             color,
             normal,
-            texture,
+            texCoord,
             joints,
             weights,
             primitive.indices,

@@ -1,5 +1,8 @@
 import {Primitive} from "./Primitive";
 
+/**
+ * @link https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-mesh
+ */
 export class Mesh
 {
     private constructor(

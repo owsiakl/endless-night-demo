@@ -2,6 +2,7 @@ import { Camera } from "../Engine/Camera";
 import { Program } from "../Engine/Program";
 import {Mesh} from "./Mesh";
 import {Loader} from "../GLTF/Loader";
+import {Assets} from "../Assets/Assets";
 
 export class TestGLTF implements Mesh
 {
@@ -10,19 +11,22 @@ export class TestGLTF implements Mesh
     private vao: WebGLVertexArrayObject | null;
     private model: Loader;
     private vertexCount: number;
+    private assets: Assets;
 
-    constructor(program: Program, gl: WebGL2RenderingContext, model: Loader)
+    constructor(program: Program, gl: WebGL2RenderingContext, model: Loader, assets: Assets)
     {
         this.gl = gl;
         this.program = program;
         this.vao = null;
         this.model = model;
         this.vertexCount = 0;
+        this.assets = assets;
     }
 
     preRender(camera: Camera): void
     {
         this.program.setAttributeLocation('a_position');
+        this.program.setAttributeLocation('a_texcoord');
         this.program.setUniformLocation('u_projection');
         this.program.setUniformLocation('u_view');
 
@@ -51,12 +55,12 @@ export class TestGLTF implements Mesh
 
             if (undefined != bufferView.target) {
                 const positionBuffer = this.gl.createBuffer();
-                const positions = new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset, accessor.typeSize * accessor.count);
+                const positions = new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset, bufferView.byteLength / TypedArray.BYTES_PER_ELEMENT);
 
                 this.gl.bindBuffer(bufferView.target, positionBuffer);
                 this.gl.bufferData(bufferView.target, positions, this.gl.STATIC_DRAW);
                 this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_position'));
-                this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_position'), accessor.typeSize, accessor.componentType, false, 0, 0);
+                this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_position'), accessor.typeSize, accessor.componentType, false, bufferView.byteStride, accessor.byteOffset);
             }
         }
 
@@ -69,7 +73,7 @@ export class TestGLTF implements Mesh
 
             if (undefined != bufferView.target) {
                 const indicesBuffer = this.gl.createBuffer();
-                const indices = new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset, accessor.typeSize * accessor.count)
+                const indices = new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset, bufferView.byteLength / TypedArray.BYTES_PER_ELEMENT);
 
                 this.gl.bindBuffer(bufferView.target, indicesBuffer);
                 this.gl.bufferData(bufferView.target, indices, this.gl.STATIC_DRAW);
@@ -77,6 +81,43 @@ export class TestGLTF implements Mesh
 
             this.vertexCount = accessor.count;
         }
+
+        if (undefined !== mesh.primitive.texCoord) {
+            const accessor = accessors[mesh.primitive.texCoord];
+            const bufferView = bufferViews[accessor.bufferView];
+            const buffer = buffers[bufferView.buffer];
+            const TypedArray = accessor.typedArray;
+
+            if (undefined != bufferView.target) {
+                const texCoordsBuffer = this.gl.createBuffer();
+                const texCoords = new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset, bufferView.byteLength / TypedArray.BYTES_PER_ELEMENT);
+
+                this.gl.bindBuffer(bufferView.target, texCoordsBuffer);
+                this.gl.bufferData(bufferView.target, texCoords, this.gl.STATIC_DRAW);
+                this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_texcoord'));
+                this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_texcoord'), accessor.typeSize, accessor.componentType, false, bufferView.byteStride, accessor.byteOffset);
+            }
+        }
+
+        if (undefined !== mesh.primitive.material) {
+            const material = this.model.materials[mesh.primitive.material]
+
+            if (material.isTexture) {
+
+                const texture = this.model.texture![material.baseTexture!]
+                const sampler = this.model.samplers![texture.sampler];
+                const source = this.model.images![texture.source];
+                const image = this.assets.images.get(source.uri!);
+
+
+                const modelTexture = this.gl.createTexture();
+                this.gl.bindTexture(this.gl.TEXTURE_2D, modelTexture);
+                this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
+                this.gl.generateMipmap(this.gl.TEXTURE_2D);
+            }
+        }
+
+
 
         this.gl.bindVertexArray(null);
 
