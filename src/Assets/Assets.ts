@@ -3,11 +3,13 @@ import {Shader} from './Shader';
 import {ShaderType} from './ShaderType';
 import {Shaders} from "./Shaders";
 import {Logger} from "../Logger/Logger";
+import {Models} from "./Models";
 
 export class Assets
 {
     public shaders = new Shaders();
     public images = new Images();
+    public models = new Models();
 
     private logger: Logger;
     private assetsCount: number = 0;
@@ -32,6 +34,13 @@ export class Assets
         this.importShader('cube_fragment', '/shaders/cube/fragment.glsl', ShaderType.FRAGMENT);
         this.importShader('grid_vertex', '/shaders/grid/vertex.glsl', ShaderType.VERTEX);
         this.importShader('grid_fragment', '/shaders/grid/fragment.glsl', ShaderType.FRAGMENT);
+        this.importShader('gltf_vertex', '/shaders/gltf/vertex.glsl', ShaderType.VERTEX);
+        this.importShader('gltf_fragment', '/shaders/gltf/fragment.glsl', ShaderType.FRAGMENT);
+
+        this.importModel('gltf_triangle', '/gltf/triangle.gltf');
+        this.importModel('gltf_cube_guy', '/gltf/cube-guy.gltf');
+
+        this.importImage('gltf_cube_guy_uv', 'image/cube-guy/cube_guy_uv.png');
     }
 
     private checkAssets()
@@ -83,5 +92,27 @@ export class Assets
         };
 
         image.src = path;
+    }
+
+    private importModel(name: string, path: string) : void
+    {
+        this.logger.debug(`Fetch model "${name}".`, {'path': path});
+
+        this.assetsCount++;
+
+        const request = new XMLHttpRequest();
+
+        request.open('GET', path);
+
+        request.onloadend = () => {
+            this.models.add(name, request.response);
+            this.assetsLoaded++;
+
+            this.logger.debug(`Fetch model "${name}" completed.`);
+
+            this.checkAssets();
+        };
+
+        request.send();
     }
 }

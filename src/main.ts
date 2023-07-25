@@ -6,6 +6,8 @@ import {Cube} from "./Mesh/Cube";
 import {Camera} from "./Engine/Camera";
 import {Grid} from "./Mesh/Grid";
 import {MouseCamera} from "./Engine/MouseCamera";
+import {TestGLTF} from "./Mesh/TestGLTF";
+import {Loader} from "./GLTF/Loader";
 
 const logger = new ConsoleLogger();
 const assets = new Assets(logger);
@@ -45,8 +47,21 @@ function main()
         gl
     );
 
+    const gltf = new TestGLTF(
+        Program.create(
+            'gltf',
+            assets.shaders.get('triangle_vertex'),
+            assets.shaders.get('triangle_fragment'),
+            gl,
+            logger
+        ),
+        gl,
+        Loader.parse(JSON.parse(assets.models.get('gltf_triangle')) as GLTF)
+    );
+
     grid.preRender(camera);
     cube.preRender(camera);
+    gltf.preRender(camera);
 
     renderLoop.start(time => {
         gl.clearColor(0, 0, 0, 0);
@@ -57,6 +72,7 @@ function main()
 
         grid.render(time, camera);
         cube.render(time, camera);
+        gltf.render(time, camera);
     });
 
     // debug statistics

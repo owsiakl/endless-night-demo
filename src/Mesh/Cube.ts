@@ -138,6 +138,7 @@ export class Cube implements Mesh
 
 
         this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_model'), false, modelMatrix);
+        this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_view'), false, camera.viewMatrix);
         this.gl.drawElements(this.gl.TRIANGLES, 6 * 6, this.gl.UNSIGNED_SHORT, 0);
 
         this.gl.bindVertexArray(null);
