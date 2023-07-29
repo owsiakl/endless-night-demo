@@ -23,6 +23,7 @@ export class Camera
         this.projectionMatrix = mat4.perspective(mat4.create(), fov, width / height, NEAR, FAR);
         this.cameraMatrix = mat4.create();
         this.cameraPosition = vec3.fromValues(3, 3, 5);
+        // this.cameraPosition = vec3.fromValues(0, 0, 8);
         this.target = vec3.fromValues(0, 0, 0);
     }
 

@@ -1,3 +1,6 @@
+export type AccessorData = Uint8Array | Int16Array | Uint16Array | Uint32Array | Float32Array;
+export type AccessorDataConstructor = Uint8ArrayConstructor | Int16ArrayConstructor | Uint16ArrayConstructor | Uint32ArrayConstructor | Float32ArrayConstructor;
+
 /**
  * @link https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-accessor
  */
@@ -16,7 +19,7 @@ export class Accessor
     {
         return new this(
             accessor.bufferView,
-            accessor.byteOffset,
+            accessor.byteOffset ?? 0,
             accessor.componentType,
             accessor.count,
             accessor.type,
@@ -37,7 +40,7 @@ export class Accessor
         }
     }
 
-    public get typedArray(): Uint8ArrayConstructor | Int16ArrayConstructor | Uint16ArrayConstructor | Uint32ArrayConstructor | Float32ArrayConstructor
+    public get typedArray(): AccessorDataConstructor
     {
         switch (this.componentType) {
             case 5121: return Uint8Array;
@@ -47,5 +50,10 @@ export class Accessor
             case 5126: return Float32Array;
             default: throw new Error(`Can't get typed array based on "${this.componentType}" type`);
         }
+    }
+
+    public get length(): number
+    {
+        return this.count * this.typeSize;
     }
 }

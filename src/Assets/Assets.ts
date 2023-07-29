@@ -39,6 +39,8 @@ export class Assets
 
         this.importModel('gltf_triangle', '/gltf/triangle.gltf');
         this.importModel('gltf_cube_guy', '/gltf/cube-guy.gltf');
+        this.importModel('gltf_fox', '/gltf/fox.gltf');
+        this.importModel('gltf_cesium_man', '/gltf/cesium-man.gltf');
 
         this.importImage('testTexture.png', 'image/triangle/testTexture.png');
     }

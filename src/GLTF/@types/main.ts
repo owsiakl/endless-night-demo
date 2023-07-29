@@ -13,6 +13,8 @@ type GLTF = {
     textures: Array<GLTF_texture> | undefined,
     images: Array<GLTF_image> | undefined,
     samplers: Array<GLTF_sampler> | undefined,
+    animations: Array<GLTF_animation> | undefined,
+    skins: Array<GLTF_skin> | undefined,
 }
 
 type GLTF_mesh = {
@@ -28,7 +30,7 @@ type GLTF_primitive = {
 
 type GLTF_accessor = {
     bufferView: number,
-    byteOffset: number,
+    byteOffset: number | undefined,
     componentType: GLTF_accessor_component_type,
     count: number,
     type: GLTF_accessor_type,
@@ -36,7 +38,7 @@ type GLTF_accessor = {
 
 type GLTF_buffer_view = {
     buffer: number,
-    byteOffset: number,
+    byteOffset: number | undefined,
     byteLength: number,
     byteStride: number | undefined,
     target: GLTF_buffer_view_target | undefined
@@ -55,6 +57,10 @@ type GLTF_node = {
     name: string | undefined,
     mesh: number | undefined,
     skin: number | undefined,
+    children: Array<number> | undefined,
+    translation: [number, number, number] | undefined,
+    rotation: [number, number, number, number] | undefined,
+    scale: [number, number, number] | undefined,
 }
 
 type GLTF_material = {
@@ -85,10 +91,35 @@ type GLTF_image = {
 }
 
 type GLTF_sampler = {
-    minFilter: number | undefined
+    minFilter: number | undefined,
     magFilter: number | undefined,
     wrapS: number | undefined,
     wrapT: number | undefined,
+}
+
+type GLTF_animation = {
+    name: string | undefined,
+    channels: Array<GLTF_animation_channel>,
+    samplers: Array<GLTF_animation_sampler>,
+}
+
+type GLTF_animation_channel = {
+    sampler: number,
+    target: {
+        node: number | undefined,
+        path: string,
+    },
+}
+
+type GLTF_animation_sampler = {
+    input: number,
+    interpolation: string | undefined,
+    output: number,
+}
+
+type GLTF_skin = {
+    inverseBindMatrices: number,
+    joints: Array<number>,
 }
 
 enum GLTF_accessor_component_type {

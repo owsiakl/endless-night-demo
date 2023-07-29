@@ -3,6 +3,7 @@ import { Program } from "../Engine/Program";
 import {Mesh} from "./Mesh";
 import {Loader} from "../GLTF/Loader";
 import {Assets} from "../Assets/Assets";
+import {mat4} from "gl-matrix";
 
 export class TestGLTF implements Mesh
 {
@@ -27,21 +28,18 @@ export class TestGLTF implements Mesh
     {
         this.program.setAttributeLocation('a_position');
         this.program.setAttributeLocation('a_texcoord');
+        this.program.setAttributeLocation('a_joint');
+        this.program.setAttributeLocation('a_weight');
         this.program.setUniformLocation('u_projection');
         this.program.setUniformLocation('u_view');
+        this.program.setUniformLocation('u_model');
+        this.program.setUniformLocation('u_jointMat');
 
         this.vao = this.gl.createVertexArray()!;
         this.gl.bindVertexArray(this.vao);
 
-
-        // const scene = this.model.scenes[this.model.defaultScene];
-        // const node = this.model.nodes[scene.node];
-        //
-        // if (!node.isMesh) {
-        //     throw new Error('GLTF model is not a mesh.');
-        // }
-
         const mesh = this.model.meshes[0];
+        const skin = this.model.skins![0];
         const accessors = this.model.accessors;
         const bufferViews = this.model.bufferViews;
         const buffers = this.model.buffers;
@@ -50,30 +48,50 @@ export class TestGLTF implements Mesh
         {
             const accessor = accessors[mesh.primitive.position];
             const bufferView = bufferViews[accessor.bufferView];
-            const buffer = buffers[bufferView.buffer];
-            const TypedArray = accessor.typedArray;
 
             if (undefined != bufferView.target) {
                 const positionBuffer = this.gl.createBuffer();
-                const positions = new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset, bufferView.byteLength / TypedArray.BYTES_PER_ELEMENT);
+                const positions = this.model.getAccessorData(mesh.primitive.position);
 
                 this.gl.bindBuffer(bufferView.target, positionBuffer);
                 this.gl.bufferData(bufferView.target, positions, this.gl.STATIC_DRAW);
                 this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_position'));
-                this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_position'), accessor.typeSize, accessor.componentType, false, bufferView.byteStride, accessor.byteOffset);
+                this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_position'), accessor.typeSize, accessor.componentType, false, 0, 0);
             }
+        }
+
+        // JOINTS
+        if (undefined !== mesh.primitive.joints) {
+            const jointAccessor = this.model.accessors[mesh.primitive.joints];
+            const joints = this.model.getAccessorData(mesh.primitive.joints);
+
+            const jointsBuffer = this.gl.createBuffer();
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, jointsBuffer);
+            this.gl.bufferData(this.gl.ARRAY_BUFFER, joints, this.gl.STATIC_DRAW);
+            this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_joint'));
+            this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_joint'), jointAccessor.typeSize, jointAccessor.componentType, false, 0, 0);
+        }
+
+        // WEIGHTS
+        if (undefined !== mesh.primitive.weights) {
+            const weightAccessor = this.model.accessors[mesh.primitive.weights];
+            const weights = this.model.getAccessorData(mesh.primitive.weights);
+
+            const weightBuffer = this.gl.createBuffer();
+            this.gl.bindBuffer(this.gl.ARRAY_BUFFER, weightBuffer);
+            this.gl.bufferData(this.gl.ARRAY_BUFFER, weights, this.gl.STATIC_DRAW);
+            this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_weight'));
+            this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_weight'), weightAccessor.typeSize, weightAccessor.componentType, false, 0, 0);
         }
 
         // INDICES
         if (undefined !== mesh.primitive.indices) {
             const accessor = accessors[mesh.primitive.indices];
             const bufferView = bufferViews[accessor.bufferView];
-            const buffer = buffers[bufferView.buffer];
-            const TypedArray = accessor.typedArray;
 
             if (undefined != bufferView.target) {
                 const indicesBuffer = this.gl.createBuffer();
-                const indices = new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset, bufferView.byteLength / TypedArray.BYTES_PER_ELEMENT);
+                const indices = this.model.getAccessorData(mesh.primitive.indices);
 
                 this.gl.bindBuffer(bufferView.target, indicesBuffer);
                 this.gl.bufferData(bufferView.target, indices, this.gl.STATIC_DRAW);
@@ -82,33 +100,31 @@ export class TestGLTF implements Mesh
             this.vertexCount = accessor.count;
         }
 
+        // TEXCOORDS
         if (undefined !== mesh.primitive.texCoord) {
             const accessor = accessors[mesh.primitive.texCoord];
             const bufferView = bufferViews[accessor.bufferView];
-            const buffer = buffers[bufferView.buffer];
-            const TypedArray = accessor.typedArray;
 
             if (undefined != bufferView.target) {
                 const texCoordsBuffer = this.gl.createBuffer();
-                const texCoords = new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset, bufferView.byteLength / TypedArray.BYTES_PER_ELEMENT);
+                const texCoords = this.model.getAccessorData(mesh.primitive.texCoord);
 
                 this.gl.bindBuffer(bufferView.target, texCoordsBuffer);
                 this.gl.bufferData(bufferView.target, texCoords, this.gl.STATIC_DRAW);
                 this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_texcoord'));
-                this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_texcoord'), accessor.typeSize, accessor.componentType, false, bufferView.byteStride, accessor.byteOffset);
+                this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_texcoord'), accessor.typeSize, accessor.componentType, false, 0, 0);
             }
         }
 
+        // TEXTURES
         if (undefined !== mesh.primitive.material) {
-            const material = this.model.materials[mesh.primitive.material]
+            const material = this.model.materials![mesh.primitive.material]
 
             if (material.isTexture) {
-
                 const texture = this.model.texture![material.baseTexture!]
-                const sampler = this.model.samplers![texture.sampler];
                 const image = this.model.images![texture.source];
 
-                let imageFile: HTMLImageElement|undefined = undefined;
+                let imageFile: HTMLImageElement | undefined = undefined;
 
                 if (image.isFromFile) {
                     imageFile = this.assets.images.get(image.uri!);
@@ -137,6 +153,15 @@ export class TestGLTF implements Mesh
             }
         }
 
+        // SKINS
+        if (undefined !== this.model.skins) {
+            const ibmAccessor = this.model.accessors[skin.inverseBindMatrices];
+            const ibm = this.model.getAccessorData(skin.inverseBindMatrices);
+
+            skin.joints.forEach((joint, index) => {
+                joint.ibm = ibm.slice(index * ibmAccessor.typeSize, (index + 1) * ibmAccessor.typeSize) as mat4;
+            });
+        }
 
         this.gl.bindVertexArray(null);
 
@@ -151,7 +176,27 @@ export class TestGLTF implements Mesh
         this.gl.useProgram(this.program.program);
         this.gl.bindVertexArray(this.vao);
 
+        const animation = this.model.animations![1];
+        const scene = this.model.scenes[0];
+
+        animation.advance(time);
+        scene.applyTransforms();
+
+        if (undefined !== this.model.skins) {
+            for (const skin of this.model.skins) {
+                for (const joint of skin.joints) {
+                    const node = this.model.nodes[joint.index];
+
+                    joint.jointMatrix = mat4.clone(node.worldTransform);
+                    mat4.multiply(joint.jointMatrix, joint.jointMatrix, joint.ibm);
+                }
+
+                this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_jointMat'), false, skin.jointMatrix);
+            }
+        }
+
         this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_view'), false, camera.viewMatrix);
+        this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_model'), false, mat4.create());
 
         this.gl.drawElements(this.gl.TRIANGLES, this.vertexCount, this.gl.UNSIGNED_SHORT, 0);
 

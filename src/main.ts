@@ -19,6 +19,9 @@ function main()
 {
     const fpsCounter = document.querySelector('[data-fps-counter]') as HTMLSpanElement;
     const msCounter = document.querySelector('[data-ms-counter]') as HTMLSpanElement;
+    const heapLimit = document.querySelector('[data-heap-limit]') as HTMLSpanElement;
+    const heapAvailable = document.querySelector('[data-heap-available]') as HTMLSpanElement;
+    const heapUsed = document.querySelector('[data-heap-used]') as HTMLSpanElement;
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
     const camera = new Camera(canvas);
@@ -76,6 +79,7 @@ function main()
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
 
         camera.update();
 
@@ -88,5 +92,11 @@ function main()
     setInterval(() => {
         fpsCounter.innerText = renderLoop.fps.toFixed(2);
         msCounter.innerText = renderLoop.ms.toFixed(2);
-    }, 1000);
+
+        // @ts-ignore
+        const memory = window.performance.memory;
+        heapLimit.innerText = (memory.jsHeapSizeLimit / 1000000).toFixed(2).concat(' MB');
+        heapAvailable.innerText = (memory.totalJSHeapSize / 1000000).toFixed(2).concat(' MB');
+        heapUsed.innerText = (memory.usedJSHeapSize / 1000000).toFixed(2).concat(' MB');
+    }, 5000);
 }

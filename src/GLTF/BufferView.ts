@@ -16,10 +16,15 @@ export class BufferView
     {
         return new this(
             bufferView.buffer,
-            bufferView.byteOffset,
+            bufferView.byteOffset ?? 0,
             bufferView.byteLength,
             bufferView.byteStride ?? 0,
             bufferView.target,
         );
+    }
+
+    public get isInterleaved(): boolean
+    {
+        return this.byteStride > 0;
     }
 }

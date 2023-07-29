@@ -1,19 +1,24 @@
+import {Node} from "./Node";
+import {mat4} from "gl-matrix";
+
 /**
  * @link https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-scene
  */
 export class Scene
 {
-    private constructor(
-        public node: number,
-    ) {
+    private constructor(public nodes: Array<Node>)
+    {
     }
 
-    public static fromJson(scene: GLTF_scene): Scene
+    public static fromJson(scene: GLTF_scene, nodesList: Array<Node>): Scene
     {
-        if (scene.nodes.length > 1) {
-            throw new Error(`Multi-node scenes are not implemented.`);
-        }
+        return new this(scene.nodes.map(index => nodesList[index]));
+    }
 
-        return new this(scene.nodes[0]);
+    public applyTransforms()
+    {
+        for (const node of this.nodes) {
+            node.applyTransforms(mat4.create())
+        }
     }
 }

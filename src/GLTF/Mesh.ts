@@ -1,4 +1,4 @@
-import {Primitive} from "./Primitive";
+import {Primitive} from "./Mesh/Primitive";
 
 /**
  * @link https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-mesh
