@@ -14,6 +14,8 @@ export class TestGLTF implements Mesh
     private vertexCount: number;
     private assets: Assets;
 
+    private activeAnimation: number | undefined = undefined;
+
     constructor(program: Program, gl: WebGL2RenderingContext, model: Loader, assets: Assets)
     {
         this.gl = gl;
@@ -169,6 +171,8 @@ export class TestGLTF implements Mesh
         this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_projection'), false, camera.projectionMatrix);
         this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_view'), false, camera.viewMatrix);
         this.gl.useProgram(null);
+
+        this.bindAnimationsOnChange();
     }
 
     render(time: number, camera: Camera): void
@@ -176,11 +180,15 @@ export class TestGLTF implements Mesh
         this.gl.useProgram(this.program.program);
         this.gl.bindVertexArray(this.vao);
 
-        const animation = this.model.animations![1];
-        const scene = this.model.scenes[0];
+        if (undefined !== this.activeAnimation) {
+            const animation = this.model.animations![this.activeAnimation];
 
-        animation.advance(time);
-        scene.applyTransforms();
+            animation.advance(time);
+
+            for (const scene of this.model.scenes) {
+                scene.applyTransforms();
+            }
+        }
 
         if (undefined !== this.model.skins) {
             for (const skin of this.model.skins) {
@@ -195,6 +203,7 @@ export class TestGLTF implements Mesh
             }
         }
 
+
         this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_view'), false, camera.viewMatrix);
         this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_model'), false, mat4.create());
 
@@ -202,5 +211,35 @@ export class TestGLTF implements Mesh
 
         this.gl.useProgram(null);
         this.gl.bindVertexArray(null);
+    }
+
+    private bindAnimationsOnChange(): void
+    {
+        if (undefined === this.model.animations) {
+            return;
+        }
+
+        const animations = this.model.animations.map(a => a.name);
+
+        window.document.body.insertAdjacentHTML(
+            'beforeend',
+            `
+                <div class="info-box top-right">
+                    ${animations.map((name, index) => `
+                         <section>
+                            <input type="radio" id="${name}" value="${index}" name="animation" data-animation>
+                            <label for="${name}">${name}</label>
+                        </section>
+                    `).join('')}
+                </div>
+            `
+        );
+
+        // @ts-ignore
+        document.querySelectorAll('[data-animation]').forEach((radio: HTMLInputElement) => {
+            radio.addEventListener('change', () => {
+                this.activeAnimation = Number.parseInt(radio.value);
+            });
+        });
     }
 }

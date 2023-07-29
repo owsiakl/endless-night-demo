@@ -18,14 +18,22 @@ canvas {
   height: 100%;
 }
 
-.performace {
+.info-box {
   position: absolute;
-  top: 15px;
-  left: 15px;
   min-width: 100px;
   background-color: rgba(#838FA0, 0.5);
   padding: 8px;
   border-radius: 4px;
+
+  &.top-left {
+    top: 15px;
+    left: 15px;
+  }
+
+  &.top-right {
+    top: 15px;
+    right: 15px;
+  }
 
   section {
     display: flex;
