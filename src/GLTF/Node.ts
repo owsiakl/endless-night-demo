@@ -9,13 +9,13 @@ export class Node
     public parent: Node | null = null;
     public children: Array<Node> = [];
     public worldTransform: mat4 = mat4.create();
+    public translation: vec3 = vec3.fromValues(0, 0, 0);
+    public rotation: quat = quat.fromValues(0, 0, 0, 1);
+    public scale: vec3 = vec3.fromValues(1, 1, 1);
 
     private constructor(
         public name: string | undefined,
         public index: number,
-        public translation: vec3,
-        public rotation: quat,
-        public scale: vec3,
         public mesh: number | undefined,
         public skin: number | undefined,
     ) {
@@ -25,15 +25,32 @@ export class Node
     {
         const node = nodesList[index];
 
-        return new this(
-            node.name,
+        const self =  new this(
+            node.name ?? `node_${index}`,
             index,
-            node.translation ? vec3.fromValues(...node.translation) : vec3.fromValues(0, 0, 0),
-            node.rotation ? quat.fromValues(...node.rotation) : quat.fromValues(0, 0, 0, 1),
-            node.scale ? vec3.fromValues(...node.scale) : vec3.fromValues(1, 1, 1),
             node.mesh,
             node.skin,
         );
+
+        if (undefined !== node.matrix) {
+            self.translation = mat4.getTranslation(vec3.create(), node.matrix);
+            self.rotation = mat4.getRotation(quat.create(), node.matrix);
+            self.scale = mat4.getScaling(vec3.create(), node.matrix);
+        }
+
+        if (undefined !== node.translation) {
+            self.translation = vec3.fromValues(...node.translation);
+        }
+
+        if (undefined !== node.rotation) {
+            self.rotation = quat.fromValues(...node.rotation);
+        }
+
+        if (undefined !== node.scale) {
+            self.scale = vec3.fromValues(...node.scale);
+        }
+
+        return self;
     }
 
     public setParent(parent: Node) : void

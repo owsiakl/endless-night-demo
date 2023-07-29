@@ -13,7 +13,6 @@ export class TestGLTF implements Mesh
     private model: Loader;
     private vertexCount: number;
     private assets: Assets;
-
     private activeAnimation: number | undefined = undefined;
 
     constructor(program: Program, gl: WebGL2RenderingContext, model: Loader, assets: Assets)
@@ -41,7 +40,6 @@ export class TestGLTF implements Mesh
         this.gl.bindVertexArray(this.vao);
 
         const mesh = this.model.meshes[0];
-        const skin = this.model.skins![0];
         const accessors = this.model.accessors;
         const bufferViews = this.model.bufferViews;
         const buffers = this.model.buffers;
@@ -127,14 +125,28 @@ export class TestGLTF implements Mesh
                 const image = this.model.images![texture.source];
 
                 let imageFile: HTMLImageElement | undefined = undefined;
+                const modelTexture = this.gl.createTexture();
 
                 if (image.isFromFile) {
-                    imageFile = this.assets.images.get(image.uri!);
+                    if (image.uri?.startsWith('data:')) {
+                        imageFile = new Image();
+                        imageFile.src = image.uri;
 
-                    const modelTexture = this.gl.createTexture();
-                    this.gl.bindTexture(this.gl.TEXTURE_2D, modelTexture);
-                    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, imageFile);
-                    this.gl.generateMipmap(this.gl.TEXTURE_2D);
+                    } else {
+                        imageFile = this.assets.images.get(image.uri!);
+                    }
+
+                    if (imageFile.naturalWidth !== 0 && imageFile.naturalHeight !== 0) {
+                        this.gl.bindTexture(this.gl.TEXTURE_2D, modelTexture);
+                        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, imageFile);
+                        this.gl.generateMipmap(this.gl.TEXTURE_2D);
+                    } else {
+                        imageFile.onload = () => {
+                            this.gl.bindTexture(this.gl.TEXTURE_2D, modelTexture);
+                            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, imageFile!);
+                            this.gl.generateMipmap(this.gl.TEXTURE_2D);
+                        };
+                    }
                 }
 
                 if (image.isFromBuffer) {
@@ -157,6 +169,8 @@ export class TestGLTF implements Mesh
 
         // SKINS
         if (undefined !== this.model.skins) {
+            const skin = this.model.skins[0];
+
             const ibmAccessor = this.model.accessors[skin.inverseBindMatrices];
             const ibm = this.model.getAccessorData(skin.inverseBindMatrices);
 

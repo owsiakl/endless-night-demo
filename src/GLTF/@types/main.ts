@@ -61,6 +61,7 @@ type GLTF_node = {
     translation: [number, number, number] | undefined,
     rotation: [number, number, number, number] | undefined,
     scale: [number, number, number] | undefined,
+    matrix: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number] | undefined,
 }
 
 type GLTF_material = {

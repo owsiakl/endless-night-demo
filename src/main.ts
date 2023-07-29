@@ -65,7 +65,8 @@ function main()
         ),
         gl,
         // Loader.parse(JSON.parse(assets.models.get('gltf_triangle')) as GLTF),
-        Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF),
+        // Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF),
+        Loader.parse(JSON.parse(assets.models.get('gltf_cesium_man')) as GLTF),
         assets
     );
 
