@@ -4,6 +4,7 @@ import {Mesh} from "./Mesh";
 import {Loader} from "../GLTF/Loader";
 import {Assets} from "../Assets/Assets";
 import {mat4} from "gl-matrix";
+import {printAttributes, printUniforms} from "../Debug/Program";
 
 export class TestGLTF implements Mesh
 {
@@ -27,13 +28,13 @@ export class TestGLTF implements Mesh
 
     preRender(camera: Camera): void
     {
-        this.program.setAttributeLocation('a_position');
-        this.program.setAttributeLocation('a_texcoord');
-        this.program.setAttributeLocation('a_joint');
-        this.program.setAttributeLocation('a_weight');
-        this.program.setUniformLocation('u_projection');
-        this.program.setUniformLocation('u_view');
-        this.program.setUniformLocation('u_model');
+        // this.program.setAttributeLocation('a_position');
+        // this.program.setAttributeLocation('a_texcoord');
+        // this.program.setAttributeLocation('a_joint');
+        // this.program.setAttributeLocation('a_weight');
+        // this.program.setUniformLocation('u_projection');
+        // this.program.setUniformLocation('u_view');
+        // this.program.setUniformLocation('u_model');
         this.program.setUniformLocation('u_jointMat');
 
         this.vao = this.gl.createVertexArray()!;

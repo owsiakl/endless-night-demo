@@ -17,7 +17,7 @@ export class Skin
 
     public get jointMatrix(): mat4
     {
-        const size = this.joints.reduce((acc, current) => acc + current.jointMatrix.length, 0);
+        const size = this.joints.length * 16;
         const matrix = new Float32Array(size);
 
         this.joints.forEach((joint, index) => {

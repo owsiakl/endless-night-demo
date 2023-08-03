@@ -32,10 +32,6 @@ export class Assets
         this.importShader('triangle_fragment', '/shaders/triangle/fragment.glsl', ShaderType.FRAGMENT);
         this.importShader('cube_vertex', '/shaders/cube/vertex.glsl', ShaderType.VERTEX);
         this.importShader('cube_fragment', '/shaders/cube/fragment.glsl', ShaderType.FRAGMENT);
-        this.importShader('grid_vertex', '/shaders/grid/vertex.glsl', ShaderType.VERTEX);
-        this.importShader('grid_fragment', '/shaders/grid/fragment.glsl', ShaderType.FRAGMENT);
-        this.importShader('gltf_vertex', '/shaders/gltf/vertex.glsl', ShaderType.VERTEX);
-        this.importShader('gltf_fragment', '/shaders/gltf/fragment.glsl', ShaderType.FRAGMENT);
 
         this.importModel('gltf_triangle', '/gltf/triangle.gltf');
         this.importModel('gltf_cube_guy', '/gltf/cube-guy.gltf');

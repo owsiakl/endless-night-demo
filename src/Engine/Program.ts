@@ -32,7 +32,21 @@ export class Program
 
         logger.debug(`Program "${name}" shader attached & program linked.`);
 
-        return new this(name, gl, logger, program);
+        const self = new this(name, gl, logger, program);
+        const attributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
+        const uniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+
+        for(let i = 0; i < attributes; ++i) {
+            const info = gl.getActiveAttrib(program, i) as WebGLActiveInfo;
+            self.setAttributeLocation(info.name)
+        }
+
+        for(let i = 0; i < uniforms; ++i) {
+            const info = gl.getActiveUniform(program, i) as WebGLActiveInfo;
+            self.setUniformLocation(info.name)
+        }
+
+        return self;
     }
 
     public getAttributeLocation(attribute: string): GLuint

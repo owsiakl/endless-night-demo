@@ -2,12 +2,17 @@ import {Assets} from "./Assets/Assets";
 import {NullLogger} from "./Logger/NullLogger";
 import {Program} from "./Engine/Program";
 import {RenderLoop} from "./Engine/RenderLoop";
-import {Cube} from "./Mesh/Cube";
 import {Camera} from "./Engine/Camera";
-import {Grid} from "./Mesh/Grid";
 import {MouseCamera} from "./Engine/MouseCamera";
 import {TestGLTF} from "./Mesh/TestGLTF";
 import {Loader} from "./GLTF/Loader";
+import {Scene} from "./Core/Scene";
+import {WebGLRenderer} from "./Renderer/WebGLRenderer";
+import {Grid} from "./Model/Grid";
+import {Cube} from "./Model/Cube";
+import {ShaderMaterial} from "./Core/Material/ShaderMaterial";
+import {Mesh} from "./Core/Object/Mesh";
+import {Line} from "./Core/Object/Line";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -33,27 +38,6 @@ function main()
 
     MouseCamera.control(camera, canvas);
 
-    const grid = new Grid(
-        Program.create(
-            'grid',
-            assets.shaders.get('grid_vertex'),
-            assets.shaders.get('grid_fragment'),
-            gl,
-            logger
-        ),
-        gl
-    );
-
-    const cube = new Cube(
-        Program.create(
-            'cube',
-            assets.shaders.get('cube_vertex'),
-            assets.shaders.get('cube_fragment'),
-            gl,
-            logger
-        ),
-        gl
-    );
 
     const gltf = new TestGLTF(
         Program.create(
@@ -65,27 +49,35 @@ function main()
         ),
         gl,
         // Loader.parse(JSON.parse(assets.models.get('gltf_triangle')) as GLTF),
-        // Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF),
-        Loader.parse(JSON.parse(assets.models.get('gltf_cesium_man')) as GLTF),
+        Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF),
+        // Loader.parse(JSON.parse(assets.models.get('gltf_cesium_man')) as GLTF),
         assets
     );
 
-    grid.preRender(camera);
-    cube.preRender(camera);
+
     gltf.preRender(camera);
 
+
+
+    const renderer = new WebGLRenderer(canvas, gl);
+    const scene = new Scene();
+
+    const grid = new Line(
+        Grid.create,
+        new ShaderMaterial(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
+    );
+
+    const cube = new Mesh(
+        Cube.create,
+        new ShaderMaterial(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
+    );
+
+    scene.add(grid);
+    scene.add(cube);
+
     renderLoop.start(time => {
-
-        gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
-
         camera.update();
-
-        grid.render(time, camera);
-        cube.render(time, camera);
+        renderer.render(scene, camera);
         gltf.render(time, camera);
     });
 
