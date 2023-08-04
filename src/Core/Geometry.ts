@@ -1,5 +1,6 @@
 import {GeometryAttribute} from "./GeometryAttribute";
 import {WebGLProgram} from "../Renderer/webgl/WebGLProgram";
+import {AccessorData} from "../GLTF/Accessor";
 
 export class Geometry
 {
@@ -9,7 +10,7 @@ export class Geometry
     public readonly attributes: GeometryAttribute[] = [];
     public updateBuffers: boolean = false;
     public count: number = 0;
-    public index: Uint16Array | null = null;
+    public index: AccessorData | null = null;
     public program: WebGLProgram | null = null;
 
     constructor()
@@ -17,7 +18,7 @@ export class Geometry
         this.id = Geometry.count++;
     }
 
-    public setAttribute(name: string, data: ArrayBufferView, itemSize: number, normalized: boolean = false)
+    public setAttribute(name: string, data: AccessorData, itemSize: number, normalized: boolean = false)
     {
         this.attributes.push(new GeometryAttribute(name, data, itemSize, normalized));
 

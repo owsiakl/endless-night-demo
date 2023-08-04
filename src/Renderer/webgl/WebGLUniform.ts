@@ -4,11 +4,12 @@ export class WebGLUniform
         private readonly gl: WebGL2RenderingContext,
         private readonly name: string,
         private readonly location: WebGLUniformLocation,
-        private readonly type: GLenum
+        private readonly type: GLenum,
+        private readonly size: number,
     ) {
     }
 
-    public set(data: number[])
+    public set(data: Iterable<number>)
     {
         switch (this.type) {
             case 35676: this.gl.uniformMatrix4fv(this.location, false, data); break;

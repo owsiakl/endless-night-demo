@@ -69,8 +69,8 @@ export class TestGLTF implements Mesh
             const jointsBuffer = this.gl.createBuffer();
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, jointsBuffer);
             this.gl.bufferData(this.gl.ARRAY_BUFFER, joints, this.gl.STATIC_DRAW);
-            this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_joint'));
-            this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_joint'), jointAccessor.typeSize, jointAccessor.componentType, false, 0, 0);
+            this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_joints'));
+            this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_joints'), jointAccessor.typeSize, jointAccessor.componentType, false, 0, 0);
         }
 
         // WEIGHTS
@@ -81,8 +81,8 @@ export class TestGLTF implements Mesh
             const weightBuffer = this.gl.createBuffer();
             this.gl.bindBuffer(this.gl.ARRAY_BUFFER, weightBuffer);
             this.gl.bufferData(this.gl.ARRAY_BUFFER, weights, this.gl.STATIC_DRAW);
-            this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_weight'));
-            this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_weight'), weightAccessor.typeSize, weightAccessor.componentType, false, 0, 0);
+            this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_weights'));
+            this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_weights'), weightAccessor.typeSize, weightAccessor.componentType, false, 0, 0);
         }
 
         // INDICES
@@ -112,8 +112,8 @@ export class TestGLTF implements Mesh
 
                 this.gl.bindBuffer(bufferView.target, texCoordsBuffer);
                 this.gl.bufferData(bufferView.target, texCoords, this.gl.STATIC_DRAW);
-                this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_texcoord'));
-                this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_texcoord'), accessor.typeSize, accessor.componentType, false, 0, 0);
+                this.gl.enableVertexAttribArray(this.program.getAttributeLocation('a_uv'));
+                this.gl.vertexAttribPointer(this.program.getAttributeLocation('a_uv'), accessor.typeSize, accessor.componentType, false, 0, 0);
             }
         }
 
@@ -183,6 +183,15 @@ export class TestGLTF implements Mesh
         this.gl.bindVertexArray(null);
 
         this.gl.useProgram(this.program.program);
+
+        if (undefined !== this.model.skins) {
+            const skeleton = this.model.getSkin(0);
+
+            // skeleton.updateMatrixWorld();
+
+            this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_jointMat'), false, skeleton.jointMatrix);
+        }
+
         this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_projection'), false, camera.projectionMatrix);
         this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_view'), false, camera.viewMatrix);
         this.gl.useProgram(null);
@@ -204,20 +213,6 @@ export class TestGLTF implements Mesh
                 scene.applyTransforms();
             }
         }
-
-        if (undefined !== this.model.skins) {
-            for (const skin of this.model.skins) {
-                for (const joint of skin.joints) {
-                    const node = this.model.nodes[joint.index];
-
-                    joint.jointMatrix = mat4.clone(node.worldTransform);
-                    mat4.multiply(joint.jointMatrix, joint.jointMatrix, joint.ibm);
-                }
-
-                this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_jointMat'), false, skin.jointMatrix);
-            }
-        }
-
 
         this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_view'), false, camera.viewMatrix);
         this.gl.uniformMatrix4fv(this.program.getUniformLocation('u_model'), false, mat4.create());

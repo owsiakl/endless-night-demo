@@ -1,12 +1,14 @@
 import {Geometry} from "../Geometry";
-import {Object} from "../Object";
 import {Material} from "../Material";
+import {Object3D} from "../Object3D";
 
-export class Line implements Object
+export class Line extends Object3D
 {
     constructor(
+        name: string,
         public readonly geometry: Geometry,
         public readonly material: Material
     ) {
+        super(name);
     }
 }

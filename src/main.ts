@@ -13,6 +13,7 @@ import {Cube} from "./Model/Cube";
 import {ShaderMaterial} from "./Core/Material/ShaderMaterial";
 import {Mesh} from "./Core/Object/Mesh";
 import {Line} from "./Core/Object/Line";
+import {SkinnedMesh} from "./Core/Object/SkinnedMesh";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -20,7 +21,7 @@ const renderLoop = new RenderLoop();
 
 document.addEventListener('DOMContentLoaded', () => assets.preload(main));
 
-function main()
+async function main()
 {
     const fpsCounter = document.querySelector('[data-fps-counter]') as HTMLSpanElement;
     const msCounter = document.querySelector('[data-ms-counter]') as HTMLSpanElement;
@@ -37,7 +38,6 @@ function main()
     canvas.style.height = `${canvas.offsetHeight}px`;
 
     MouseCamera.control(camera, canvas);
-
 
     const gltf = new TestGLTF(
         Program.create(
@@ -57,28 +57,44 @@ function main()
 
     gltf.preRender(camera);
 
-
-
     const renderer = new WebGLRenderer(canvas, gl);
     const scene = new Scene();
 
     const grid = new Line(
+        'line',
         Grid.create,
         new ShaderMaterial(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
     );
 
     const cube = new Mesh(
+        'cube',
         Cube.create,
         new ShaderMaterial(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
     );
 
+    // const model = Loader.parse(JSON.parse(assets.models.get('gltf_triangle')) as GLTF);
+    // const model = Loader.parse(JSON.parse(assets.models.get('gltf_cesium_man')) as GLTF);
+    const model = Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF);
+    const material = new ShaderMaterial(assets.shaders.get('triangle_vertex').textContent, assets.shaders.get('triangle_fragment').textContent);
+    material.setImage(await model.getTexture(0));
+
+    const test = new SkinnedMesh(
+        'gltf',
+        model.getMesh(0),
+        material,
+        model.getSkin(0)
+    );
+
     scene.add(grid);
     scene.add(cube);
+    // scene.add(test);
 
     renderLoop.start(time => {
         camera.update();
         renderer.render(scene, camera);
+
         gltf.render(time, camera);
+
     });
 
     // debug statistics

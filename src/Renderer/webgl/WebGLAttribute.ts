@@ -9,7 +9,7 @@ export class WebGLAttribute
     ) {
     }
 
-    public set(data: ArrayBufferView, target: GLenum, normalized: boolean)
+    public set(data: ArrayBufferView, target: GLenum, itemSize: number, normalized: boolean)
     {
         const gl = this.gl;
         this.buffer = gl.createBuffer();
@@ -34,7 +34,7 @@ export class WebGLAttribute
         gl.bindBuffer(target, this.buffer);
         gl.bufferData(target, data, gl.STATIC_DRAW);
         gl.enableVertexAttribArray(this.location);
-        gl.vertexAttribPointer(this.location, 3, type, normalized, 0, 0);
+        gl.vertexAttribPointer(this.location, itemSize, type, normalized, 0, 0);
         gl.bindBuffer(target, null);
     }
 }

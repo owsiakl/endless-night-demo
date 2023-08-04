@@ -5,6 +5,9 @@ import {Line} from "../Core/Object/Line";
 import {Mesh} from "../Core/Object/Mesh";
 import {WebGLPrograms} from "./webgl/WebGLPrograms";
 import {WebGLVertexArrays} from "./webgl/WebGLVertexArrays";
+import {Object3D} from "../Core/Object3D";
+import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
+import {ShaderMaterial} from "../Core/Material/ShaderMaterial";
 
 export class WebGLRenderer
 {
@@ -27,8 +30,15 @@ export class WebGLRenderer
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
 
+        scene.updateMatrixWorld();
+
         for (let i = 0, length = scene.objects.length; i < length; i++) {
             const object = scene.objects[i];
+
+            if (!(object instanceof Mesh) && !(object instanceof Line)) {
+                return;
+            }
+
             const geometry = object.geometry;
             const program = this.programs.initProgram(gl, object.material);
 
@@ -39,7 +49,14 @@ export class WebGLRenderer
                 for (let i = 0, length = geometry.attributes.length; i < length; i++) {
                     const attribute = geometry.attributes[i];
 
-                    program.attributes.get(attribute.name).set(attribute.data, gl.ARRAY_BUFFER, attribute.normalized);
+                    if (program.attributes.has(attribute.name))
+                    {
+                        program.attributes.get(attribute.name).set(attribute.data, gl.ARRAY_BUFFER, attribute.itemSize, attribute.normalized);
+                    }
+                    else
+                    {
+                        console.log('attribute doesnt exists: ', attribute.name);
+                    }
                 }
 
                 if (geometry.indexed) {
@@ -51,15 +68,25 @@ export class WebGLRenderer
 
                 geometry.updateBuffers = false;
 
-                // @ts-ignore
-                program.uniforms.get('u_projection').set(camera.projectionMatrix);
+
+                if (object.material instanceof ShaderMaterial && object.material.image)
+                {
+                    const image = object.material.image;
+                    const modelTexture = gl.createTexture();
+
+                    gl.bindTexture(gl.TEXTURE_2D, modelTexture);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+                    gl.generateMipmap(gl.TEXTURE_2D);
+                }
             }
 
-            // @ts-ignore
+            program.uniforms.get('u_projection').set(camera.projectionMatrix);
             program.uniforms.get('u_model').set(mat4.create());
-            // @ts-ignore
             program.uniforms.get('u_view').set(camera.viewMatrix);
 
+            if (object instanceof SkinnedMesh) {
+                program.uniforms.get('u_jointMat').set(object.skeleton.jointMatrix)
+            }
 
             let mode = null;
 

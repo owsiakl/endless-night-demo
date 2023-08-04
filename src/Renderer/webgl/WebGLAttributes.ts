@@ -21,10 +21,15 @@ export class WebGLAttributes
 
     public get(name: string): WebGLAttribute
     {
-        if (!this.attributes.has(name)) {
+        if (!this.has(name)) {
             throw new Error(`Program doesn't have "${name}" attribute.`)
         }
 
         return this.attributes.get(name)!;
+    }
+
+    public has(name: string) : boolean
+    {
+        return this.attributes.has(name);
     }
 }

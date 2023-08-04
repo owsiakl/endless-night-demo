@@ -13,7 +13,13 @@ export class WebGLUniforms
             const info = gl.getActiveUniform(program, i) as WebGLActiveInfo;
             const location = gl.getUniformLocation(program, info.name) as WebGLUniformLocation;
 
-            self.uniforms.set(info.name, new WebGLUniform(gl, info.name, location, info.type));
+            let name = info.name;
+
+            if (name.endsWith('[0]')) {
+                name = name.slice(0, -3)
+            }
+
+            self.uniforms.set(name, new WebGLUniform(gl, name, location, info.type, info.size));
         }
 
         return self;
