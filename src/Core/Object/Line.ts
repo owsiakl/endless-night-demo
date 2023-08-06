@@ -9,6 +9,6 @@ export class Line extends Object3D
         public readonly geometry: Geometry,
         public readonly material: Material
     ) {
-        super(name);
+        super(0, name);
     }
 }

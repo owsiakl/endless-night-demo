@@ -13,9 +13,10 @@ export class Object3D
     private children: Object3D[] = [];
 
     public worldTransform = mat4.create();
-    public jointMatrix = mat4.create();
 
-    public constructor(public readonly name: string)
+    public animations: null = null;
+
+    public constructor(public readonly id: number, public readonly name: string)
     {
     }
 

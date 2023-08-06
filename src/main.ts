@@ -1,10 +1,8 @@
 import {Assets} from "./Assets/Assets";
 import {NullLogger} from "./Logger/NullLogger";
-import {Program} from "./Engine/Program";
 import {RenderLoop} from "./Engine/RenderLoop";
 import {Camera} from "./Engine/Camera";
 import {MouseCamera} from "./Engine/MouseCamera";
-import {TestGLTF} from "./Mesh/TestGLTF";
 import {Loader} from "./GLTF/Loader";
 import {Scene} from "./Core/Scene";
 import {WebGLRenderer} from "./Renderer/WebGLRenderer";
@@ -39,24 +37,6 @@ async function main()
 
     MouseCamera.control(camera, canvas);
 
-    const gltf = new TestGLTF(
-        Program.create(
-            'gltf',
-            assets.shaders.get('triangle_vertex'),
-            assets.shaders.get('triangle_fragment'),
-            gl,
-            logger
-        ),
-        gl,
-        // Loader.parse(JSON.parse(assets.models.get('gltf_triangle')) as GLTF),
-        Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF),
-        // Loader.parse(JSON.parse(assets.models.get('gltf_cesium_man')) as GLTF),
-        assets
-    );
-
-
-    gltf.preRender(camera);
-
     const renderer = new WebGLRenderer(canvas, gl);
     const scene = new Scene();
 
@@ -72,29 +52,28 @@ async function main()
         new ShaderMaterial(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
     );
 
-    // const model = Loader.parse(JSON.parse(assets.models.get('gltf_triangle')) as GLTF);
-    // const model = Loader.parse(JSON.parse(assets.models.get('gltf_cesium_man')) as GLTF);
     const model = Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF);
     const material = new ShaderMaterial(assets.shaders.get('triangle_vertex').textContent, assets.shaders.get('triangle_fragment').textContent);
     material.setImage(await model.getTexture(0));
+    const skeleton = model.getSkin(0);
+    const animation = model.getAnimation(0);
 
-    const test = new SkinnedMesh(
+    const cubeMan = new SkinnedMesh(
         'gltf',
         model.getMesh(0),
         material,
-        model.getSkin(0)
+        skeleton
     );
 
     scene.add(grid);
     scene.add(cube);
-    // scene.add(test);
+    scene.add(cubeMan);
+    scene.add(skeleton);
 
     renderLoop.start(time => {
+        animation.update(time, skeleton);
         camera.update();
         renderer.render(scene, camera);
-
-        gltf.render(time, camera);
-
     });
 
     // debug statistics
