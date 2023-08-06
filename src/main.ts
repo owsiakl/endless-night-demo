@@ -8,10 +8,9 @@ import {Scene} from "./Core/Scene";
 import {WebGLRenderer} from "./Renderer/WebGLRenderer";
 import {Grid} from "./Model/Grid";
 import {Cube} from "./Model/Cube";
-import {ShaderMaterial} from "./Core/Material/ShaderMaterial";
 import {Mesh} from "./Core/Object/Mesh";
 import {Line} from "./Core/Object/Line";
-import {SkinnedMesh} from "./Core/Object/SkinnedMesh";
+import {Material} from "./Core/Material";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -43,35 +42,46 @@ async function main()
     const grid = new Line(
         'line',
         Grid.create,
-        new ShaderMaterial(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
+        new Material(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
     );
 
     const cube = new Mesh(
         'cube',
         Cube.create,
-        new ShaderMaterial(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
+        new Material(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
     );
 
-    const model = Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF);
-    const material = new ShaderMaterial(assets.shaders.get('triangle_vertex').textContent, assets.shaders.get('triangle_fragment').textContent);
-    material.setImage(await model.getTexture(0));
-    const skeleton = model.getSkin(0);
-    const animation = model.getAnimation(0);
 
-    const cubeMan = new SkinnedMesh(
-        'gltf',
-        model.getMesh(0),
-        material,
-        skeleton
-    );
+    // CUBE GUY
+    const model = await Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF);
+    const cubeMan = await model.load();
+    cubeMan.material.vertexShader = assets.shaders.get('triangle_vertex').textContent;
+    cubeMan.material.fragmentShader = assets.shaders.get('triangle_fragment').textContent;
+
+    // FOX
+    // const foxModel = await Loader.parse(JSON.parse(assets.models.get('gltf_fox')) as GLTF);
+    const foxModel = await Loader.parseBinary(assets.binaryModels.get('glb_fox'));
+    const fox = await foxModel.load();
+    fox.material.vertexShader = assets.shaders.get('triangle_vertex').textContent;
+    fox.material.fragmentShader = assets.shaders.get('triangle_fragment').textContent;
+    fox.setScale([0.01, 0.01, 0.01]);
+    fox.setTranslation([1, 0, 0]);
+
+
+    // @ts-ignore
+
+
+
+
 
     scene.add(grid);
-    scene.add(cube);
+    // scene.add(cube);
     scene.add(cubeMan);
-    scene.add(skeleton);
+    scene.add(fox);
 
     renderLoop.start(time => {
-        animation.update(time, skeleton);
+        cubeMan.animations[1].update(time, cubeMan.skeleton);
+        fox.animations[2].update(time, fox.skeleton);
         camera.update();
         renderer.render(scene, camera);
     });

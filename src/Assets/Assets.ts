@@ -4,12 +4,14 @@ import {ShaderType} from './ShaderType';
 import {Shaders} from "./Shaders";
 import {Logger} from "../Logger/Logger";
 import {Models} from "./Models";
+import {BinaryModels} from "./BinaryModels";
 
 export class Assets
 {
     public shaders = new Shaders();
     public images = new Images();
     public models = new Models();
+    public binaryModels = new BinaryModels();
 
     private logger: Logger;
     private assetsCount: number = 0;
@@ -35,8 +37,9 @@ export class Assets
 
         this.importModel('gltf_triangle', '/gltf/triangle.gltf');
         this.importModel('gltf_cube_guy', '/gltf/cube-guy.gltf');
-        this.importModel('gltf_fox', '/gltf/fox.gltf');
+        this.importModel('gltf_fox', '/gltf/Fox.gltf');
         this.importModel('gltf_cesium_man', '/gltf/cesium-man.gltf');
+        this.importModelBinary('glb_fox', '/gltf/Fox.glb');
 
         this.importImage('testTexture.png', 'image/triangle/testTexture.png');
     }
@@ -112,5 +115,27 @@ export class Assets
         };
 
         request.send();
+    }
+
+    private importModelBinary(name: string, path: string) : void
+    {
+        this.logger.debug(`Fetch model "${name}".`, {'path': path});
+
+        this.assetsCount++;
+
+        fetch(path)
+            .then(async response => {
+                const data = await response.arrayBuffer();
+
+                this.binaryModels.add(name, data);
+                this.assetsLoaded++;
+
+                this.logger.debug(`Fetch model "${name}" completed.`);
+
+                this.checkAssets();
+            })
+            .catch(error => {
+                throw new Error(error);
+            });
     }
 }

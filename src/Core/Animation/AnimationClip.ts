@@ -4,6 +4,7 @@ import {Skeleton} from "../Skeleton";
 export class AnimationClip
 {
     private readonly duration: number;
+    private readonly speed: number = 0.1;
     private animationElapsed: number = 0;
 
     constructor(
@@ -22,10 +23,12 @@ export class AnimationClip
             keyframe.update(skeleton.getBone(keyframe.objectId), this.animationElapsed);
         }
 
-        if (this.animationElapsed + deltaTime >= this.duration) {
+        const elapsed = deltaTime * this.speed;
+
+        if (this.animationElapsed + elapsed >= this.duration) {
             this.animationElapsed = 0;
         } else {
-            this.animationElapsed += deltaTime;
+            this.animationElapsed += elapsed;
         }
     }
 

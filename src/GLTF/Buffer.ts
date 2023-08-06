@@ -13,14 +13,41 @@ export class Buffer
 
     public static fromJson(buffer: GLTF_buffer): Buffer
     {
-        return new this(
+        const self = new this(
             buffer.uri,
             buffer.byteLength,
         );
+
+        if (undefined === self.uri) {
+            // @ts-ignore
+            self.arrayBufferCache = buffer.binary;
+        }
+
+        return self;
+    }
+
+    async arrayBufferAsync()
+    {
+        if (undefined === this.uri) {
+            return;
+        }
+
+        if (this.uri.startsWith('data:')) {
+            return;
+        }
+
+        const response = await fetch('/gltf/' + this.uri);
+        const arrayBuffer = await response.arrayBuffer();
+
+        this.arrayBufferCache = arrayBuffer;
     }
 
     public arrayBuffer(): ArrayBuffer
     {
+        if (undefined !== this.arrayBufferCache) {
+            return this.arrayBufferCache;
+        }
+
         if (!this.uri.startsWith('data:')) {
             throw new Error(`GLTF buffer URIs other than data are not implemented.`);
         }

@@ -1,4 +1,5 @@
 import {mat4, quat, vec3} from "gl-matrix";
+import {AnimationClip} from "./Animation/AnimationClip";
 
 export class Object3D
 {
@@ -14,7 +15,7 @@ export class Object3D
 
     public worldTransform = mat4.create();
 
-    public animations: null = null;
+    public animations: AnimationClip[] = [];
 
     public constructor(public readonly id: number, public readonly name: string)
     {
@@ -70,7 +71,7 @@ export class Object3D
         return this.transformMatrix;
     }
 
-    public setChild(child: this) : void
+    public setChild(child: Object3D) : void
     {
         child.parent = this;
 

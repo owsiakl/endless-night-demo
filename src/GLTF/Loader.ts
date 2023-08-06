@@ -12,6 +12,8 @@ import {RotationKeyframe} from "../Core/Animation/Keyframe/RotationKeyframe";
 import {ScaleKeyframe} from "../Core/Animation/Keyframe/ScaleKeyframe";
 import {AnimationClip} from "../Core/Animation/AnimationClip";
 import {Interpolation} from "../Core/Animation/Interpolation";
+import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
+import {Material} from "../Core/Material";
 
 export class Loader
 {
@@ -26,8 +28,79 @@ export class Loader
     ) {
     }
 
-    public static parse(model: GLTF) : Loader
+    public async load()
     {
+        const skeleton = this.getSkin(0);
+        const mesh = new SkinnedMesh(
+            'gltf',
+            this.getMesh(0),
+            (new Material()).setImage(await this.getTexture(0)),
+            skeleton
+        );
+
+        mesh.setChild(skeleton);
+        mesh.animations = this.model.animations?.map((anim, index) => this.getAnimation(index)) ?? [];
+
+        return mesh;
+    }
+
+    public static async parseBinary(model: ArrayBuffer) : Promise<Loader>
+    {
+        const header = new Uint32Array(model, 0, 3);
+
+        if (0x46546c67 !== header[0])
+        {
+            throw new Error('GLB magic number is not valid.')
+        }
+
+        if (2 !== header[1])
+        {
+            throw new Error(`GLTF versions other than ${header[1]} are not implemented.`);
+        }
+
+
+        const jsonChunkHeader = new Uint32Array(model, 12, 2);
+        const jsonByteOffset = 20;
+        const jsonByteLength = jsonChunkHeader[0];
+
+        if (0x4e4f534a !== jsonChunkHeader[1])
+        {
+            throw new Error('Unexpected GLB layout.');
+        }
+
+        const jsonText = new TextDecoder().decode(model.slice(jsonByteOffset, jsonByteOffset + jsonByteLength));
+        const json = JSON.parse(jsonText);
+
+
+        // JSON only
+        if (jsonByteOffset + jsonByteLength === model.byteLength)
+        {
+            return json;
+        }
+
+        const binaryChunkHeader = new Uint32Array(model, jsonByteOffset + jsonByteLength, 2);
+
+        if (0x004E4942 !== binaryChunkHeader[1])
+        {
+            throw new Error('Unexpected GLB layout.');
+        }
+
+        // Decode content.
+        const binaryByteOffset = jsonByteOffset + jsonByteLength + 8;
+        const binaryByteLength = binaryChunkHeader[0];
+        const binary = model.slice(binaryByteOffset, binaryByteOffset + binaryByteLength);
+
+        // Attach binary to buffer
+        json.buffers[0].binary = binary;
+
+        console.log(json);
+
+        return this.parse(json);
+    }
+
+    public static async parse(model: GLTF) : Promise<Loader>
+    {
+
         if ('2.0' !== model.asset.version) {
             throw new Error(`GLTF versions other than ${model.asset.version} are not implemented.`);
         }
@@ -54,6 +127,10 @@ export class Loader
         const bufferViews = model.bufferViews.map(bufferView => BufferView.fromJson(bufferView));
         const buffers = model.buffers.map(buffer => Buffer.fromJson(buffer));
 
+        for (const buffer of buffers) {
+            await buffer.arrayBufferAsync();
+        }
+
         return new this(
             model,
             model.scene,
@@ -61,6 +138,14 @@ export class Loader
             bufferViews,
             buffers
         );
+    }
+
+    public getBufferData(index: number) : Uint8Array
+    {
+        const bufferView = this.bufferViews[index];
+        const buffer = this.buffers[bufferView.buffer];
+
+        return new Uint8Array(buffer.arrayBuffer(), bufferView.byteOffset, bufferView.byteLength / Uint8Array.BYTES_PER_ELEMENT)
     }
 
     public getAccessorData(index: number) : AccessorData
@@ -121,6 +206,11 @@ export class Loader
             if (undefined === attr || undefined === accessor)
             {
                 throw new Error(`Cannot create geometry attribute from name "${name}".`)
+            }
+
+            if ('position' === attr && undefined === indices)
+            {
+                geometry.count = this.getAccessorData(index).length / TYPE_SIZES[accessor.type];
             }
 
             geometry.setAttribute('a_' + attr, this.getAccessorData(index), TYPE_SIZES[accessor.type]);
@@ -202,31 +292,6 @@ export class Loader
         return new Skeleton(bones, inverseMatrices);
     }
 
-    /**
-     * @param index - buffer view index
-     */
-    public getBuffer(index: number) : ArrayBuffer
-    {
-        const bufferView = this.model.bufferViews ? this.model.bufferViews[index] : undefined;
-
-        if (undefined === bufferView)
-        {
-            throw new Error(`Buffer view with index "${index}" doesn't exists.`);
-        }
-
-        const buffer = this.model.buffers ? this.model.buffers[bufferView.buffer] : undefined;
-
-        if (undefined === buffer)
-        {
-            throw new Error(`Buffer with index "${index}" doesn't exists.`);
-        }
-
-        return Buffer
-            .fromJson(buffer)
-            .arrayBuffer()
-            .slice(bufferView.byteOffset ?? 0, bufferView.byteLength);
-    }
-
     public getTexture(index: number) : Promise<HTMLImageElement>
     {
         const texture = this.model.textures ? this.model.textures[index] : undefined;
@@ -244,9 +309,7 @@ export class Loader
         // from buffer
         if (undefined !== image.bufferView)
         {
-            const bufferView = this.model.bufferViews![image.bufferView!];
-            const buffer = this.model.buffers![bufferView.buffer];
-            const imageData = new Uint8Array(Buffer.fromJson(buffer).arrayBuffer(), bufferView.byteOffset, bufferView.byteLength / Uint8Array.BYTES_PER_ELEMENT);
+            const imageData = this.getBufferData(image.bufferView);
             const blob = new Blob([imageData], {type: image.mimeType});
 
             uri = URL.createObjectURL(blob);

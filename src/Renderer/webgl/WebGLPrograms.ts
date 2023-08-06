@@ -1,6 +1,5 @@
 import {Hash} from "../../Core/Hash";
 import {Material} from "../../Core/Material";
-import {ShaderMaterial} from "../../Core/Material/ShaderMaterial";
 import {WebGLProgram} from "./WebGLProgram";
 
 export class WebGLPrograms
@@ -11,7 +10,7 @@ export class WebGLPrograms
     {
         const properties = [];
 
-        if (material instanceof ShaderMaterial) {
+        if (material.vertexShader && material.fragmentShader) {
             properties.push(material.vertexShader);
             properties.push(material.fragmentShader);
         }
@@ -22,7 +21,7 @@ export class WebGLPrograms
             return this.programs.get(hash)!;
         }
 
-        if (material instanceof ShaderMaterial) {
+        if (material.vertexShader && material.fragmentShader) {
             const program = WebGLProgram.create(gl, material.vertexShader, material.fragmentShader);
 
             this.programs.set(hash, program);

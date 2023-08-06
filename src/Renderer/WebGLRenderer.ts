@@ -4,15 +4,15 @@ import {mat4} from "gl-matrix";
 import {Line} from "../Core/Object/Line";
 import {Mesh} from "../Core/Object/Mesh";
 import {WebGLPrograms} from "./webgl/WebGLPrograms";
+import {WebGLTexture} from "./webgl/WebGLTexture";
 import {WebGLVertexArrays} from "./webgl/WebGLVertexArrays";
-import {Object3D} from "../Core/Object3D";
 import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
-import {ShaderMaterial} from "../Core/Material/ShaderMaterial";
 
 export class WebGLRenderer
 {
     private readonly programs = new WebGLPrograms();
     private readonly vertexArrays = new WebGLVertexArrays();
+    private readonly textures = new WebGLTexture();
 
     public constructor(
         private readonly canvas: HTMLCanvasElement,
@@ -69,19 +69,25 @@ export class WebGLRenderer
                 geometry.updateBuffers = false;
 
 
-                if (object.material instanceof ShaderMaterial && object.material.image)
+                if (object.material && object.material.image)
                 {
-                    const image = object.material.image;
-                    const modelTexture = gl.createTexture();
+                    this.textures.set(gl, object);
+                }
+            }
 
-                    gl.bindTexture(gl.TEXTURE_2D, modelTexture);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-                    gl.generateMipmap(gl.TEXTURE_2D);
+            if (object.material && object.material.image)
+            {
+                const texture = this.textures.textures.get(object.geometry.id);
+
+                if (undefined !== texture)
+                {
+                    gl.activeTexture(gl.TEXTURE0);
+                    gl.bindTexture(gl.TEXTURE_2D, texture);
                 }
             }
 
             program.uniforms.get('u_projection').set(camera.projectionMatrix);
-            program.uniforms.get('u_model').set(mat4.create());
+            program.uniforms.get('u_model').set(object.worldTransform);
             program.uniforms.get('u_view').set(camera.viewMatrix);
 
             if (object instanceof SkinnedMesh) {
