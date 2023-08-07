@@ -1,5 +1,6 @@
 import {Keyframe} from "./Keyframe";
 import {Skeleton} from "../Skeleton";
+import {Object3D} from "../Object3D";
 
 export class AnimationClip
 {
@@ -35,7 +36,7 @@ export class AnimationClip
         this.duration = this.endTime - this.startTime;
     }
 
-    public update(deltaTime: number, skeleton: Skeleton)
+    public update(deltaTime: number, root: Object3D)
     {
         const elapsed = deltaTime * this.speed;
 
@@ -49,8 +50,25 @@ export class AnimationClip
         for (let i = 0, length = this.keyframes.length; i < length; i++)
         {
             const keyframe = this.keyframes[i];
+            let object = null;
 
-            keyframe.update(skeleton.getBone(keyframe.objectId), this.animationElapsed);
+            root.traverse((child) => {
+                if (keyframe.objectId === child.id)
+                {
+                    object = child;
+
+                    return true;
+                }
+
+                return false;
+            })
+
+            if (null === object)
+            {
+                throw new Error(`Root model doesn't have object with id "${keyframe.objectId}".`);
+            }
+
+            keyframe.update(object, this.animationElapsed);
         }
     }
 }

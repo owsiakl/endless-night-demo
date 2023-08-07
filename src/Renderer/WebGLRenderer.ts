@@ -81,7 +81,7 @@ export class WebGLRenderer
                 }
                 else
                 {
-                    console.log('attribute doesnt exists: ', attribute.name);
+                    // console.log('attribute doesnt exists: ', attribute.name);
                 }
             }
 

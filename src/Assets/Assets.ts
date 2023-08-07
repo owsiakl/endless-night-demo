@@ -38,6 +38,7 @@ export class Assets
         this.importModel('gltf_fox', '/gltf/Fox.gltf');
         this.importModel('gltf_cesium_man', '/gltf/cesium-man.gltf');
         this.importModelBinary('glb_fox', '/gltf/Fox.glb');
+        this.importModelBinary('glb_soldier', '/gltf/Soldier.glb');
 
         this.importImage('testTexture.png', 'image/triangle/testTexture.png');
     }

@@ -11,7 +11,7 @@ import {Cube} from "./Model/Cube";
 import {Mesh} from "./Core/Object/Mesh";
 import {Line} from "./Core/Object/Line";
 import {Material} from "./Core/Material";
-import {dump} from "./Debug/Numbers";
+import {quat} from "gl-matrix";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -57,35 +57,40 @@ async function main()
     // CESIUM MAN
     const cesiumModel = await Loader.parse(JSON.parse(assets.models.get('gltf_cesium_man')) as GLTF);
     const cesium = await cesiumModel.getScene(0);
-    cesium.setTranslation([-1, 0, 0])
+    cesium.setTranslation([-1.5, 0, 0])
     const cesiumAnims = await Promise.all(cesiumModel.getAnimations());
 
     // CUBE GUY
     const cubeManModel = await Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF);
     const cubeMan = await cubeManModel.getScene(0);
+    cubeMan.setTranslation([1.5, 0, 0]);
     const cubeManAnims = await Promise.all(cubeManModel.getAnimations());
 
     // FOX
     const foxModel = await Loader.parseBinary(assets.binaryModels.get('glb_fox'));
     const fox = await foxModel.getScene(0);
     fox.setScale([0.01, 0.01, 0.01]);
-    fox.setTranslation([1, 0, 0]);
+    fox.setTranslation([-1.5, 0, -1.5]);
     const foxAnims = await Promise.all(foxModel.getAnimations());
+
+    // SOLDIER
+    const soldierModel = await Loader.parseBinary(assets.binaryModels.get('glb_soldier'));
+    const soldier = await soldierModel.getScene(0);
+    soldier.setRotation(quat.rotateY(quat.create(), quat.create(), Math.PI));
+    const soldierAnims = await Promise.all(soldierModel.getAnimations());
+
 
     scene.add(grid);
     scene.add(cubeMan);
     scene.add(fox);
     scene.add(cesium);
+    scene.add(soldier);
 
     renderLoop.start(time => {
-        // @ts-ignore
-        cubeManAnims[1].update(time, cubeMan.children[0].children[0].skeleton);
-        // @ts-ignore
-        foxAnims[2].update(time, fox.children[1].skeleton);
-        // @ts-ignore
-        cesiumAnims[0].update(time, cesium.children[0].children[0].children[1].skeleton);
-
-
+        cubeManAnims[1].update(time, cubeMan);
+        foxAnims[2].update(time, fox);
+        cesiumAnims[0].update(time, cesium);
+        soldierAnims[1].update(time, soldier);
 
         camera.update();
         renderer.render(scene, camera);

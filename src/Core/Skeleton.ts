@@ -32,15 +32,4 @@ export class Skeleton extends Object3D
             this.bones[i].updateMatrixWorld();
         }
     }
-
-    public getBone(id: number) : Object3D
-    {
-        for (let i = 0; i < this.bones.length; i++) {
-            if(this.bones[i].id === id) {
-                return this.bones[i];
-            }
-        }
-
-        throw new Error(`Skeleton doesn't have bone with id "${id}".`);
-    }
 }

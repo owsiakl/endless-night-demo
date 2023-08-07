@@ -78,6 +78,8 @@ export class Loader
         // Attach binary to buffer
         json.buffers[0].binary = binary;
 
+        console.log(json);
+
         return this.parse(json);
     }
 
@@ -92,9 +94,9 @@ export class Loader
             throw new Error(`GLTF must have some default scene defined.`);
         }
 
-        if (model.skins && model.skins.length > 1) {
-            throw new Error(`GLTF multi-skins are not implemented yet..`);
-        }
+        // if (model.skins && model.skins.length > 1) {
+        //     throw new Error(`GLTF multi-skins are not implemented yet.`);
+        // }
 
         if (model.accessors === undefined ||
             model.meshes === undefined ||
@@ -155,7 +157,7 @@ export class Loader
         return new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset + accessor.byteOffset, accessor.count * accessor.typeSize);
     }
 
-    public async getMesh(index: number, isSkinned: boolean = false)
+    public async getMesh(index: number, isSkinned: boolean = false, id: number)
     {
         const mesh = this.model.meshes ? this.model.meshes[index] : undefined;
 
@@ -170,7 +172,7 @@ export class Loader
         }
 
         const name = mesh.name ?? `mesh_${index}`;
-        const id = index;
+        // const id = index;
         const indices = mesh.primitives[0].indices;
         const attributes = mesh.primitives[0].attributes;
         const material = mesh.primitives[0].material;
@@ -227,14 +229,14 @@ export class Loader
 
         if (undefined !== node.mesh && undefined !== node.skin)
         {
-            object = await this.getMesh(node.mesh, true);
+            object = await this.getMesh(node.mesh, true, id);
             // @ts-ignore
-            object.skeleton = await this.getSkin(node.skin);
+            object.skeleton = await this.getSkin(node.skin, id);
         }
 
         if (undefined !== node.mesh && undefined === node.skin)
         {
-            object = await this.getMesh(node.mesh);
+            object = await this.getMesh(node.mesh, false, id);
         }
 
         if (undefined === node.mesh && undefined === node.skin)
@@ -282,7 +284,7 @@ export class Loader
         return object;
     }
 
-    public async getSkin(index: number) : Promise<Skeleton>
+    public async getSkin(index: number, id: number) : Promise<Skeleton>
     {
         const skin = this.model.skins ? this.model.skins[index] : undefined;
 
@@ -416,7 +418,7 @@ export class Loader
             throw new Error(`Scene with index "${index}" doesn't exists.`);
         }
 
-        const newScene = new Object3D(0, 'scene');
+        const newScene = new Object3D(999, 'scene');
 
         for (let i = 0; i < scene.nodes.length; i++)
         {

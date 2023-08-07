@@ -79,4 +79,15 @@ export class Object3D
 
         this.children.push(child);
     }
+
+    public traverse(callback: (object: Object3D) => boolean) : void
+    {
+        if (callback(this)) {
+            return;
+        }
+
+        for (let i = 0, l = this.children.length; i < l; i++) {
+            this.children[i].traverse(callback);
+        }
+    }
 }
