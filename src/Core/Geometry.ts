@@ -1,6 +1,7 @@
 import {GeometryAttribute} from "./GeometryAttribute";
 import {WebGLProgram} from "../Renderer/webgl/WebGLProgram";
 import {AccessorData} from "../GLTF/Accessor";
+import {SkinnedMesh} from "./Object/SkinnedMesh";
 
 export class Geometry
 {

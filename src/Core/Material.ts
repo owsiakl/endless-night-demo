@@ -1,6 +1,7 @@
 export class Material
 {
     public image: HTMLImageElement|null = null;
+    public vertexColors  = false;
 
     constructor(
         public vertexShader: string|null = null,
@@ -11,6 +12,13 @@ export class Material
     setImage(image: HTMLImageElement) : this
     {
         this.image = image;
+
+        return this;
+    }
+
+    useVertexColors()
+    {
+        this.vertexColors = true;
 
         return this;
     }

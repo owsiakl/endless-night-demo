@@ -11,6 +11,7 @@ import {Cube} from "./Model/Cube";
 import {Mesh} from "./Core/Object/Mesh";
 import {Line} from "./Core/Object/Line";
 import {Material} from "./Core/Material";
+import {dump} from "./Debug/Numbers";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -36,43 +37,40 @@ async function main()
 
     MouseCamera.control(camera, canvas);
 
-    const renderer = new WebGLRenderer(canvas, gl);
+    const renderer = new WebGLRenderer(canvas, gl, assets.shaders);
     const scene = new Scene();
 
     const grid = new Line(
+        0,
         'line',
         Grid.create,
-        new Material(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
+        (new Material()).useVertexColors()
     );
 
     const cube = new Mesh(
+        0,
         'cube',
         Cube.create,
-        new Material(assets.shaders.get('cube_vertex').textContent, assets.shaders.get('cube_fragment').textContent)
+        (new Material()).useVertexColors()
     );
 
     // CESIUM MAN
     const cesiumModel = await Loader.parse(JSON.parse(assets.models.get('gltf_cesium_man')) as GLTF);
-    const cesium = await cesiumModel.load();
-    cesium.material.vertexShader = assets.shaders.get('triangle_vertex').textContent;
-    cesium.material.fragmentShader = assets.shaders.get('triangle_fragment').textContent;
+    const cesium = await cesiumModel.getScene(0);
     cesium.setTranslation([-1, 0, 0])
-
+    const cesiumAnims = await Promise.all(cesiumModel.getAnimations());
 
     // CUBE GUY
     const cubeManModel = await Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF);
-    const cubeMan = await cubeManModel.load();
-    cubeMan.material.vertexShader = assets.shaders.get('triangle_vertex').textContent;
-    cubeMan.material.fragmentShader = assets.shaders.get('triangle_fragment').textContent;
+    const cubeMan = await cubeManModel.getScene(0);
+    const cubeManAnims = await Promise.all(cubeManModel.getAnimations());
 
     // FOX
     const foxModel = await Loader.parseBinary(assets.binaryModels.get('glb_fox'));
-    const fox = await foxModel.load();
-    fox.material.vertexShader = assets.shaders.get('triangle_vertex').textContent;
-    fox.material.fragmentShader = assets.shaders.get('triangle_fragment').textContent;
+    const fox = await foxModel.getScene(0);
     fox.setScale([0.01, 0.01, 0.01]);
     fox.setTranslation([1, 0, 0]);
-
+    const foxAnims = await Promise.all(foxModel.getAnimations());
 
     scene.add(grid);
     scene.add(cubeMan);
@@ -80,9 +78,15 @@ async function main()
     scene.add(cesium);
 
     renderLoop.start(time => {
-        cesium.animations[0].update(time, cesium.skeleton);
-        cubeMan.animations[1].update(time, cubeMan.skeleton);
-        fox.animations[2].update(time, fox.skeleton);
+        // @ts-ignore
+        cubeManAnims[1].update(time, cubeMan.children[0].children[0].skeleton);
+        // @ts-ignore
+        foxAnims[2].update(time, fox.children[1].skeleton);
+        // @ts-ignore
+        cesiumAnims[0].update(time, cesium.children[0].children[0].children[1].skeleton);
+
+
+
         camera.update();
         renderer.render(scene, camera);
     });

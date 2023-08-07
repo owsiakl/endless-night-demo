@@ -5,12 +5,14 @@ import {Skeleton} from "../Skeleton";
 
 export class SkinnedMesh extends Mesh
 {
+    public skeleton: Skeleton|null = null
+
     constructor(
+        id: number,
         name: string,
         public readonly geometry: Geometry,
-        public readonly material: Material,
-        public readonly skeleton: Skeleton,
+        public readonly material: Material
     ) {
-        super(name, geometry, material);
+        super(id, name, geometry, material);
     }
 }

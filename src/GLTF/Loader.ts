@@ -14,6 +14,7 @@ import {AnimationClip} from "../Core/Animation/AnimationClip";
 import {Interpolation} from "../Core/Animation/Interpolation";
 import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
 import {Material} from "../Core/Material";
+import {Mesh} from "../Core/Object/Mesh";
 
 export class Loader
 {
@@ -26,22 +27,6 @@ export class Loader
         public bufferViews: Array<BufferView>,
         public buffers: Array<Buffer>,
     ) {
-    }
-
-    public async load()
-    {
-        const skeleton = this.getSkin(0);
-        const mesh = new SkinnedMesh(
-            'gltf',
-            this.getMesh(0),
-            (new Material()).setImage(await this.getTexture(0)),
-            skeleton
-        );
-
-        mesh.setChild(skeleton);
-        mesh.animations = this.model.animations?.map((anim, index) => this.getAnimation(index)) ?? [];
-
-        return mesh;
     }
 
     public static async parseBinary(model: ArrayBuffer) : Promise<Loader>
@@ -92,8 +77,6 @@ export class Loader
 
         // Attach binary to buffer
         json.buffers[0].binary = binary;
-
-        console.log(json);
 
         return this.parse(json);
     }
@@ -172,7 +155,7 @@ export class Loader
         return new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset + accessor.byteOffset, accessor.count * accessor.typeSize);
     }
 
-    public getMesh(index: number)
+    public async getMesh(index: number, isSkinned: boolean = false)
     {
         const mesh = this.model.meshes ? this.model.meshes[index] : undefined;
 
@@ -186,8 +169,11 @@ export class Loader
             throw new Error(`Mesh with multi-primitives are not supported.`);
         }
 
+        const name = mesh.name ?? `mesh_${index}`;
+        const id = index;
         const indices = mesh.primitives[0].indices;
         const attributes = mesh.primitives[0].attributes;
+        const material = mesh.primitives[0].material;
 
         const geometry = new Geometry();
 
@@ -216,10 +202,12 @@ export class Loader
             geometry.setAttribute('a_' + attr, this.getAccessorData(index), TYPE_SIZES[accessor.type]);
         }
 
-        return geometry;
+        return isSkinned
+            ? new SkinnedMesh(id, name, geometry, await this.getMaterial(material!))
+            : new Mesh(id, name, geometry, new Material());
     }
 
-    public getNode(index: number) : Object3D
+    public async getNode(index: number) : Promise<Object3D>
     {
         if (this.nodesCache.has(index)) {
             return this.nodesCache.get(index)!;
@@ -232,7 +220,32 @@ export class Loader
             throw new Error(`Node with index "${index}" doesn't exists.`);
         }
 
-        const object = new Object3D(index, node?.name ?? `node_${index}`);
+        const name = node?.name ?? `node_${index}`;
+        const id = index;
+
+        let object: Object3D|null = null;
+
+        if (undefined !== node.mesh && undefined !== node.skin)
+        {
+            object = await this.getMesh(node.mesh, true);
+            // @ts-ignore
+            object.skeleton = await this.getSkin(node.skin);
+        }
+
+        if (undefined !== node.mesh && undefined === node.skin)
+        {
+            object = await this.getMesh(node.mesh);
+        }
+
+        if (undefined === node.mesh && undefined === node.skin)
+        {
+            object = new Object3D(id, name);
+        }
+
+        if (null === object)
+        {
+            throw new Error(`Cannot create object from node "${name}".`)
+        }
 
         if (undefined !== node.matrix)
         {
@@ -260,7 +273,7 @@ export class Loader
         {
             for (let i = 0; i < node.children.length; i++)
             {
-                object.setChild(this.getNode(node.children[i]));
+                object.setChild(await this.getNode(node.children[i]));
             }
         }
 
@@ -269,7 +282,7 @@ export class Loader
         return object;
     }
 
-    public getSkin(index: number) : Skeleton
+    public async getSkin(index: number) : Promise<Skeleton>
     {
         const skin = this.model.skins ? this.model.skins[index] : undefined;
 
@@ -285,7 +298,7 @@ export class Loader
 
         for (let i = 0; i < skin.joints.length; i++)
         {
-            bones.push(this.getNode(skin.joints[i]));
+            bones.push(await this.getNode(skin.joints[i]));
             inverseMatrices.push(mergedInverseMatrices.slice(i * 16, (i + 1) * 16) as mat4)
         }
 
@@ -337,7 +350,7 @@ export class Loader
         });
     }
 
-    public getAnimation(index: number)
+    public async getAnimation(index: number)
     {
         const animation = this.model.animations ? this.model.animations[index] : undefined;
 
@@ -351,7 +364,7 @@ export class Loader
         for (let i = 0, length = animation.channels.length; i < length; i++)
         {
             const channel = animation.channels[i];
-            const node = this.getNode(channel.target.node!);
+            const node = await this.getNode(channel.target.node!);
             const sampler = animation.samplers[channel.sampler];
             const target = channel.target.path;
             const interpolation = sampler.interpolation ?? Interpolation.LINEAR;
@@ -387,5 +400,50 @@ export class Loader
         }
 
         return new AnimationClip(animation.name ?? `animation_${index}`, keyframes);
+    }
+
+    public getAnimations()
+    {
+        return this.model.animations?.map((anim, index) => this.getAnimation(index)) ?? [];
+    }
+
+    public async getScene(index: number)
+    {
+        const scene = this.model.scenes ? this.model.scenes[index] : undefined;
+
+        if (undefined === scene)
+        {
+            throw new Error(`Scene with index "${index}" doesn't exists.`);
+        }
+
+        const newScene = new Object3D(0, 'scene');
+
+        for (let i = 0; i < scene.nodes.length; i++)
+        {
+            newScene.setChild(await this.getNode(scene.nodes[i]))
+        }
+
+        return newScene;
+    }
+
+    public async getMaterial(index: number)
+    {
+        const material = this.model.materials ? this.model.materials[index] : undefined;
+
+        if (undefined === material)
+        {
+            throw new Error(`Material with index "${index}" doesn't exists.`);
+        }
+
+        const textureIndex = material.pbrMetallicRoughness?.baseColorTexture?.index;
+
+        if (undefined === textureIndex)
+        {
+            throw new Error('Only textured material is supported now.');
+        }
+
+        return (new Material()).setImage(
+            await this.getTexture(textureIndex)
+        );
     }
 }

@@ -11,7 +11,7 @@ export class Object3D
     private transformChanged: boolean = false;
 
     private parent: Object3D|null = null;
-    private children: Object3D[] = [];
+    public children: Object3D[] = [];
 
     public worldTransform = mat4.create();
 
@@ -67,6 +67,8 @@ export class Object3D
         if (null !== this.transformMatrix && this.transformChanged) {
             this.transformMatrix = mat4.fromRotationTranslationScale(mat4.create(), this.rotation, this.translation, this.scale);
         }
+
+        this.transformChanged = false;
 
         return this.transformMatrix;
     }
