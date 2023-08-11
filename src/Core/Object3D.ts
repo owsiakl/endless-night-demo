@@ -1,5 +1,5 @@
 import {mat4, quat, vec3} from "gl-matrix";
-import {AnimationClip} from "./Animation/AnimationClip";
+import {Transform} from "./Transform";
 
 export class Object3D
 {
@@ -7,19 +7,14 @@ export class Object3D
     private rotation: quat = quat.fromValues(0, 0, 0, 1);
     private scale: vec3 = vec3.fromValues(1, 1, 1);
 
-    private transformMatrix: mat4 | null = null;
+    private transformMatrix: Nullable<mat4> = null;
     private transformChanged: boolean = false;
 
     private parent: Object3D|null = null;
     public children: Object3D[] = [];
 
     public worldTransform = mat4.create();
-
-    public animations: AnimationClip[] = [];
-
-    public constructor(public readonly id: number, public readonly name: string)
-    {
-    }
+    public model = Transform.init();
 
     public setTranslation(translation: vec3): this
     {
@@ -51,6 +46,7 @@ export class Object3D
             mat4.copy(this.worldTransform, this.localTransform)
         } else {
             mat4.multiply(this.worldTransform, this.parent.worldTransform, this.localTransform);
+            this.model = this.parent.model;
         }
 
         for (const children of this.children) {
@@ -80,13 +76,15 @@ export class Object3D
         this.children.push(child);
     }
 
-    public traverse(callback: (object: Object3D) => boolean) : void
+    public traverse(callback: (object: Object3D) => boolean|void) : void
     {
-        if (callback(this)) {
+        if (callback(this))
+        {
             return;
         }
 
-        for (let i = 0, l = this.children.length; i < l; i++) {
+        for (let i = 0, l = this.children.length; i < l; i++)
+        {
             this.children[i].traverse(callback);
         }
     }

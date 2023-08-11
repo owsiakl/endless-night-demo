@@ -1,35 +1,54 @@
-import {Object3D} from "./Object3D";
 import {mat4} from "gl-matrix";
+import {Pose} from "./Animation/Pose";
+import {Object3D} from "./Object3D";
 
 export class Skeleton extends Object3D
 {
-    constructor(
-        public readonly bones: Object3D[],
-        public readonly inverseMatrices: mat4[]
-    ) {
-        super(0, 'skeleton');
+    public readonly bindPose: Pose;
+    public currentPose: Pose;
+
+    private readonly _joints: Array<int>
+    private readonly _names: Array<string>
+    private readonly _parents: Array<int>
+    private readonly _inverseBindPose: Array<mat4>
+
+    public constructor(bindPose: Pose)
+    {
+        super();
+
+        this.bindPose = bindPose;
+        this.currentPose = bindPose;
+
+        this._joints = [];
+        this._names = [];
+        this._parents = [];
+        this._inverseBindPose = [];
     }
 
-    public get jointMatrix(): mat4
+    public addJoint(name: string, joint: int, parentId: int, ibm: mat4) : void
     {
-        const size = this.bones.length * 16;
-        const matrix = new Float32Array(size);
+        this._joints.push(joint);
+        this._names.push(name);
+        this._parents.push(parentId);
+        this._inverseBindPose.push(ibm);
+    }
 
-        this.bones.forEach((bone, index) => {
+    public get jointMatrix() : mat4
+    {
+        const size = this._joints.length;
+        const matrix = new Float32Array(size * 16);
+
+        for (let i = 0; i < size; i++)
+        {
+            const jointId = this._joints[i];
+            const ibm = this._inverseBindPose[i];
 
             matrix.set(
-                mat4.multiply(mat4.create(), bone.worldTransform, this.inverseMatrices[index]),
-                index * 16
+                mat4.multiply(mat4.create(), this.currentPose.getGlobalTransform(jointId), ibm),
+                i * 16
             );
-        });
+        }
 
         return matrix;
-    }
-
-    public updateMatrixWorld()
-    {
-        for (let i = 0, length = this.bones.length; i < length; i++) {
-            this.bones[i].updateMatrixWorld();
-        }
     }
 }

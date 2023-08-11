@@ -1,13 +1,11 @@
 import {Camera} from "../Engine/Camera";
 import {Scene} from "../Core/Scene";
-import {mat4} from "gl-matrix";
 import {Line} from "../Core/Object/Line";
 import {Mesh} from "../Core/Object/Mesh";
 import {WebGLPrograms} from "./webgl/WebGLPrograms";
 import {WebGLTexture} from "./webgl/WebGLTexture";
 import {WebGLVertexArrays} from "./webgl/WebGLVertexArrays";
 import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
-import {Object3D} from "../Core/Object3D";
 import {Shaders} from "../Assets/Shaders";
 import {WebGLShaderCache} from "./webgl/WebGLShaderCache";
 
@@ -39,53 +37,49 @@ export class WebGLRenderer
 
         scene.updateMatrixWorld();
 
-        for (let i = 0, length = scene.objects.length; i < length; i++) {
-            const object = scene.objects[i];
+        const renderList: Array<Mesh | Line> = [];
 
-            this.renderObject(gl, object, camera);
+        scene.traverse(object =>
+        {
+            if (object instanceof Mesh || object instanceof Line)
+            {
+                renderList.push(object);
+            }
+        })
+
+        this.renderObjects(gl, renderList, camera);
+    }
+
+    public renderObjects(gl: WebGL2RenderingContext, renderList: Array<Mesh | Line>, camera: Camera)
+    {
+        for (let i = 0, length = renderList.length; i < length; i++)
+        {
+            this.renderObject(gl, renderList[i], camera);
         }
     }
 
-    public renderObject(gl: WebGL2RenderingContext, object: Object3D, camera: Camera)
+    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line, camera: Camera)
     {
-        if ((object instanceof Mesh) || (object instanceof Line)) {
-            this.renderObjectFinal(gl, object, camera);
-        }
-
-        for (let i = 0, length = object.children.length; i < length; i++) {
-            const child = object.children[i];
-
-            this.renderObject(gl, child, camera);
-        }
-    }
-
-    public renderObjectFinal(gl: WebGL2RenderingContext, object: Object3D, camera: Camera)
-    {
-        if (!(object instanceof Mesh) && !(object instanceof Line)) {
-            return;
-        }
-
         const geometry = object.geometry;
         const program = this.programs.initProgram(gl, object.material, object);
 
         program.useProgram();
         this.vertexArrays.bind(gl, geometry.id);
 
-        if (geometry.updateBuffers) {
-            for (let i = 0, length = geometry.attributes.length; i < length; i++) {
+        if (geometry.updateBuffers)
+        {
+            for (let i = 0, length = geometry.attributes.length; i < length; i++)
+            {
                 const attribute = geometry.attributes[i];
 
                 if (program.attributes.has(attribute.name))
                 {
                     program.attributes.get(attribute.name).set(attribute.data, gl.ARRAY_BUFFER, attribute.itemSize, attribute.normalized);
                 }
-                else
-                {
-                    // console.log('attribute doesnt exists: ', attribute.name);
-                }
             }
 
-            if (geometry.indexed) {
+            if (geometry.indexed)
+            {
                 const buffer = gl.createBuffer();
 
                 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
@@ -113,40 +107,41 @@ export class WebGLRenderer
         }
 
         program.uniforms.get('u_projection').set(camera.projectionMatrix);
-        program.uniforms.get('u_model').set(mat4.create());
+        program.uniforms.get('u_model').set(object.model.matrix);
         program.uniforms.get('u_view').set(camera.viewMatrix);
 
-        if (object instanceof SkinnedMesh && object.skeleton) {
+        if (object instanceof SkinnedMesh)
+        {
             program.uniforms.get('u_jointMat').set(object.skeleton.jointMatrix)
         }
 
         let mode = null;
 
-        if (object instanceof Line) {
+        if (object instanceof Line)
+        {
             mode = this.gl.LINES;
         }
 
-        if (object instanceof Mesh) {
+        if (object instanceof Mesh)
+        {
             mode = this.gl.TRIANGLES;
         }
 
-        if (null === mode) {
+        if (null === mode)
+        {
             throw new Error('Cannot get rendering mode.');
         }
 
-        if (geometry.indexed) {
+        if (geometry.indexed)
+        {
             gl.drawElements(mode, geometry.count, gl.UNSIGNED_SHORT, 0);
-        } else {
+        }
+        else
+        {
             gl.drawArrays(mode, 0, geometry.count);
         }
 
         this.vertexArrays.unbind(gl);
         program.stopProgram();
-
-        for (let i = 0, length = object.children.length; i < length; i++) {
-            const child = object.children[i];
-
-            this.renderObject(gl, child, camera);
-        }
     }
 }

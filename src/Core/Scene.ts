@@ -15,4 +15,12 @@ export class Scene
             this.objects[i].updateMatrixWorld();
         }
     }
+
+    public traverse(callback: (object: Object3D) => boolean|void) : void
+    {
+        for (let i = 0, l = this.objects.length; i < l; i++)
+        {
+            this.objects[i].traverse(callback);
+        }
+    }
 }

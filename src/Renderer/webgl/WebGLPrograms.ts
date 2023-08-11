@@ -25,7 +25,7 @@ export class WebGLPrograms
         }
 
         if (object instanceof SkinnedMesh) {
-            properties.push(object.skeleton ? '#define USE_SKINNING' : '');
+            properties.push('#define USE_SKINNING');
         }
 
         const hash = Hash.create(properties.join(''));

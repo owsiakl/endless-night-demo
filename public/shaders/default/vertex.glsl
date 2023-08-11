@@ -4,7 +4,7 @@ uniform mat4 u_view;
 uniform mat4 u_model;
 
 #ifdef USE_SKINNING
-    const int MAX_JOINTS = 50;
+    const int MAX_JOINTS = 80;
     in vec4 a_joints;
     in vec4 a_weights;
     uniform mat4 u_jointMat[MAX_JOINTS];
