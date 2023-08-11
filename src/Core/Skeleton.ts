@@ -37,14 +37,14 @@ export class Skeleton extends Object3D
     {
         const size = this._joints.length;
         const matrix = new Float32Array(size * 16);
+        const globalTransforms = this.currentPose.matrixPalette;
 
         for (let i = 0; i < size; i++)
         {
             const jointId = this._joints[i];
-            const ibm = this._inverseBindPose[i];
 
             matrix.set(
-                mat4.multiply(mat4.create(), this.currentPose.getGlobalTransform(jointId), ibm),
+                mat4.multiply(mat4.create(), globalTransforms[jointId], this._inverseBindPose[i]),
                 i * 16
             );
         }

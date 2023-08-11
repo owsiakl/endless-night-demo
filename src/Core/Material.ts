@@ -1,22 +1,22 @@
 export class Material
 {
-    public image: HTMLImageElement|null = null;
-    public vertexColors  = false;
+    public image:  Nullable<HTMLImageElement>;
+    public vertexColors;
 
-    constructor(
-        public vertexShader: string|null = null,
-        public fragmentShader: string|null = null
-    ) {
+    public constructor()
+    {
+        this.image = null;
+        this.vertexColors = false;
     }
 
-    setImage(image: HTMLImageElement) : this
+    public setImage(image: HTMLImageElement) : this
     {
         this.image = image;
 
         return this;
     }
 
-    useVertexColors()
+    public useVertexColors()
     {
         this.vertexColors = true;
 

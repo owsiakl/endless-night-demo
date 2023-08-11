@@ -54,4 +54,37 @@ export class Pose
 
         return result;
     }
+
+    public get matrixPalette() : Array<mat4>
+    {
+        const matrix: Array<mat4> = []
+
+        let i = 0;
+
+        for (; i < this._nodes.length; i++)
+        {
+            const parent = this._parents[i];
+
+            if (parent > i)
+            {
+                break;
+            }
+
+            let global = this._nodes[i].matrix;
+
+            if (parent >= 0)
+            {
+                global = mat4.multiply(mat4.create(), matrix[parent], global);
+            }
+
+            matrix[i] = global;
+        }
+
+        for (; i < this._nodes.length; i++)
+        {
+            matrix.push(this.getGlobalTransform(i));
+        }
+
+        return matrix;
+    }
 }
