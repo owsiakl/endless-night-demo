@@ -1,5 +1,5 @@
-import {Transform} from "../Transform";
-import {mat4} from "gl-matrix";
+import {Transform} from "../Core/Transform";
+import {mat4, quat, vec3} from "gl-matrix";
 
 export class Pose
 {
@@ -7,11 +7,11 @@ export class Pose
     public _names: Array<string>;
     public _parents: Array<int>;
 
-    public constructor()
+    public constructor(nodes: Array<Transform> = [], names: Array<string> = [], parents: Array<int> = [])
     {
-        this._nodes = [];
-        this._names = [];
-        this._parents = [];
+        this._nodes = nodes;
+        this._names = names;
+        this._parents = parents;
     }
 
     public addNode(name: string, node: Transform, parentId: int) : void
@@ -55,6 +55,25 @@ export class Pose
         return result;
     }
 
+    public blend(pose1: Pose, pose2: Pose, value: float) : Pose
+    {
+        const outPose = pose1.copy;
+
+        for (let i = 0; i < pose1._nodes.length; i++)
+        {
+            const transform1 = pose1._nodes[i];
+            const transform2 = pose2._nodes[i];
+
+            outPose._nodes[i] = new Transform(
+                vec3.lerp(vec3.create(), transform1.translation, transform2.translation, value),
+                quat.slerp(quat.create(), transform1.rotation, transform2.rotation, value),
+                vec3.lerp(vec3.create(), transform1.scale, transform2.scale, value),
+            );
+        }
+
+        return outPose;
+    }
+
     public get matrixPalette() : Array<mat4>
     {
         const matrix: Array<mat4> = []
@@ -86,5 +105,14 @@ export class Pose
         }
 
         return matrix;
+    }
+
+    public get copy() : Pose
+    {
+        return new Pose(
+            this._nodes.map(n => n.copy()),
+            this._names.map(n => n),
+            this._parents.map(n => n)
+        );
     }
 }

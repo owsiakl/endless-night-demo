@@ -9,14 +9,14 @@ import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
 import {Material} from "../Core/Material";
 import {Mesh} from "../Core/Object/Mesh";
 import {Transform} from "../Core/Transform";
-import {Clip} from "../Core/Animation/Clip";
-import {QuaternionFrame} from "../Core/Animation/Frame/QuaternionFrame";
-import {VectorFrame} from "../Core/Animation/Frame/VectorFrame";
-import {Track} from "../Core/Animation/Track";
-import {TransformTrack} from "../Core/Animation/TransformTrack";
 import {Skeleton} from "../Core/Skeleton";
-import {Pose} from "../Core/Animation/Pose";
-import {Interpolation} from "../Core/Animation/Interpolation";
+import {AnimationClip} from "../Animation/AnimationClip";
+import {TransformTrack} from "../Animation/TransformTrack";
+import {Track} from "../Animation/Track";
+import {VectorFrame} from "../Animation/Frame/VectorFrame";
+import {QuaternionFrame} from "../Animation/Frame/QuaternionFrame";
+import {Interpolation} from "../Animation/Interpolation";
+import {Pose} from "../Animation/Pose";
 
 export class Loader
 {
@@ -331,7 +331,7 @@ export class Loader
         return -1;
     }
 
-    public getAnimation() : Array<Clip>
+    public getAnimation() : Array<AnimationClip>
     {
         if (undefined === this.model.animations)
         {
@@ -344,7 +344,7 @@ export class Loader
         {
             const animation = this.model.animations[a];
             const name = animation.name ?? `animation_${a}`;
-            const clip = new Clip(name);
+            const clip = new AnimationClip(name);
 
             for (let c = 0; c < animation.channels.length; c++)
             {
@@ -462,7 +462,7 @@ export class Loader
     }
 
 
-    public getBindPose()
+    public getBindPose() : Pose
     {
         const pose = new Pose();
 

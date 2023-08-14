@@ -1,5 +1,5 @@
 import {quat} from "gl-matrix";
-import {Frame} from "../Frame";
+import {Frame} from "./Frame";
 import {Interpolation} from "../Interpolation";
 
 export class QuaternionFrame implements Frame<quat>

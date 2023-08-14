@@ -1,5 +1,5 @@
 import {vec3} from "gl-matrix";
-import {Frame} from "../Frame";
+import {Frame} from "./Frame";
 import {Interpolation} from "../Interpolation";
 
 export class VectorFrame implements Frame<vec3>

@@ -12,7 +12,9 @@ import {Mesh} from "./Core/Object/Mesh";
 import {Line} from "./Core/Object/Line";
 import {Material} from "./Core/Material";
 import {mat4, quat, vec3} from "gl-matrix";
-import {AnimationController} from "./Core/Animation/AnimationController";
+import {Keyboard} from "./Input/Keyboard";
+import {AnimationControl} from "./Animation/AnimationControl";
+import {MovementControl} from "./Movement/MovementControl";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -30,6 +32,7 @@ async function main()
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
     const camera = new Camera(canvas);
+    const input = Keyboard.create();
 
     canvas.width = canvas.offsetWidth;
     canvas.style.width = `${canvas.offsetWidth}px`
@@ -68,14 +71,15 @@ async function main()
     // SOLDIER
     const soldierModel = await Loader.parseBinary(assets.binaryModels.get('glb_soldier'));
     const soldier = await soldierModel.getScene();
+    const [idle, run, bind, walk] = soldierModel.getAnimation();
     soldier.model.rotation = quat.rotateY(quat.create(), quat.create(), Math.PI);
 
+    const animations = new AnimationControl(soldier);
+    animations.addClip('idle', idle);
+    animations.addClip('walk', walk);
+    animations.addClip('run', run);
 
-    const animation = soldierModel.getAnimation()[0];
-    const animController = new AnimationController(soldier);
-
-    animController.play(animation);
-
+    const movement = MovementControl.bind(animations, input);
 
 
 
@@ -87,9 +91,7 @@ async function main()
     scene.add(soldier);
 
     renderLoop.start(time => {
-
-        animController.update(time);
-
+        movement.update(time);
         camera.update();
         renderer.render(scene, camera);
     });

@@ -1,4 +1,4 @@
-import {Frame} from "./Frame";
+import {Frame} from "./Frame/Frame";
 import {Interpolation} from "./Interpolation";
 
 export class Track<Type>

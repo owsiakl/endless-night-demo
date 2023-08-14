@@ -26,6 +26,15 @@ export class Transform
         );
     }
 
+    public copy() : Transform
+    {
+        return new Transform(
+            vec3.fromValues(this._translation[0], this._translation[1], this._translation[2]),
+            quat.fromValues(this._rotation[0], this._rotation[1], this._rotation[2], this._rotation[3]),
+            vec3.fromValues(this._scale[0], this._scale[1], this._scale[2]),
+        );
+    }
+
     public static fromMatrix(matrix: mat4) : Transform
     {
         return new this(
@@ -58,6 +67,11 @@ export class Transform
     {
         this._translation = translation;
         this._calculateMatrix = true;
+    }
+
+    public get translation() : vec3
+    {
+        return this._translation;
     }
 
     public set rotation(rotation: quat)

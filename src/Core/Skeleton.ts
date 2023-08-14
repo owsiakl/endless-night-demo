@@ -1,6 +1,6 @@
 import {mat4} from "gl-matrix";
-import {Pose} from "./Animation/Pose";
 import {Object3D} from "./Object3D";
+import {Pose} from "../Animation/Pose";
 
 export class Skeleton extends Object3D
 {

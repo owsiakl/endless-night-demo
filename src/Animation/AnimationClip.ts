@@ -1,20 +1,19 @@
 import {TransformTrack} from "./TransformTrack";
 import {Pose} from "./Pose";
 
-export class Clip
+export class AnimationClip
 {
     public tracks: Array<TransformTrack>;
 
-    private readonly _name: string;
     private readonly _loop: boolean;
-
+    public readonly name: string;
     public startTime: float;
     public endTime: float;
     public duration: float;
 
     public constructor(name: string)
     {
-        this._name = name;
+        this.name = name;
         this._loop = true;
         this.tracks = [];
         this.startTime = Infinity;
@@ -22,16 +21,20 @@ export class Clip
         this.duration = 0.0;
     }
 
-    public sample(pose: Pose, time: float) : void
+    public sample(pose: Pose, time: float) : Pose
     {
+        const outPose = pose.copy;
+
         for (let i = 0; i < this.tracks.length; i++)
         {
             const id = this.tracks[i].id;
-            const local = pose.getLocalTransform(id);
+            const local = outPose.getLocalTransform(id);
             const animated = this.tracks[i].sample(local, time);
 
-            pose.setLocalTransform(id, animated);
+            outPose.setLocalTransform(id, animated);
         }
+
+        return outPose;
     }
 
     public recalculateDuration() : void

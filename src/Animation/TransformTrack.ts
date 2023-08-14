@@ -1,6 +1,6 @@
 import {quat, vec3} from "gl-matrix";
 import {Track} from "./Track";
-import {Transform} from "../Transform";
+import {Transform} from "../Core/Transform";
 
 export class TransformTrack
 {
