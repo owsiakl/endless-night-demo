@@ -39,7 +39,6 @@ export class MovementControl extends StateMachine
 
         self.setState('idle');
 
-        // self.camera.update();
         self.object.model.rotation = camera.invertRotY;
 
         return self;
@@ -61,43 +60,45 @@ export class MovementControl extends StateMachine
         this.velocity = this.velocity + frameDeceleration;
         this.velocity += this.acceleration * dt;
 
+
         if (this.input.forward)
         {
-            forward = vec3.fromValues(0, 0, -1);
-            vec3.transformQuat(forward, forward, cameraRot);
-            vec3.scale(forward, forward, this.velocity * dt);
-
-            this.object.model.rotation = cameraRot;
+            forward[2] = -1;
         }
 
         if (this.input.right)
         {
-            forward = vec3.fromValues(1, 0, 0);
-            vec3.transformQuat(forward, forward, cameraRot);
-            vec3.scale(forward, forward, this.velocity * dt);
-
-            this.object.model.rotation = quat.rotateY(quat.create(), cameraRot, -Math.PI / 2);
+            forward[0] = 1;
         }
 
         if (this.input.back)
         {
-            forward = vec3.fromValues(0, 0, 1);
-            vec3.transformQuat(forward, forward, cameraRot);
-            vec3.scale(forward, forward, this.velocity * dt);
-
-            this.object.model.rotation = quat.rotateY(quat.create(), cameraRot, -Math.PI);
+            forward[2] = 1;
         }
 
         if (this.input.left)
         {
-            forward = vec3.fromValues(-1, 0, 0);
-            vec3.transformQuat(forward, forward, cameraRot);
-            vec3.scale(forward, forward, this.velocity * dt);
-
-            this.object.model.rotation = quat.rotateY(quat.create(), cameraRot, Math.PI / 2);
+            forward[0] = -1;
         }
 
-        this.object.model.translation = vec3.add(vec3.create(), this.object.model.translation, forward);
+        vec3.normalize(forward, forward);
+
+        if (this.running)
+        {
+            vec3.scale(forward, forward, 2.5);
+        }
+
+        const inputRotAngle = Math.atan2(-forward[0], -forward[2]);
+        const forwardLength = vec3.length(forward);
+
+        if (forwardLength > 0)
+        {
+            this.object.model.rotation = quat.rotateY(quat.create(), cameraRot, inputRotAngle);
+
+            vec3.transformQuat(forward, forward, cameraRot);
+            vec3.scale(forward, forward, this.velocity * dt);
+            this.object.model.translation = vec3.add(vec3.create(), this.object.model.translation, forward);
+        }
     }
 
     public get moving() : boolean
