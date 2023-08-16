@@ -13,8 +13,8 @@ import {mat4, quat, vec2, vec3} from "gl-matrix";
 import {Keyboard} from "./Input/Keyboard";
 import {AnimationControl} from "./Animation/AnimationControl";
 import {MovementControl} from "./Movement/MovementControl";
-import {FlyCamera} from "./Camera/FlyCamera";
 import {Mouse} from "./Input/Mouse";
+import {Camera} from "./Camera/Camera";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -33,9 +33,6 @@ async function main()
     const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
     const keyboardInput = Keyboard.create();
     const mouseInput = Mouse.create();
-    const camera = new FlyCamera(canvas, vec3.fromValues(0, 3, 5));
-
-    camera.bindMouse(mouseInput);
 
     canvas.width = canvas.offsetWidth;
     canvas.style.width = `${canvas.offsetWidth}px`
@@ -80,17 +77,18 @@ async function main()
     animations.addClip('walk', walk);
     animations.addClip('run', run);
 
+    const camera = new Camera(canvas, vec3.fromValues(0, 3, 5), mouseInput);
     const movement = MovementControl.bind(soldier, animations, keyboardInput, camera);
 
-
-
+    camera.follow(soldier);
 
     scene.add(grid);
     scene.add(cube);
     scene.add(soldier);
 
-
     renderLoop.start(time => {
+        mouseInput.update();
+        camera.update(time);
         movement.update(time);
         renderer.render(scene, camera);
     });

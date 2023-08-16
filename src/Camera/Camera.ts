@@ -1,12 +1,18 @@
 import {vec3, mat4, quat} from "gl-matrix";
+import {Mouse} from "../Input/Mouse";
+import {Object3D} from "../Core/Object3D";
 
-export abstract class Camera
+export class Camera
 {
     public _fov = 45;
     private readonly _near = 0.1;
     private readonly _far = 1000;
 
+    private readonly _zoomFactor = 0.06
+    private readonly _rotateFactor = 0.01;
+
     private _canvas: HTMLCanvasElement;
+    private _mouseInput: Mouse;
 
     private _worldUp: vec3;
     public _position: vec3;
@@ -22,9 +28,14 @@ export abstract class Camera
     private _projectionViewMatrix: mat4;
     private _projectionViewChanged = true;
 
-    protected constructor(canvas: HTMLCanvasElement, position: vec3)
+
+    private _followTarget: Nullable<Object3D>;
+    private _previousTargetPosition: Nullable<vec3>;
+
+    public constructor(canvas: HTMLCanvasElement, position: vec3, mouseInput: Mouse)
     {
         this._canvas = canvas;
+        this._mouseInput = mouseInput;
         this._worldUp = vec3.fromValues(0, 1, 0);
         this._position = position;
         this._target = vec3.fromValues(0, 0, 0);
@@ -36,6 +47,55 @@ export abstract class Camera
         this._direction = vec3.normalize(vec3.create(), vec3.subtract(vec3.create(), this._position, this._target));
         const _right = vec3.normalize(vec3.create(), vec3.cross(vec3.create(), this._worldUp, this._direction));
         const _up = vec3.cross(vec3.create(), this._direction, _right);
+
+        this._followTarget = null;
+        this._previousTargetPosition = null;
+    }
+
+    public update(dt: float) : void
+    {
+        if (this._mouseInput._scrolling)
+        {
+            const move = vec3.create();
+
+            vec3.scale(move, this._direction, this._mouseInput._wheelOffset * this._zoomFactor);
+            vec3.add(this._position, this._position, move);
+            vec3.normalize(this._direction, vec3.subtract(vec3.create(), this._position, this._target));
+
+            this.calculateViewMatrix();
+        }
+
+        if (this._mouseInput._clicked)
+        {
+            const rotationSpeed = -this._mouseInput._offsetX * this._rotateFactor;
+
+            vec3.rotateY(this._position, this._position, this._target, rotationSpeed);
+
+            this.calculateViewMatrix();
+        }
+
+        if (null !== this._followTarget && null !== this._previousTargetPosition)
+        {
+            const targetPosition = vec3.clone(this._followTarget.model.translation);
+
+            const moveX = targetPosition[0] - this._previousTargetPosition[0];
+            const moveZ = targetPosition[2] - this._previousTargetPosition[2];
+
+            this._position[0] += moveX;
+            this._position[2] += moveZ;
+            this._target = targetPosition;
+            this._previousTargetPosition = targetPosition;
+
+            vec3.normalize(this._direction, vec3.subtract(vec3.create(), this._position, this._target));
+
+            this.calculateViewMatrix();
+        }
+    }
+
+    public follow(object: Object3D)
+    {
+        this._followTarget = object;
+        this._previousTargetPosition = object.model.translation;
     }
 
     /**
