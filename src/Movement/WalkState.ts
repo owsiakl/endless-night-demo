@@ -35,12 +35,12 @@ export class WalkState extends State
 
     public update() : void
     {
-        if (!this._parent.input.forward && !this._parent.input.shift)
+        if (!this._parent.moving && !this._parent.running)
         {
             this._parent.setState('idle');
         }
 
-        if (this._parent.input.forward && this._parent.input.shift)
+        if (this._parent.moving && this._parent.running)
         {
             this._parent.setState('run');
         }

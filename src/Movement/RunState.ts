@@ -28,14 +28,14 @@ export class RunState extends State
 
     public update() : void
     {
-        if (!this._parent.input.forward)
+        if (!this._parent.moving)
         {
             this._parent.setState('idle');
 
             return;
         }
 
-        if (!this._parent.input.shift)
+        if (!this._parent.running)
         {
             this._parent.setState('walk');
         }

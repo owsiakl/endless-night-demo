@@ -1,11 +1,17 @@
 export class Keyboard
 {
     public forward: boolean;
+    public right: boolean;
+    public back: boolean;
+    public left: boolean;
     public shift: boolean;
 
     private constructor()
     {
         this.forward = false;
+        this.right = false;
+        this.back = false;
+        this.left = false;
         this.shift = false;
     }
 
@@ -24,7 +30,23 @@ export class Keyboard
         switch (event.code)
         {
             case 'KeyW':
+            case 'ArrowUp':
                 this.forward = true;
+                break;
+
+            case 'KeyD':
+            case 'ArrowRight':
+                this.right = true;
+                break;
+
+            case 'KeyS':
+            case 'ArrowDown':
+                this.back = true;
+                break;
+
+            case 'KeyA':
+            case 'ArrowLeft':
+                this.left = true;
                 break;
 
             case 'ShiftLeft':
@@ -38,7 +60,23 @@ export class Keyboard
         switch (event.code)
         {
             case 'KeyW':
+            case 'ArrowUp':
                 this.forward = false;
+                break;
+
+            case 'KeyD':
+            case 'ArrowRight':
+                this.right = false;
+                break;
+
+            case 'KeyS':
+            case 'ArrowDown':
+                this.back = false;
+                break;
+
+            case 'KeyA':
+            case 'ArrowLeft':
+                this.left = false;
                 break;
 
             case 'ShiftLeft':

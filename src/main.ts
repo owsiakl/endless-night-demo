@@ -11,7 +11,7 @@ import {Cube} from "./Model/Cube";
 import {Mesh} from "./Core/Object/Mesh";
 import {Line} from "./Core/Object/Line";
 import {Material} from "./Core/Material";
-import {mat4, quat, vec3} from "gl-matrix";
+import {mat4, quat, vec2, vec3} from "gl-matrix";
 import {Keyboard} from "./Input/Keyboard";
 import {AnimationControl} from "./Animation/AnimationControl";
 import {MovementControl} from "./Movement/MovementControl";
@@ -72,27 +72,24 @@ async function main()
     const soldierModel = await Loader.parseBinary(assets.binaryModels.get('glb_soldier'));
     const soldier = await soldierModel.getScene();
     const [idle, run, bind, walk] = soldierModel.getAnimation();
-    soldier.model.rotation = quat.rotateY(quat.create(), quat.create(), Math.PI);
 
     const animations = new AnimationControl(soldier);
     animations.addClip('idle', idle);
     animations.addClip('walk', walk);
     animations.addClip('run', run);
 
-    const movement = MovementControl.bind(animations, input);
+    const movement = MovementControl.bind(soldier, animations, input, camera);
+
 
 
 
     scene.add(grid);
     scene.add(cube);
-    // scene.add(cubeMan);
-    // scene.add(cubeMan);
-    // scene.add(cesium);
     scene.add(soldier);
 
     renderLoop.start(time => {
-        movement.update(time);
         camera.update();
+        movement.update(time);
         renderer.render(scene, camera);
     });
 

@@ -1,4 +1,4 @@
-import {vec3, mat4} from "gl-matrix";
+import {vec3, mat4, quat} from "gl-matrix";
 
 const FOV = 45;
 const NEAR = 0.1;
@@ -11,7 +11,7 @@ export class Camera
 {
     public projectionMatrix: mat4;
     private cameraMatrix: mat4;
-    private cameraPosition: vec3;
+    public cameraPosition: vec3;
     private target: vec3;
 
     public constructor(canvas: HTMLCanvasElement)
@@ -22,8 +22,7 @@ export class Camera
 
         this.projectionMatrix = mat4.perspective(mat4.create(), fov, width / height, NEAR, FAR);
         this.cameraMatrix = mat4.create();
-        this.cameraPosition = vec3.fromValues(-3, 3, 5);
-        // this.cameraPosition = vec3.fromValues(0, 0, 8);
+        this.cameraPosition = vec3.fromValues(-8, 6, 5);
         this.target = vec3.fromValues(0, 0, 0);
     }
 
@@ -52,5 +51,14 @@ export class Camera
     public get viewMatrix(): mat4
     {
         return mat4.invert(mat4.create(), this.cameraMatrix);
+    }
+
+    public get invertRotY() : quat
+    {
+        const rotation = mat4.getRotation(quat.create(), this.viewMatrix);
+        const theta = Math.atan2(rotation[1], rotation[3])
+        const rotY = quat.fromValues(0, Math.sin(theta), 0, Math.cos(theta));
+
+        return quat.invert(quat.create(), rotY);
     }
 }
