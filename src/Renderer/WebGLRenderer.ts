@@ -1,4 +1,3 @@
-import {Camera} from "../Engine/Camera";
 import {Scene} from "../Core/Scene";
 import {Line} from "../Core/Object/Line";
 import {Mesh} from "../Core/Object/Mesh";
@@ -8,6 +7,7 @@ import {WebGLVertexArrays} from "./webgl/WebGLVertexArrays";
 import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
 import {Shaders} from "../Assets/Shaders";
 import {WebGLShaderCache} from "./webgl/WebGLShaderCache";
+import {Camera} from "../Camera/Camera";
 
 export class WebGLRenderer
 {
@@ -106,9 +106,8 @@ export class WebGLRenderer
             }
         }
 
-        program.uniforms.get('u_projection').set(camera.projectionMatrix);
+        program.uniforms.get('u_projectionView').set(camera.projectionViewMatrix);
         program.uniforms.get('u_model').set(object.model.matrix);
-        program.uniforms.get('u_view').set(camera.viewMatrix);
 
         if (object instanceof SkinnedMesh)
         {

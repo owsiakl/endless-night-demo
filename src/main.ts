@@ -1,8 +1,6 @@
 import {Assets} from "./Assets/Assets";
 import {NullLogger} from "./Logger/NullLogger";
 import {RenderLoop} from "./Engine/RenderLoop";
-import {Camera} from "./Engine/Camera";
-import {MouseCamera} from "./Engine/MouseCamera";
 import {Loader} from "./GLTF/Loader";
 import {Scene} from "./Core/Scene";
 import {WebGLRenderer} from "./Renderer/WebGLRenderer";
@@ -15,6 +13,8 @@ import {mat4, quat, vec2, vec3} from "gl-matrix";
 import {Keyboard} from "./Input/Keyboard";
 import {AnimationControl} from "./Animation/AnimationControl";
 import {MovementControl} from "./Movement/MovementControl";
+import {FlyCamera} from "./Camera/FlyCamera";
+import {Mouse} from "./Input/Mouse";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -31,15 +31,17 @@ async function main()
     const heapUsed = document.querySelector('[data-heap-used]') as HTMLSpanElement;
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
     const gl = canvas.getContext('webgl2') as WebGL2RenderingContext;
-    const camera = new Camera(canvas);
-    const input = Keyboard.create();
+    const keyboardInput = Keyboard.create();
+    const mouseInput = Mouse.create();
+    const camera = new FlyCamera(canvas, vec3.fromValues(0, 3, 5));
+
+    camera.bindMouse(mouseInput);
 
     canvas.width = canvas.offsetWidth;
     canvas.style.width = `${canvas.offsetWidth}px`
     canvas.height = canvas.offsetHeight;
     canvas.style.height = `${canvas.offsetHeight}px`;
 
-    MouseCamera.control(camera, canvas);
 
     const renderer = new WebGLRenderer(canvas, gl, assets.shaders);
     const scene = new Scene();
@@ -78,7 +80,7 @@ async function main()
     animations.addClip('walk', walk);
     animations.addClip('run', run);
 
-    const movement = MovementControl.bind(soldier, animations, input, camera);
+    const movement = MovementControl.bind(soldier, animations, keyboardInput, camera);
 
 
 
@@ -87,8 +89,8 @@ async function main()
     scene.add(cube);
     scene.add(soldier);
 
+
     renderLoop.start(time => {
-        camera.update();
         movement.update(time);
         renderer.render(scene, camera);
     });

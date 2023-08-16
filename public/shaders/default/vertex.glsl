@@ -1,6 +1,5 @@
 in vec4 a_position;
-uniform mat4 u_projection;
-uniform mat4 u_view;
+uniform mat4 u_projectionView;
 uniform mat4 u_model;
 
 #ifdef USE_SKINNING
@@ -34,7 +33,7 @@ void main()
         position = skinMatrix * a_position;
     #endif
 
-    gl_Position = u_projection * u_view * u_model * position;
+    gl_Position = u_projectionView * u_model * position;
 
     #ifdef USE_COLOR_ATTRIBUTE
       v_color = a_color;

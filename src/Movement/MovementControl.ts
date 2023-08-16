@@ -4,9 +4,9 @@ import {IdleState} from "./IdleState";
 import {WalkState} from "./WalkState";
 import {RunState} from "./RunState";
 import {Keyboard} from "../Input/Keyboard";
-import {Camera} from "../Engine/Camera";
 import {quat, vec3} from "gl-matrix";
 import {Object3D} from "../Core/Object3D";
+import {Camera} from "../Camera/Camera";
 
 export class MovementControl extends StateMachine
 {
@@ -39,7 +39,7 @@ export class MovementControl extends StateMachine
 
         self.setState('idle');
 
-        self.camera.update();
+        // self.camera.update();
         self.object.model.rotation = camera.invertRotY;
 
         return self;
