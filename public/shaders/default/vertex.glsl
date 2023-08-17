@@ -19,6 +19,13 @@ uniform mat4 u_model;
     out vec4 v_color;
 #endif
 
+#ifdef USE_LIGHT
+    uniform mat4 u_normalMatrix;
+    in vec3 a_normal;
+    out vec3 v_vertex;
+    out vec3 v_normal;
+#endif
+
 void main()
 {
     vec4 position = a_position;
@@ -36,10 +43,15 @@ void main()
     gl_Position = u_projectionView * u_model * position;
 
     #ifdef USE_COLOR_ATTRIBUTE
-      v_color = a_color;
+        v_color = a_color;
     #endif
 
     #ifdef USE_TEXTURE
         v_texcoord = a_uv;
+    #endif
+
+    #ifdef USE_LIGHT
+        v_normal = vec3(mat3(u_normalMatrix) * mat3(skinMatrix) * a_normal);
+        v_vertex = vec3(u_model * skinMatrix * position);
     #endif
 }

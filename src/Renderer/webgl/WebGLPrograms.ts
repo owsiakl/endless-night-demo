@@ -22,6 +22,8 @@ export class WebGLPrograms
         if (object instanceof Mesh || object instanceof Line) {
             properties.push(object.material.image ? '#define USE_TEXTURE' : '');
             properties.push(object.material.vertexColors ? '#define USE_COLOR_ATTRIBUTE' : '');
+            properties.push(object.material.color ? '#define USE_STATIC_COLOR_ATTRIBUTE' : '');
+            properties.push(object.material.light ? '#define USE_LIGHT' : '');
         }
 
         if (object instanceof SkinnedMesh) {

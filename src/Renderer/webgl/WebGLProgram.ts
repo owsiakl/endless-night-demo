@@ -29,7 +29,7 @@ export class WebGLProgram
         gl.linkProgram(program);
 
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            throw new Error('Unexpected error while creating a program.' + gl.getProgramInfoLog(program));
+            throw new Error('Unexpected error while creating a program. ' + gl.getProgramInfoLog(program));
         }
 
         return new this(gl, program);

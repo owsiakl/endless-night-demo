@@ -8,6 +8,7 @@ import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
 import {Shaders} from "../Assets/Shaders";
 import {WebGLShaderCache} from "./webgl/WebGLShaderCache";
 import {Camera} from "../Camera/Camera";
+import {mat4} from "gl-matrix";
 
 export class WebGLRenderer
 {
@@ -113,6 +114,22 @@ export class WebGLRenderer
         {
             program.uniforms.get('u_jointMat').set(object.skeleton.jointMatrix)
         }
+
+        if (null !== object.material.color)
+        {
+            program.uniforms.get('u_color').set(object.material.color)
+        }
+
+        if (null !== object.material.lightPosition)
+        {
+            program.uniforms.get('u_lightPosition').set(object.material.lightPosition)
+
+            const matrix = mat4.create();
+            mat4.invert(matrix, object.model.matrix);
+            mat4.transpose(matrix, matrix);
+            program.uniforms.get('u_normalMatrix').set(matrix)
+        }
+
 
         let mode = null;
 

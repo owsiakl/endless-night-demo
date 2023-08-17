@@ -50,6 +50,11 @@ export class MovementControl extends StateMachine
 
         this.animations.update(dt);
 
+        if (!this.moving)
+        {
+            return;
+        }
+
         let forward = vec3.fromValues(0, 0, 0);
         let cameraRot = this.camera.invertRotY;
 
@@ -59,7 +64,6 @@ export class MovementControl extends StateMachine
 
         this.velocity = this.velocity + frameDeceleration;
         this.velocity += this.acceleration * dt;
-
 
         if (this.input.forward)
         {

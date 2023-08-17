@@ -1,12 +1,20 @@
+import {vec3} from "gl-matrix";
+
 export class Material
 {
     public image:  Nullable<HTMLImageElement>;
+    public color:  Nullable<vec3>;
     public vertexColors;
+    public light;
+    public lightPosition: Nullable<vec3>;
 
     public constructor()
     {
         this.image = null;
+        this.color = null;
         this.vertexColors = false;
+        this.light = false;
+        this.lightPosition = null;
     }
 
     public setImage(image: HTMLImageElement) : this
@@ -16,9 +24,25 @@ export class Material
         return this;
     }
 
+
+    public setColor(color: vec3) : this
+    {
+        this.color = color;
+
+        return this;
+    }
+
     public useVertexColors()
     {
         this.vertexColors = true;
+
+        return this;
+    }
+
+    public useLight(position: vec3 = vec3.fromValues(0, 0, 0))
+    {
+        this.light = true;
+        this.lightPosition = position;
 
         return this;
     }

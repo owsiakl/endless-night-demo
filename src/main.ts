@@ -15,6 +15,7 @@ import {AnimationControl} from "./Animation/AnimationControl";
 import {MovementControl} from "./Movement/MovementControl";
 import {Mouse} from "./Input/Mouse";
 import {Camera} from "./Camera/Camera";
+import {Plane} from "./Model/Plane";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -48,18 +49,33 @@ async function main()
         (new Material()).useVertexColors()
     );
 
-    const cube = new Mesh(
-        Cube.create,
-        (new Material()).useVertexColors()
+    const plane = new Mesh(
+        Plane.create(10, 10),
+        (new Material()).setColor(vec3.fromValues(.8, .8, .8))
     );
+
+    const cube = new Mesh(
+        Cube.create2(0.5, 0.5, 0.5),
+        (new Material()).setColor(vec3.fromValues(1, 0, 0))
+    );
+
+    const light = new Mesh(
+        Cube.create2(.05, .05, .05),
+        (new Material()).setColor(vec3.fromValues(1, 1, 0))
+    );
+
 
     // CESIUM MAN
     // const cesiumModel = await Loader.parse(JSON.parse(assets.models.get('gltf_cesium_man')) as GLTF);
     // const cesium = await cesiumModel.getScene();
+    // const [ walk] = cesiumModel.getAnimation();
+    // const animations = new AnimationControl(cesium);
+    // animations.addClip('walk', walk);
 
     // CUBE GUY
     // const cubeManModel = await Loader.parse(JSON.parse(assets.models.get('gltf_cube_guy')) as GLTF);
     // const cubeMan = await cubeManModel.getScene();
+
 
     // FOX
     // const foxModel = await Loader.parseBinary(assets.binaryModels.get('glb_fox'));
@@ -82,9 +98,19 @@ async function main()
 
     camera.follow(soldier);
 
+    // scene.add(plane);
     scene.add(grid);
-    scene.add(cube);
     scene.add(soldier);
+    scene.add(light);
+
+    const lightPosition = vec3.fromValues(0, 1, 1);
+
+    // @ts-ignore
+    soldier.children[0].material.useLight(lightPosition)
+    // @ts-ignore
+    soldier.children[1].material.useLight(lightPosition)
+
+    light.model.translation = lightPosition;
 
     renderLoop.start(time => {
         mouseInput.update();
