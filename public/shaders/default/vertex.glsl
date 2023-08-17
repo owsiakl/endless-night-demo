@@ -63,5 +63,4 @@ void main()
     #ifdef USE_SHADOWING
         v_projectedTexCoord = u_textureMatrix * u_model * position;
     #endif
-
 }

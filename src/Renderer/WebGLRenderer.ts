@@ -74,8 +74,6 @@ export class WebGLRenderer
         })
 
         this.renderObjects(gl, renderList, camera);
-
-
     }
 
     public renderObjects(gl: WebGL2RenderingContext, renderList: Array<Mesh | Line>, camera: Camera)

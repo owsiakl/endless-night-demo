@@ -20,6 +20,7 @@ import {CameraPosition} from "./Camera/CameraPosition";
 import {CameraDebug} from "./Debug/CameraDebug";
 import {Geometry} from "./Core/Geometry";
 import {Transform} from "./Core/Transform";
+import {FrustumDebug} from "./Debug/FrustumDebug";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -105,89 +106,50 @@ async function main()
     camera.follow(soldier);
 
 
-    cube.model.translation = vec3.fromValues(0, 1, 0);
-    cubeMan.model.translation = vec3.fromValues(0, 0, 0);
-
-
-
-
-
 
 
 
     // ======= SHADOWING =======
-
-
-
-
     const textureWorldMatrix = mat4.lookAt(
         mat4.create(),
-        [1, 5, 1],
+        [0, 5, .01],
         [0, 0, 0],
         [0, 1, 0],
     );
 
-    const textureMatrix = mat4.invert(mat4.create(), textureWorldMatrix);
+    const textureProjectionMatrix = mat4.perspective(
+        mat4.create(),
+        45,
+        1 / 1,
+        0.1,
+        20,
+    );
+
+    const textureMatrix = mat4.create();
+    mat4.translate(textureMatrix, textureMatrix, vec3.fromValues(0.5, 0.5, 0.5));
+    mat4.scale(textureMatrix, textureMatrix, vec3.fromValues(0.5, 0.5, 0.5));
+    mat4.multiply(textureMatrix, textureMatrix, textureProjectionMatrix);
+    mat4.multiply(textureMatrix, textureMatrix, textureWorldMatrix);
 
     // @ts-ignore
     cubeMan.children[0].material.useShadow(
         assets.images.get('f-texture'),
-        textureWorldMatrix
+        textureMatrix
     );
 
     // @ts-ignore
     soldier.children[0].material.useShadow(
         assets.images.get('f-texture'),
-        textureWorldMatrix
+        textureMatrix
     );
 
     plane.material.useShadow(
         assets.images.get('f-texture'),
-        textureWorldMatrix
+        textureMatrix
     );
 
-    const positions = [
-        0,  0, -1,
-        1,  0, -1,
-        0,  1, -1,
-        1,  1, -1,
-        0,  0,  1,
-        1,  0,  1,
-        0,  1,  1,
-        1,  1,  1,
-    ];
-    const indices = [
-        0, 1,
-        1, 3,
-        3, 2,
-        2, 0,
-
-        4, 5,
-        5, 7,
-        7, 6,
-        6, 4,
-
-        0, 4,
-        1, 5,
-        3, 7,
-        2, 6,
-    ];
-
-    const geometry = new Geometry();
-
-    geometry.setAttribute('a_position', new Float32Array(positions), 3);
-    geometry.index = new Uint16Array(indices);
-    geometry.count = indices.length;
-
-    const cubeLines = new Line(
-        geometry,
-        (new Material()).setColor(vec3.fromValues(0, 0, 0))
-    )
-
-    cubeLines.model = Transform.fromMatrix(textureMatrix);
-    cubeLines.model.scale = vec3.fromValues(1, 1, 10);
-
-
+    const frustumDebug = new FrustumDebug();
+    frustumDebug.update(mat4.multiply(mat4.create(), textureProjectionMatrix, textureWorldMatrix))
 
     // ======= SCENE =======
     const scene = new Scene();
@@ -196,8 +158,8 @@ async function main()
     // scene.add(cube);
     // scene.add(soldier);
     // scene.add(light);
-    scene.add(cubeLines);
     scene.add(soldier);
+    scene.add(frustumDebug.frustumModel);
 
 
 
@@ -224,8 +186,8 @@ async function main()
     // debugScene.add(cube);
     // debugScene.add(light);
     debugScene.add(cameraDebug.cameraModel);
-    debugScene.add(cameraDebug.frustumModel);
-    debugScene.add(cubeLines);
+    // debugScene.add(cameraDebug.frustumModel);
+    debugScene.add(frustumDebug.frustumModel);
     debugScene.add(soldier);
 
     const debugCamera = new Camera(canvas, vec3.fromValues(0, 20, 20), mouseInput);

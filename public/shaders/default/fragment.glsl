@@ -26,7 +26,6 @@ out vec4 outColor;
     uniform sampler2D u_projectedTexture;
 #endif
 
-
 void main()
 {
     #ifdef USE_TEXTURE
