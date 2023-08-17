@@ -1,4 +1,4 @@
-import {vec3} from "gl-matrix";
+import {mat4, vec3} from "gl-matrix";
 
 export class Material
 {
@@ -7,6 +7,9 @@ export class Material
     public vertexColors;
     public light;
     public lightPosition: Nullable<vec3>;
+    public shadow: boolean;
+    public shadowImage: Nullable<HTMLImageElement>;
+    public shadowTextureMatrix: Nullable<mat4>;
 
     public constructor()
     {
@@ -15,6 +18,9 @@ export class Material
         this.vertexColors = false;
         this.light = false;
         this.lightPosition = null;
+        this.shadow = false;
+        this.shadowImage = null;
+        this.shadowTextureMatrix = null;
     }
 
     public setImage(image: HTMLImageElement) : this
@@ -43,6 +49,15 @@ export class Material
     {
         this.light = true;
         this.lightPosition = position;
+
+        return this;
+    }
+
+    public useShadow(image: HTMLImageElement, shadowTextureMatrix: mat4)
+    {
+        this.shadow = true;
+        this.shadowImage = image;
+        this.shadowTextureMatrix = shadowTextureMatrix;
 
         return this;
     }

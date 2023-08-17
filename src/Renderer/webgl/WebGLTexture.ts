@@ -1,20 +1,11 @@
-import {Object3D} from "../../Core/Object3D";
-import {Line} from "../../Core/Object/Line";
-import {Mesh} from "../../Core/Object/Mesh";
-
 export class WebGLTexture
 {
-    public textures: Map<number, globalThis.WebGLTexture> = new Map();
+    public textures: Map<string, globalThis.WebGLTexture> = new Map();
 
     private currentTextureUnit = 0;
 
-    public set(gl: WebGL2RenderingContext, object: Mesh | Line)
+    public set(gl: WebGL2RenderingContext, name: string, image: HTMLImageElement)
     {
-
-        if (!object.material || !object.material.image) {
-            return;
-        }
-
         const texture = gl.createTexture();
 
         if (null === texture)
@@ -24,11 +15,10 @@ export class WebGLTexture
 
         gl.activeTexture(gl.TEXTURE0 + this.currentTextureUnit);
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, object.material.image);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         gl.generateMipmap(gl.TEXTURE_2D);
 
-
-        this.textures.set(object.geometry.id, texture);
+        this.textures.set(name, texture);
 
         gl.bindTexture(gl.TEXTURE_2D, null);
 

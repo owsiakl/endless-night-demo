@@ -26,6 +26,11 @@ uniform mat4 u_model;
     out vec3 v_normal;
 #endif
 
+#ifdef USE_SHADOWING
+    uniform mat4 u_textureMatrix;
+    out vec4 v_projectedTexCoord;
+#endif
+
 void main()
 {
     vec4 position = a_position;
@@ -52,6 +57,11 @@ void main()
 
     #ifdef USE_LIGHT
         v_normal = vec3(mat3(u_normalMatrix) * mat3(skinMatrix) * a_normal);
-        v_vertex = vec3(u_model * skinMatrix * position);
+        v_vertex = vec3(u_model * position);
     #endif
+
+    #ifdef USE_SHADOWING
+        v_projectedTexCoord = u_textureMatrix * u_model * position;
+    #endif
+
 }

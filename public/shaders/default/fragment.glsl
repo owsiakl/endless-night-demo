@@ -21,6 +21,12 @@ out vec4 outColor;
     in vec3 v_normal;
 #endif
 
+#ifdef USE_SHADOWING
+    in vec4 v_projectedTexCoord;
+    uniform sampler2D u_projectedTexture;
+#endif
+
+
 void main()
 {
     #ifdef USE_TEXTURE
@@ -51,5 +57,20 @@ void main()
         vec3 diffuse = nDotL * lightColor;
 
         outColor = vec4(color.rgb * (ambient + diffuse), color.a);
+    #endif
+
+    #ifdef USE_SHADOWING
+        vec3 projectedTexcoord = v_projectedTexCoord.xyz / v_projectedTexCoord.w;
+
+        bool inRange =
+        projectedTexcoord.x >= 0.0 &&
+        projectedTexcoord.x <= 1.0 &&
+        projectedTexcoord.y >= 0.0 &&
+        projectedTexcoord.y <= 1.0;
+
+        vec4 projectedTexColor = texture(u_projectedTexture, projectedTexcoord.xy);
+        float projectedAmount = inRange ? 1.0 : 0.0;
+
+        outColor = mix(outColor, projectedTexColor, projectedAmount);
     #endif
 }

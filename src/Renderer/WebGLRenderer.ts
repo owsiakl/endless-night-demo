@@ -74,6 +74,8 @@ export class WebGLRenderer
         })
 
         this.renderObjects(gl, renderList, camera);
+
+
     }
 
     public renderObjects(gl: WebGL2RenderingContext, renderList: Array<Mesh | Line>, camera: Camera)
@@ -117,19 +119,39 @@ export class WebGLRenderer
 
             if (object.material && object.material.image)
             {
-                this.textures.set(gl, object);
+                this.textures.set(gl, object.material.image.src, object.material.image);
+            }
+
+            if (object.material && object.material.shadowImage)
+            {
+                this.textures.set(gl, object.material.shadowImage.src, object.material.shadowImage);
             }
         }
 
         if (object.material && object.material.image)
         {
-            const texture = this.textures.textures.get(object.geometry.id);
+            const texture = this.textures.textures.get(object.material.image.src);
 
             if (undefined !== texture)
             {
                 gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, texture);
+                program.uniforms.get('u_texture').set(0);
             }
+        }
+
+        if (object.material && object.material.shadowImage)
+        {
+            const texture = this.textures.textures.get(object.material.shadowImage.src);
+
+            if (undefined !== texture)
+            {
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, texture);
+                program.uniforms.get('u_projectedTexture').set(1);
+            }
+
+            program.uniforms.get('u_textureMatrix').set(object.material.shadowTextureMatrix!);
         }
 
         program.uniforms.get('u_projectionView').set(camera.projectionViewMatrix);

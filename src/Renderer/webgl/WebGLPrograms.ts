@@ -24,6 +24,7 @@ export class WebGLPrograms
             properties.push(object.material.vertexColors ? '#define USE_COLOR_ATTRIBUTE' : '');
             properties.push(object.material.color ? '#define USE_STATIC_COLOR_ATTRIBUTE' : '');
             properties.push(object.material.light ? '#define USE_LIGHT' : '');
+            properties.push(object.material.shadow ? '#define USE_SHADOWING' : '');
         }
 
         if (object instanceof SkinnedMesh) {
