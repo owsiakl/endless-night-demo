@@ -2,11 +2,18 @@ import {Object3D} from "./Object3D";
 
 export class Scene
 {
-    public objects: Object3D[] = [];
+    public objects: Array<Object3D>;
 
-    public add(object: Object3D)
+    public constructor()
+    {
+        this.objects = [];
+    }
+
+    public add(object: Object3D) : this
     {
         this.objects.push(object);
+
+        return this;
     }
 
     public updateMatrixWorld()

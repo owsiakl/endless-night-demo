@@ -9,13 +9,15 @@ import {Cube} from "./Model/Cube";
 import {Mesh} from "./Core/Object/Mesh";
 import {Line} from "./Core/Object/Line";
 import {Material} from "./Core/Material";
-import {mat4, quat, vec2, vec3} from "gl-matrix";
+import {mat4, vec3, vec4} from "gl-matrix";
 import {Keyboard} from "./Input/Keyboard";
 import {AnimationControl} from "./Animation/AnimationControl";
 import {MovementControl} from "./Movement/MovementControl";
 import {Mouse} from "./Input/Mouse";
 import {Camera} from "./Camera/Camera";
 import {Plane} from "./Model/Plane";
+import {CameraPosition} from "./Camera/CameraPosition";
+import {CameraDebug} from "./Debug/CameraDebug";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -42,7 +44,6 @@ async function main()
 
 
     const renderer = new WebGLRenderer(canvas, gl, assets.shaders);
-    const scene = new Scene();
 
     const grid = new Line(
         Grid.create,
@@ -93,16 +94,28 @@ async function main()
     animations.addClip('walk', walk);
     animations.addClip('run', run);
 
-    const camera = new Camera(canvas, vec3.fromValues(0, 3, 5), mouseInput);
+    const camera = new Camera(canvas, vec3.fromValues(0, 10, 5), mouseInput);
+    camera.splitScreen(CameraPosition.TOP);
+
+
     const movement = MovementControl.bind(soldier, animations, keyboardInput, camera);
 
     camera.follow(soldier);
 
+
+
+
+
+    // ======= SCENE =======
+    const scene = new Scene();
     // scene.add(plane);
     scene.add(grid);
     scene.add(soldier);
     scene.add(light);
 
+
+
+    // ======= LIGHT =======
     const lightPosition = vec3.fromValues(0, 1, 1);
 
     // @ts-ignore
@@ -112,11 +125,45 @@ async function main()
 
     light.model.translation = lightPosition;
 
+
+
+
+
+    // ======= DEBUG =======
+    const cameraDebug = new CameraDebug(camera);
+
+    const debugScene = new Scene();
+    debugScene.add(grid);
+    debugScene.add(soldier);
+    debugScene.add(light);
+    debugScene.add(cameraDebug.cameraModel);
+    debugScene.add(cameraDebug.frustumModel);
+
+    const debugCamera = new Camera(canvas, vec3.fromValues(0, 20, 20), mouseInput);
+    debugCamera._far = 100;
+    debugCamera.splitScreen(CameraPosition.BOTTOM);
+
+
+
+
+
+
+
+    // ======= RENDER =======
+
     renderLoop.start(time => {
         mouseInput.update();
         camera.update(time);
         movement.update(time);
         renderer.render(scene, camera);
+
+
+        // ======= DEBUG =======
+        vec3.rotateY(debugCamera._position, debugCamera._position, debugCamera._target, time * .3);
+        debugCamera.calculateViewMatrix();
+
+        cameraDebug.update();
+        renderer.render(debugScene, debugCamera);
     });
 
     // debug statistics

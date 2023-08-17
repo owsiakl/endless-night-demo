@@ -9,6 +9,7 @@ import {Shaders} from "../Assets/Shaders";
 import {WebGLShaderCache} from "./webgl/WebGLShaderCache";
 import {Camera} from "../Camera/Camera";
 import {mat4} from "gl-matrix";
+import {CameraPosition} from "../Camera/CameraPosition";
 
 export class WebGLRenderer
 {
@@ -30,11 +31,35 @@ export class WebGLRenderer
     {
         const gl = this.gl;
 
-        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        gl.clearColor(0, 0, 0, 0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
+
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+
+        if (null !== camera.screenPosition)
+        {
+            gl.enable(gl.SCISSOR_TEST);
+
+            if (CameraPosition.TOP === camera.screenPosition)
+            {
+                gl.viewport(0, height / 2, width, height / 2);
+                gl.scissor(0, height / 2, width, height / 2);
+            }
+
+            if (CameraPosition.BOTTOM === camera.screenPosition)
+            {
+                gl.viewport(0, 0, width, height / 2);
+                gl.scissor(0, 0, width, height / 2);
+            }
+        }
+        else
+        {
+            gl.viewport(0, 0, width, height);
+        }
+
+        gl.clearColor(0, 0, 0, 0);
+
 
         scene.updateMatrixWorld();
 

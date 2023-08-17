@@ -1,17 +1,20 @@
-import {vec3, mat4, quat} from "gl-matrix";
+import {mat4, quat, vec3} from "gl-matrix";
 import {Mouse} from "../Input/Mouse";
 import {Object3D} from "../Core/Object3D";
+import {CameraPosition} from "./CameraPosition";
 
 export class Camera
 {
     public _fov = 45;
-    private readonly _near = 0.1;
-    private readonly _far = 1000;
+    public readonly _near = 0.1;
+    public _far = 30;
 
     private readonly _zoomFactor = 0.06
     private readonly _rotateFactor = 0.01;
 
     private _canvas: HTMLCanvasElement;
+    private _width: int;
+    private _height: int;
     private _mouseInput: Mouse;
 
     private _worldUp: vec3;
@@ -32,9 +35,14 @@ export class Camera
     private _followTarget: Nullable<Object3D>;
     private _previousTargetPosition: Nullable<vec3>;
 
+    public screenPosition: Nullable<CameraPosition>;
+
     public constructor(canvas: HTMLCanvasElement, position: vec3, mouseInput: Mouse)
     {
         this._canvas = canvas;
+        this._width = canvas.width;
+        this._height = canvas.height;
+
         this._mouseInput = mouseInput;
         this._worldUp = vec3.fromValues(0, 1, 0);
         this._position = position;
@@ -50,6 +58,7 @@ export class Camera
 
         this._followTarget = null;
         this._previousTargetPosition = null;
+        this.screenPosition = null;
     }
 
     public update(dt: float) : void
@@ -123,7 +132,7 @@ export class Camera
     {
         if (this._projectionChanged)
         {
-            mat4.perspective(this._projectionMatrix, this._fov, this._canvas.width / this._canvas.height, this._near, this._far);
+            mat4.perspective(this._projectionMatrix, this._fov, this._width / this._height, this._near, this._far);
             this._projectionChanged = false;
         }
 
@@ -160,5 +169,16 @@ export class Camera
         const rotY = quat.fromValues(0, Math.sin(theta), 0, Math.cos(theta));
 
         return quat.invert(quat.create(), rotY);
+    }
+
+    public splitScreen(position: CameraPosition)
+    {
+        if (position === CameraPosition.TOP || position === CameraPosition.BOTTOM)
+        {
+            this._height /= 2;
+            this.calculateProjectionMatrix();
+        }
+
+        this.screenPosition = position;
     }
 }
