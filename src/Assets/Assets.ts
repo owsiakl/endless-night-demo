@@ -33,6 +33,9 @@ export class Assets
         this.importShader('default_vertex', '/shaders/default/vertex.glsl', ShaderType.VERTEX);
         this.importShader('default_fragment', '/shaders/default/fragment.glsl', ShaderType.FRAGMENT);
 
+        this.importShader('depth_vertex', '/shaders/depth/vertex.glsl', ShaderType.VERTEX);
+        this.importShader('depth_fragment', '/shaders/depth/fragment.glsl', ShaderType.FRAGMENT);
+
         this.importModel('gltf_triangle', '/gltf/triangle.gltf');
         this.importModel('gltf_cube_guy', '/gltf/cube-guy.gltf');
         this.importModel('gltf_fox', '/gltf/Fox.gltf');

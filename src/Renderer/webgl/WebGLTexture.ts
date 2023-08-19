@@ -1,8 +1,8 @@
 export class WebGLTexture
 {
-    public textures: Map<string, globalThis.WebGLTexture> = new Map();
+    public textures: Map<string, {index: int, texture: globalThis.WebGLTexture}> = new Map();
 
-    private currentTextureUnit = 0;
+    private currentTextureUnit = 1;
 
     public set(gl: WebGL2RenderingContext, name: string, image: HTMLImageElement)
     {
@@ -13,14 +13,20 @@ export class WebGLTexture
             throw new Error('Cannot create webgl texture.');
         }
 
-        gl.activeTexture(gl.TEXTURE0 + this.currentTextureUnit);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
         gl.generateMipmap(gl.TEXTURE_2D);
 
-        this.textures.set(name, texture);
+        this.textures.set(name, {index: this.currentTextureUnit, texture: texture});
 
         gl.bindTexture(gl.TEXTURE_2D, null);
+
+        this.currentTextureUnit++;
+    }
+
+    public setCreated(gl: WebGL2RenderingContext, name: string, texture: globalThis.WebGLTexture)
+    {
+        this.textures.set(name, {index: this.currentTextureUnit, texture: texture});
 
         this.currentTextureUnit++;
     }

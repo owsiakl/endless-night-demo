@@ -9,7 +9,7 @@ import {Cube} from "./Model/Cube";
 import {Mesh} from "./Core/Object/Mesh";
 import {Line} from "./Core/Object/Line";
 import {Material} from "./Core/Material";
-import {mat4, vec3, vec4} from "gl-matrix";
+import {mat4, quat, vec3, vec4} from "gl-matrix";
 import {Keyboard} from "./Input/Keyboard";
 import {AnimationControl} from "./Animation/AnimationControl";
 import {MovementControl} from "./Movement/MovementControl";
@@ -17,9 +17,6 @@ import {Mouse} from "./Input/Mouse";
 import {Camera} from "./Camera/Camera";
 import {Plane} from "./Model/Plane";
 import {CameraPosition} from "./Camera/CameraPosition";
-import {CameraDebug} from "./Debug/CameraDebug";
-import {Geometry} from "./Core/Geometry";
-import {Transform} from "./Core/Transform";
 import {FrustumDebug} from "./Debug/FrustumDebug";
 
 const logger = new NullLogger();
@@ -55,8 +52,9 @@ async function main()
 
     const plane = new Mesh(
         Plane.create(20, 20),
-        (new Material()).setColor(vec3.fromValues(.8, .8, .8))
+        (new Material())
     );
+    plane.material.setColor(vec3.fromValues(.8, .8, .9))
 
     const cube = new Mesh(
         Cube.create2(0.5, 0.5, 0.5),
@@ -98,7 +96,8 @@ async function main()
     animations.addClip('run', run);
 
     const camera = new Camera(canvas, vec3.fromValues(0, 5, 5), mouseInput);
-    camera.splitScreen(CameraPosition.TOP);
+    camera.splitScreen(CameraPosition.BOTTOM);
+    camera._far = 100;
 
 
     const movement = MovementControl.bind(soldier, animations, keyboardInput, camera);
@@ -108,63 +107,9 @@ async function main()
 
 
 
-
-    // ======= SHADOWING =======
-    const textureWorldMatrix = mat4.lookAt(
-        mat4.create(),
-        [0, 5, .01],
-        [0, 0, 0],
-        [0, 1, 0],
-    );
-
-    const textureProjectionMatrix = mat4.perspective(
-        mat4.create(),
-        45,
-        1 / 1,
-        0.1,
-        20,
-    );
-
-    const textureMatrix = mat4.create();
-    mat4.translate(textureMatrix, textureMatrix, vec3.fromValues(0.5, 0.5, 0.5));
-    mat4.scale(textureMatrix, textureMatrix, vec3.fromValues(0.5, 0.5, 0.5));
-    mat4.multiply(textureMatrix, textureMatrix, textureProjectionMatrix);
-    mat4.multiply(textureMatrix, textureMatrix, textureWorldMatrix);
-
-    // @ts-ignore
-    cubeMan.children[0].material.useShadow(
-        assets.images.get('f-texture'),
-        textureMatrix
-    );
-
-    // @ts-ignore
-    soldier.children[0].material.useShadow(
-        assets.images.get('f-texture'),
-        textureMatrix
-    );
-
-    plane.material.useShadow(
-        assets.images.get('f-texture'),
-        textureMatrix
-    );
-
-    const frustumDebug = new FrustumDebug();
-    frustumDebug.update(mat4.multiply(mat4.create(), textureProjectionMatrix, textureWorldMatrix))
-
-    // ======= SCENE =======
-    const scene = new Scene();
-    scene.add(plane);
-    // scene.add(grid);
-    // scene.add(cube);
-    // scene.add(soldier);
-    // scene.add(light);
-    scene.add(soldier);
-    scene.add(frustumDebug.frustumModel);
-
-
-
     // ======= LIGHT =======
-    const lightPosition = vec3.fromValues(0, 1, 1);
+    const lightPosition = vec3.fromValues(0, 4, 4);
+    const lightTarget = vec3.fromValues(0, 0, 0);
 
     // @ts-ignore
     soldier.children[0].material.useLight(lightPosition)
@@ -174,53 +119,127 @@ async function main()
     light.model.translation = lightPosition;
 
 
+    // ======= SHADOWING =======
+    let textureWorldMatrix = mat4.lookAt(
+        mat4.create(),
+        lightPosition,
+        lightTarget,
+        [0, 1, 0],
+    );
+
+    const perspectiveFOV = 45;
+    const perspectiveWidth = 1;
+    const perspectiveHeight = 1;
+    const perspectiveNear = 1;
+    const perspectiveFar = 30;
+    let textureProjectionMatrix = mat4.perspective(mat4.create(), perspectiveFOV * Math.PI / 180, perspectiveWidth / perspectiveHeight, perspectiveNear, perspectiveFar);
+
+    const orthoWidth = 20;
+    const orthoNear = 0;
+    const orthoFar = 30;
+    // const textureProjectionMatrix = mat4.ortho(mat4.create(), -orthoWidth, orthoWidth, -orthoWidth, orthoWidth, orthoNear, orthoFar);
+
+    const textureMatrix = mat4.multiply(mat4.create(), textureProjectionMatrix, textureWorldMatrix);
+
+    const frustumDebug = new FrustumDebug();
+    frustumDebug.update(mat4.multiply(mat4.create(), textureProjectionMatrix, textureWorldMatrix))
+
+
+
+
+    const cube1 = new Mesh(
+        Cube.create2(0.5, 0.5, 0.5),
+        (new Material()).setColor(vec3.fromValues(0.6, 0, 0))
+    );
+    cube1.model.translation = vec3.fromValues(-2, 1, 0)
+
+    const cube2 = new Mesh(
+        Cube.create2(0.5, 0.5, 0.5),
+        (new Material()).setColor(vec3.fromValues(0, 0.6, 0))
+    );
+    cube2.model.translation = vec3.fromValues(0, 0.5, 2)
+
+    const cube3 = new Mesh(
+        Cube.create2(0.5, 0.5, 0.5),
+        (new Material()).setColor(vec3.fromValues(0, 0, 0.6))
+    );
+    cube3.model.translation = vec3.fromValues(2, 0.25, 0.5)
+
+
+    // ======= SCENE =======
+    const scene = new Scene();
+    scene.add(light);
+    scene.add(soldier);
+    scene.add(frustumDebug.frustumModel);
+    scene.add(cube1);
+    scene.add(cube2);
+    scene.add(cube3);
+    scene.add(plane);
+
 
 
 
     // ======= DEBUG =======
-    const cameraDebug = new CameraDebug(camera);
+    const plane2 = new Mesh(Plane.create(10, 10), (new Material()));
+    plane2.model.rotation = quat.rotateX(quat.create(), quat.create(), Math.PI / 2)
+    plane2.model.translation = vec3.fromValues(0, 5, -10)
+    plane2.material.depthMap = true;
+
+    const debugCamera = new Camera(canvas, vec3.fromValues(10, 20, 20), mouseInput);
+    debugCamera._far = 100;
+    debugCamera.splitScreen(CameraPosition.TOP);
 
     const debugScene = new Scene();
-    debugScene.add(plane);
-    // debugScene.add(grid);
-    // debugScene.add(cube);
-    // debugScene.add(light);
-    debugScene.add(cameraDebug.cameraModel);
-    // debugScene.add(cameraDebug.frustumModel);
-    debugScene.add(frustumDebug.frustumModel);
+    debugScene.add(light);
     debugScene.add(soldier);
-
-    const debugCamera = new Camera(canvas, vec3.fromValues(0, 20, 20), mouseInput);
-    debugCamera._far = 100;
-    debugCamera.splitScreen(CameraPosition.BOTTOM);
-
-
-
-
-
-
-
-
-
+    debugScene.add(frustumDebug.frustumModel);
+    debugScene.add(cube1);
+    debugScene.add(cube2);
+    debugScene.add(cube3);
+    debugScene.add(plane);
+    debugScene.add(plane2);
 
 
 
 
     // ======= RENDER =======
+    const depthTexture = gl.createTexture();
+    const depthTextureSize = 1024;
+    gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT32F, depthTextureSize, depthTextureSize, 0, gl.DEPTH_COMPONENT, gl.FLOAT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    const depthFramebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, 0);
+
+
+    plane.material.useShadow();
+    cube1.material.useShadow();
+    cube2.material.useShadow();
+    cube3.material.useShadow();
+    plane2.material.setTexture('plane-depth-texture', depthTexture!);
 
     renderLoop.start(time => {
         mouseInput.update();
         camera.update(time);
-        // movement.update(time);
-        renderer.render(scene, camera);
+        movement.update(time);
 
 
-        // ======= DEBUG =======
-        vec3.rotateY(debugCamera._position, debugCamera._position, debugCamera._target, time * .3);
-        debugCamera.calculateViewMatrix();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
+        renderer.framebuffer(scene, camera, textureMatrix);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-        cameraDebug.update();
-        renderer.render(debugScene, debugCamera);
+
+        // @ts-ignore
+        renderer.render(scene, camera, depthTexture, textureMatrix);
+
+        // @ts-ignore
+        renderer.render(debugScene, debugCamera, depthTexture, textureMatrix);
     });
 
     // debug statistics

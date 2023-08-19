@@ -33,4 +33,9 @@ export class WebGLUniforms
 
         return this.uniforms.get(name)!;
     }
+
+    public has(name: string): boolean
+    {
+        return this.uniforms.has(name);
+    }
 }

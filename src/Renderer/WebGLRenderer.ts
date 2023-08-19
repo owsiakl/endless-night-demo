@@ -27,7 +27,100 @@ export class WebGLRenderer
         this.programs = new WebGLPrograms(this.shaderCache);
     }
 
-    public render(scene: Scene, camera: Camera)
+    public framebuffer(scene: Scene, camera: Camera, textureMatrix: mat4)
+    {
+        const gl = this.gl;
+        const width = this.canvas.width;
+        const height = this.canvas.height;
+
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+
+
+        gl.viewport(0, 0, 1024, 1024);
+
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        const renderList: Array<Mesh | Line> = [];
+
+        scene.traverse(object =>
+        {
+            if (object instanceof Mesh || object instanceof Line)
+            {
+                renderList.push(object);
+            }
+        });
+
+        for (let i = 0, length = renderList.length; i < length; i++)
+        {
+            const object = renderList[i];
+            const geometry = object.geometry;
+            const program = this.programs.depthProgram(gl, object.material, object);
+
+            program.useProgram();
+
+
+            for (let i = 0, length = geometry.attributes.length; i < length; i++)
+            {
+                const attribute = geometry.attributes[i];
+
+                if (program.attributes.has(attribute.name))
+                {
+                    program.attributes.get(attribute.name).set(attribute.data, gl.ARRAY_BUFFER, attribute.itemSize, attribute.normalized);
+                }
+            }
+
+            if (geometry.indexed)
+            {
+                const buffer = gl.createBuffer();
+
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.index, gl.STATIC_DRAW);
+            }
+
+            if (object instanceof SkinnedMesh)
+            {
+                program.uniforms.get('u_jointMat').set(object.skeleton.jointMatrix)
+            }
+
+
+            program.uniforms.get('u_model').set(object.model.matrix!);
+
+            program.uniforms.get('u_lightSpace').set(textureMatrix);
+
+            let mode = null;
+
+            if (object instanceof Line)
+            {
+                mode = this.gl.LINES;
+            }
+
+            if (object instanceof Mesh)
+            {
+                mode = this.gl.TRIANGLES;
+            }
+
+            if (null === mode)
+            {
+                throw new Error('Cannot get rendering mode.');
+            }
+
+            if (geometry.indexed)
+            {
+                gl.drawElements(mode, geometry.count, gl.UNSIGNED_SHORT, 0);
+            }
+            else
+            {
+                gl.drawArrays(mode, 0, geometry.count);
+            }
+
+            program.stopProgram();
+        }
+
+    }
+
+    public render(scene: Scene, camera: Camera, depthTexture: Nullable<WebGLTexture> = null, depthTextureMatrix: Nullable<mat4> = null)
     {
         const gl = this.gl;
 
@@ -52,6 +145,18 @@ export class WebGLRenderer
                 gl.viewport(0, 0, width, height / 2);
                 gl.scissor(0, 0, width, height / 2);
             }
+
+            if (CameraPosition.LEFT === camera.screenPosition)
+            {
+                gl.viewport(0, 0, width / 2, height);
+                gl.scissor(0, 0, width / 2, height);
+            }
+
+            if (CameraPosition.RIGHT === camera.screenPosition)
+            {
+                gl.viewport(width / 2, 0, width / 2, height);
+                gl.scissor(width / 2, 0, width / 2, height);
+            }
         }
         else
         {
@@ -59,6 +164,7 @@ export class WebGLRenderer
         }
 
         gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 
         scene.updateMatrixWorld();
@@ -73,18 +179,20 @@ export class WebGLRenderer
             }
         })
 
-        this.renderObjects(gl, renderList, camera);
+        this.renderObjects(gl, renderList, camera, depthTexture, depthTextureMatrix);
+
+        gl.disable(gl.SCISSOR_TEST);
     }
 
-    public renderObjects(gl: WebGL2RenderingContext, renderList: Array<Mesh | Line>, camera: Camera)
+    public renderObjects(gl: WebGL2RenderingContext, renderList: Array<Mesh | Line>, camera: Camera, depthTexture: Nullable<WebGLTexture> = null, depthTextureMatrix: Nullable<mat4> = null)
     {
         for (let i = 0, length = renderList.length; i < length; i++)
         {
-            this.renderObject(gl, renderList[i], camera);
+            this.renderObject(gl, renderList[i], camera, depthTexture, depthTextureMatrix);
         }
     }
 
-    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line, camera: Camera)
+    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line, camera: Camera, depthTexture: Nullable<WebGLTexture> = null, depthTextureMatrix: Nullable<mat4> = null)
     {
         const geometry = object.geometry;
         const program = this.programs.initProgram(gl, object.material, object);
@@ -120,10 +228,12 @@ export class WebGLRenderer
                 this.textures.set(gl, object.material.image.src, object.material.image);
             }
 
-            if (object.material && object.material.shadowImage)
+
+            if (object.material && object.material.texture)
             {
-                this.textures.set(gl, object.material.shadowImage.src, object.material.shadowImage);
+                this.textures.setCreated(gl, object.material.textureName!, object.material.texture);
             }
+
         }
 
         if (object.material && object.material.image)
@@ -132,25 +242,38 @@ export class WebGLRenderer
 
             if (undefined !== texture)
             {
-                gl.activeTexture(gl.TEXTURE0);
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                program.uniforms.get('u_texture').set(0);
+                gl.activeTexture(gl.TEXTURE3);
+                gl.bindTexture(gl.TEXTURE_2D, texture.texture);
+                program.uniforms.get('u_texture').set(3);
             }
         }
 
-        if (object.material && object.material.shadowImage)
+        if (object.material && object.material.texture)
         {
-            const texture = this.textures.textures.get(object.material.shadowImage.src);
+            const texture = this.textures.textures.get(object.material.textureName!);
 
             if (undefined !== texture)
             {
-                gl.activeTexture(gl.TEXTURE1);
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                program.uniforms.get('u_projectedTexture').set(1);
+                gl.activeTexture(gl.TEXTURE4);
+                gl.bindTexture(gl.TEXTURE_2D, texture.texture);
+                program.uniforms.get('u_texture').set(4);
             }
-
-            program.uniforms.get('u_textureMatrix').set(object.material.shadowTextureMatrix!);
         }
+
+
+        if (program.uniforms.has('u_projectedTexture') && depthTexture)
+        {
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+            program.uniforms.get('u_projectedTexture').set(0);
+        }
+
+        if (program.uniforms.has('u_textureMatrix') && depthTextureMatrix)
+        {
+            program.uniforms.get('u_textureMatrix').set(depthTextureMatrix!);
+
+        }
+
 
         program.uniforms.get('u_projectionView').set(camera.projectionViewMatrix);
         program.uniforms.get('u_model').set(object.model.matrix);

@@ -1,4 +1,6 @@
 import {mat4, vec3} from "gl-matrix";
+import {types} from "sass";
+import Null = types.Null;
 
 export class Material
 {
@@ -8,8 +10,9 @@ export class Material
     public light;
     public lightPosition: Nullable<vec3>;
     public shadow: boolean;
-    public shadowImage: Nullable<HTMLImageElement>;
-    public shadowTextureMatrix: Nullable<mat4>;
+    public texture: Nullable<WebGLTexture>;
+    public textureName: Nullable<string>;
+    public depthMap: boolean;
 
     public constructor()
     {
@@ -19,13 +22,23 @@ export class Material
         this.light = false;
         this.lightPosition = null;
         this.shadow = false;
-        this.shadowImage = null;
-        this.shadowTextureMatrix = null;
+        this.texture = null;
+        this.textureName = null;
+        this.depthMap = false;
     }
 
     public setImage(image: HTMLImageElement) : this
     {
         this.image = image;
+
+        return this;
+    }
+
+    public setTexture(name: string, texture: WebGLTexture) : this
+    {
+        this.texture = texture;
+        this.textureName = name;
+        this.color = null;
 
         return this;
     }
@@ -53,11 +66,9 @@ export class Material
         return this;
     }
 
-    public useShadow(image: HTMLImageElement, shadowTextureMatrix: mat4)
+    public useShadow()
     {
         this.shadow = true;
-        this.shadowImage = image;
-        this.shadowTextureMatrix = shadowTextureMatrix;
 
         return this;
     }

@@ -306,6 +306,8 @@ export class Loader
             throw new Error('Only textured material is supported now.');
         }
 
+        // return (new Material()).setColor(vec3.fromValues(0.4, 0.4, 0));
+
         return (new Material()).setImage(
             await this.getTexture(textureIndex)
         );

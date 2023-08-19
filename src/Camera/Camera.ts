@@ -179,6 +179,12 @@ export class Camera
             this.calculateProjectionMatrix();
         }
 
+        if (position === CameraPosition.LEFT || position === CameraPosition.RIGHT)
+        {
+            this._width /= 2;
+            this.calculateProjectionMatrix();
+        }
+
         this.screenPosition = position;
     }
 }

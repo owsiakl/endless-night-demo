@@ -1,4 +1,4 @@
-in vec4 a_position;
+layout (location = 0) in vec4 a_position;
 uniform mat4 u_projectionView;
 uniform mat4 u_model;
 
@@ -35,6 +35,10 @@ void main()
 {
     vec4 position = a_position;
 
+    #ifdef USE_LIGHT
+        vec3 normal = a_normal;
+    #endif
+
     #ifdef USE_SKINNING
         mat4 skinMatrix =
                 a_weights.x * u_jointMat[int(a_joints.x)] +
@@ -43,9 +47,15 @@ void main()
                 a_weights.w * u_jointMat[int(a_joints.w)];
 
         position = skinMatrix * a_position;
+
+        #ifdef USE_LIGHT
+            normal = mat3(skinMatrix) * a_normal;
+        #endif
     #endif
 
     gl_Position = u_projectionView * u_model * position;
+
+
 
     #ifdef USE_COLOR_ATTRIBUTE
         v_color = a_color;
@@ -56,7 +66,7 @@ void main()
     #endif
 
     #ifdef USE_LIGHT
-        v_normal = vec3(mat3(u_normalMatrix) * mat3(skinMatrix) * a_normal);
+        v_normal = vec3(mat3(u_normalMatrix) * normal);
         v_vertex = vec3(u_model * position);
     #endif
 
