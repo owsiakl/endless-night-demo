@@ -12,7 +12,6 @@ export class Material
     public shadow: boolean;
     public texture: Nullable<WebGLTexture>;
     public textureName: Nullable<string>;
-    public depthMap: boolean;
 
     public constructor()
     {
@@ -24,7 +23,6 @@ export class Material
         this.shadow = false;
         this.texture = null;
         this.textureName = null;
-        this.depthMap = false;
     }
 
     public setImage(image: HTMLImageElement) : this

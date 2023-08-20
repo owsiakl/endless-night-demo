@@ -16,8 +16,8 @@ import {MovementControl} from "./Movement/MovementControl";
 import {Mouse} from "./Input/Mouse";
 import {Camera} from "./Camera/Camera";
 import {Plane} from "./Model/Plane";
-import {CameraPosition} from "./Camera/CameraPosition";
 import {FrustumDebug} from "./Debug/FrustumDebug";
+import {DepthTexture} from "./Debug/DepthTexture";
 
 const logger = new NullLogger();
 const assets = new Assets(logger);
@@ -62,7 +62,7 @@ async function main()
     );
 
     const light = new Mesh(
-        Cube.create2(.06, .06, .06),
+        Cube.create2(0.5, 0.5, 0.5),
         (new Material()).setColor(vec3.fromValues(1, 1, 0))
     );
 
@@ -96,7 +96,6 @@ async function main()
     animations.addClip('run', run);
 
     const camera = new Camera(canvas, vec3.fromValues(0, 5, 5), mouseInput);
-    camera.splitScreen(CameraPosition.BOTTOM);
     camera._far = 100;
 
 
@@ -112,9 +111,9 @@ async function main()
     const lightTarget = vec3.fromValues(0, 0, 0);
 
     // @ts-ignore
-    soldier.children[0].material.useLight(lightPosition)
+    // soldier.children[0].material.useLight(lightPosition)
     // @ts-ignore
-    soldier.children[1].material.useLight(lightPosition)
+    // soldier.children[1].material.useLight(lightPosition)
 
     light.model.translation = lightPosition;
 
@@ -127,17 +126,17 @@ async function main()
         [0, 1, 0],
     );
 
-    const perspectiveFOV = 45;
+    const perspectiveFOV = 60;
     const perspectiveWidth = 1;
     const perspectiveHeight = 1;
     const perspectiveNear = 1;
     const perspectiveFar = 30;
-    let textureProjectionMatrix = mat4.perspective(mat4.create(), perspectiveFOV * Math.PI / 180, perspectiveWidth / perspectiveHeight, perspectiveNear, perspectiveFar);
+    // let textureProjectionMatrix = mat4.perspective(mat4.create(), perspectiveFOV * Math.PI / 180, perspectiveWidth / perspectiveHeight, perspectiveNear, perspectiveFar);
 
-    const orthoWidth = 20;
+    const orthoWidth = 5;
     const orthoNear = 0;
-    const orthoFar = 30;
-    // const textureProjectionMatrix = mat4.ortho(mat4.create(), -orthoWidth, orthoWidth, -orthoWidth, orthoWidth, orthoNear, orthoFar);
+    const orthoFar = 15;
+    const textureProjectionMatrix = mat4.ortho(mat4.create(), -orthoWidth, orthoWidth, -orthoWidth, orthoWidth, orthoNear, orthoFar);
 
     const textureMatrix = mat4.multiply(mat4.create(), textureProjectionMatrix, textureWorldMatrix);
 
@@ -170,35 +169,11 @@ async function main()
     const scene = new Scene();
     scene.add(light);
     scene.add(soldier);
-    scene.add(frustumDebug.frustumModel);
-    scene.add(cube1);
-    scene.add(cube2);
-    scene.add(cube3);
+    // scene.add(frustumDebug.frustumModel);
+    // scene.add(cube1);
+    // scene.add(cube2);
+    // scene.add(cube3);
     scene.add(plane);
-
-
-
-
-    // ======= DEBUG =======
-    const plane2 = new Mesh(Plane.create(10, 10), (new Material()));
-    plane2.model.rotation = quat.rotateX(quat.create(), quat.create(), Math.PI / 2)
-    plane2.model.translation = vec3.fromValues(0, 5, -10)
-    plane2.material.depthMap = true;
-
-    const debugCamera = new Camera(canvas, vec3.fromValues(10, 20, 20), mouseInput);
-    debugCamera._far = 100;
-    debugCamera.splitScreen(CameraPosition.TOP);
-
-    const debugScene = new Scene();
-    debugScene.add(light);
-    debugScene.add(soldier);
-    debugScene.add(frustumDebug.frustumModel);
-    debugScene.add(cube1);
-    debugScene.add(cube2);
-    debugScene.add(cube3);
-    debugScene.add(plane);
-    debugScene.add(plane2);
-
 
 
 
@@ -216,30 +191,29 @@ async function main()
     const depthFramebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, depthTexture, 0);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
 
     plane.material.useShadow();
+    // @ts-ignore
+    soldier.children[0].material.useShadow();
+    // @ts-ignore
+    soldier.children[0].material.useShadow();
     cube1.material.useShadow();
     cube2.material.useShadow();
     cube3.material.useShadow();
-    plane2.material.setTexture('plane-depth-texture', depthTexture!);
 
     renderLoop.start(time => {
         mouseInput.update();
         camera.update(time);
         movement.update(time);
 
-
         gl.bindFramebuffer(gl.FRAMEBUFFER, depthFramebuffer);
         renderer.framebuffer(scene, camera, textureMatrix);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-
         // @ts-ignore
         renderer.render(scene, camera, depthTexture, textureMatrix);
-
-        // @ts-ignore
-        renderer.render(debugScene, debugCamera, depthTexture, textureMatrix);
     });
 
     // debug statistics

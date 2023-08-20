@@ -33,12 +33,6 @@ export class WebGLPrograms
             properties.push('#define USE_SKINNING');
         }
 
-        if (material.depthMap)
-        {
-            properties = ['#define DEPTH_MAP'];
-            properties.push(material.texture ? '#define USE_TEXTURE' : '');
-        }
-
         const hash = Hash.create(properties.join(''));
 
         if (this.programs.has(hash)) {

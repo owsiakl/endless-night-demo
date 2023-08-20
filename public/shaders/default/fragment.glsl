@@ -21,46 +21,15 @@ out vec4 outColor;
     in vec3 v_normal;
 #endif
 
-
-float linearizeDepth(float depth)
-{
-    float near = 0.1;
-    float far  = 30.0;
-    float z = depth * 2.0 - 1.0; // back to NDC
-    return (2.0 * near * far) / (far + near - z * (far - near));
-}
-
 #ifdef USE_SHADOWING
     in vec4 v_projectedTexCoord;
     uniform sampler2D u_projectedTexture;
-
-    float shadowCalculation(vec4 fragPosLightSpace)
-    {
-        vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-        projCoords = projCoords * 0.5 + 0.5;
-        float closestDepth = texture(u_projectedTexture, projCoords.xy).r;
-        float currentDepth = projCoords.z;
-        float shadow = currentDepth > closestDepth  ? 0.0 : 1.0;
-
-        return shadow;
-    }
 #endif
-
 
 void main()
 {
     #ifdef USE_TEXTURE
         outColor = texture(u_texture, v_texcoord);
-
-        #ifdef DEPTH_MAP
-            float depthValue = texture(u_texture, v_texcoord).r;
-
-            // for ortho
-            outColor = vec4(vec3(depthValue), 1.0);
-
-            // for perspective
-//            outColor = vec4(vec3(linearizeDepth(depthValue) / far), 1.0);
-        #endif
     #endif
 
     #ifdef USE_COLOR_ATTRIBUTE
@@ -77,7 +46,6 @@ void main()
         vec3 lightColor = vec3(0.8, 0.8, 0.8);
         vec3 lightDirection = u_lightPosition;
 
-
         float ambientStrength = 0.2;
         vec3 ambient = ambientStrength * lightColor;
 
@@ -86,12 +54,7 @@ void main()
         float nDotL = min(max(dot(normal, lightDirection), 0.0), .8);
         vec3 diffuse = nDotL * lightColor;
 
-//        #ifdef USE_SHADOWING
-//            float shadow = shadowCalculation(FragPosLightSpace);
-//            outColor = vec4((1.0 - shadow) * (ambient + diffuse) * outColor.rgb, 1.0);
-//        #else
-            outColor = vec4(outColor.rgb * (ambient + diffuse), outColor.a);
-//        #endif
+        outColor = vec4(outColor.rgb * (ambient + diffuse), outColor.a);
 
     #endif
 
