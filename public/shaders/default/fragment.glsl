@@ -24,6 +24,37 @@ out vec4 outColor;
 #ifdef USE_SHADOWING
     in vec4 v_projectedTexCoord;
     uniform sampler2D u_projectedTexture;
+
+    float shadowCalculation(vec4 fragPosLightSpace)
+    {
+        vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+        projCoords = projCoords * 0.5 + 0.5;
+        float closestDepth = texture(u_projectedTexture, projCoords.xy).r;
+        float currentDepth = projCoords.z;
+        float bias = 0.005;
+
+        bool inRange =
+                projCoords.x >= 0.0 &&
+                projCoords.x <= 1.0 &&
+                projCoords.y >= 0.0 &&
+                projCoords.y <= 1.0;
+
+        float shadow = 0.0;
+        vec2 texelSize = 0.8 / vec2(textureSize(u_projectedTexture, 0));
+
+        for (int x = -1; x <= 1; ++x)
+        {
+            for (int y = -1; y <= 1; ++y)
+            {
+                float pcfDepth = texture(u_projectedTexture, projCoords.xy + vec2(x, y) * texelSize).r;
+                shadow += (inRange && currentDepth - bias > pcfDepth) ? 0.5 : 1.0;
+            }
+        }
+
+        shadow /= 9.0;
+
+        return shadow;
+    }
 #endif
 
 void main()
@@ -59,20 +90,6 @@ void main()
     #endif
 
     #ifdef USE_SHADOWING
-        float u_bias = -0.001;
-        vec3 projectedTexcoord = v_projectedTexCoord.xyz / v_projectedTexCoord.w;
-        projectedTexcoord = projectedTexcoord * 0.5 + 0.5;
-
-        float currentDepth = projectedTexcoord.z + u_bias;
-
-        bool inRange =
-        projectedTexcoord.x >= 0.0 &&
-        projectedTexcoord.x <= 1.0 &&
-        projectedTexcoord.y >= 0.0 &&
-        projectedTexcoord.y <= 1.0;
-
-        float projectedDepth = texture(u_projectedTexture, projectedTexcoord.xy).r;
-        float shadowLight = (inRange && projectedDepth <= currentDepth) ? 0.0 : 1.0;
-        outColor = vec4(outColor.rgb * shadowLight, outColor.a);
+        outColor = vec4(outColor.rgb * shadowCalculation(v_projectedTexCoord), outColor.a);
     #endif
 }

@@ -31,7 +31,6 @@ export class Camera
     private _projectionViewMatrix: mat4;
     private _projectionViewChanged = true;
 
-
     private _followTarget: Nullable<Object3D>;
     private _previousTargetPosition: Nullable<vec3>;
 

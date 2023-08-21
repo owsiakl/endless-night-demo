@@ -23,11 +23,4 @@ export class WebGLTexture
 
         this.currentTextureUnit++;
     }
-
-    public setCreated(gl: WebGL2RenderingContext, name: string, texture: globalThis.WebGLTexture)
-    {
-        this.textures.set(name, {index: this.currentTextureUnit, texture: texture});
-
-        this.currentTextureUnit++;
-    }
 }

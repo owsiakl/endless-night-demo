@@ -1,3 +1,5 @@
+precision highp float;
+
 layout (location = 0) in vec4 a_position;
 uniform mat4 u_projectionView;
 uniform mat4 u_model;

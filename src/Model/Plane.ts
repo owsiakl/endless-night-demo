@@ -1,6 +1,4 @@
 import {Geometry} from "../Core/Geometry";
-import {dump} from "../Debug/Numbers";
-
 
 export class Plane
 {

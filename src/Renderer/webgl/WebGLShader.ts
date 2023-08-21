@@ -11,6 +11,10 @@ export class WebGLShader
         gl.shaderSource(shader, source);
         gl.compileShader(shader);
 
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            throw new Error(`Unexpected error while compiling shader: ` + gl.getShaderInfoLog(shader));
+        }
+
         return shader;
     }
 }

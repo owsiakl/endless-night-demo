@@ -1,3 +1,5 @@
+precision highp float;
+
 in vec4 a_position;
 uniform mat4 u_lightSpace;
 uniform mat4 u_model;

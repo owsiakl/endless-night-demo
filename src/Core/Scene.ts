@@ -1,12 +1,27 @@
 import {Object3D} from "./Object3D";
+import {Light} from "../Light/Light";
 
 export class Scene
 {
     public objects: Array<Object3D>;
+    public light: Nullable<Light>;
 
     public constructor()
     {
         this.objects = [];
+        this.light = null;
+    }
+
+    public addLight(light: Light) : this
+    {
+        if (null !== this.light)
+        {
+            throw new Error('Currently only one scene light is supported.');
+        }
+
+        this.light = light;
+
+        return this;
     }
 
     public add(object: Object3D) : this

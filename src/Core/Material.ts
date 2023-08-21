@@ -10,8 +10,6 @@ export class Material
     public light;
     public lightPosition: Nullable<vec3>;
     public shadow: boolean;
-    public texture: Nullable<WebGLTexture>;
-    public textureName: Nullable<string>;
 
     public constructor()
     {
@@ -20,9 +18,7 @@ export class Material
         this.vertexColors = false;
         this.light = false;
         this.lightPosition = null;
-        this.shadow = false;
-        this.texture = null;
-        this.textureName = null;
+        this.shadow = true;
     }
 
     public setImage(image: HTMLImageElement) : this
@@ -31,16 +27,6 @@ export class Material
 
         return this;
     }
-
-    public setTexture(name: string, texture: WebGLTexture) : this
-    {
-        this.texture = texture;
-        this.textureName = name;
-        this.color = null;
-
-        return this;
-    }
-
 
     public setColor(color: vec3) : this
     {
