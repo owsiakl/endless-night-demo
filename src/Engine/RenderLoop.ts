@@ -1,63 +1,51 @@
+import {DebugContainer} from "../Debug/DebugContainer";
+
 export class RenderLoop
 {
-    public fps: number;
-    public ms: number;
+    private readonly _debug: Nullable<DebugContainer>;
+    private _oldTimestamp: number;
+    private _active: boolean;
+    private _onRender: (time: number) => void;
 
-    private oldTimestamp: number;
-    private active: boolean;
-    private onRender: (time: number) => void;
-    private msArray: number[] = [];
-
-    public constructor()
+    public constructor(debug: Nullable<DebugContainer>)
     {
-        this.fps = 0;
-        this.ms = 0;
-        this.oldTimestamp = 0;
-        this.active = false;
-        this.onRender = () => null;
+        this._debug = debug;
+        this._oldTimestamp = 0;
+        this._active = false;
+        this._onRender = () => null;
     }
 
-    public start(onRender: (time: number) => void): void
+    public start(onRender: (time: number) => void) : void
     {
-        this.onRender = onRender;
-        this.active = true;
+        this._onRender = onRender;
+        this._active = true;
 
-        window.requestAnimationFrame(this.run.bind(this));
+        requestAnimationFrame(this.run.bind(this));
     }
 
-    public stop(): void
+    public stop() : void
     {
-        this.active = false;
+        this._active = false;
     }
 
-    private run(timestamp: number): void
+    private run(timestamp: number) : void
     {
         const loopStart = performance.now();
-        const secondsPassed = (timestamp - this.oldTimestamp) / 1000;
+        const secondsPassed = (timestamp - this._oldTimestamp) / 1000;
 
-        this.oldTimestamp = timestamp;
-        this.fps = 1 / secondsPassed;
-        
-        this.onRender(secondsPassed);
+        this._oldTimestamp = timestamp;
 
-        const ms = performance.now() - loopStart;
+        this._onRender(secondsPassed);
 
-        if (this.msArray.length >= 60) {
-            this.msArray.shift();
-        }
-
-        this.msArray.push(ms);
-
-        let sum = 0;
-        for (let key in this.msArray) {
-            sum += this.msArray[key];
-        }
-
-        this.ms = sum / this.msArray.length;
-    
-        if (this.active)
+        if (null !== this._debug)
         {
-            window.requestAnimationFrame(this.run.bind(this));
+            this._debug.fps = 1 / secondsPassed;
+            this._debug.cpuTime = performance.now() - loopStart;
+        }
+
+        if (this._active)
+        {
+            requestAnimationFrame(this.run.bind(this));
         }
     }
 }

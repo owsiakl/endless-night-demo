@@ -18,13 +18,15 @@ module.exports = {
     output: {
         filename: 'main.js',
         path: path.resolve(__dirname, 'public/dist'),
+        clean: true,
     },
     devServer: {
         static: {
             directory: path.join(__dirname, 'public'),
         },
         devMiddleware: {
-            writeToDisk: true
+            publicPath: '/dist',
+
         }
     },
     devtool: 'inline-source-map',

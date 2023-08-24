@@ -11,29 +11,40 @@ import {Camera} from "../Camera/Camera";
 import {mat4} from "gl-matrix";
 import {CameraPosition} from "../Camera/CameraPosition";
 import {WebGLFramebuffer} from "./webgl/WebGLFramebuffer";
+import {DebugContainer} from "../Debug/DebugContainer";
 
 export class WebGLRenderer
 {
     private readonly _gl: WebGL2RenderingContext;
     private readonly _canvas: HTMLCanvasElement;
     private readonly _shaders: Shaders;
+    private readonly _debug: Nullable<DebugContainer>;
     private readonly _programs;
     private readonly _shaderCache;
     private readonly _vertexArrays = new WebGLVertexArrays();
     private readonly _textures = new WebGLTexture();
     private _framebuffer: Nullable<WebGLFramebuffer>;
+    private _query: Nullable<WebGLQuery>;
+    private _queryExt: Nullable<any>;
 
-    public constructor(canvas: HTMLCanvasElement, gl: WebGL2RenderingContext, shaders: Shaders)
+    public constructor(canvas: HTMLCanvasElement, gl: WebGL2RenderingContext, shaders: Shaders, debug: Nullable<DebugContainer>)
     {
         this._gl = gl;
         this._canvas = canvas;
         this._shaders = shaders;
+        this._debug = debug;
         this._shaderCache = new WebGLShaderCache(shaders);
         this._programs = new WebGLPrograms(this._shaderCache);
         this._framebuffer = null;
+        this._query = null;
 
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
+
+        if (null !== this._debug)
+        {
+            this._queryExt = gl.getExtension('EXT_disjoint_timer_query_webgl2');
+        }
     }
 
     public render(scene: Scene, camera: Camera)
@@ -41,6 +52,28 @@ export class WebGLRenderer
         const gl = this._gl;
         const width = this._canvas.width;
         const height = this._canvas.height;
+
+        if (null !== this._debug)
+        {
+            if (null !== this._query)
+            {
+                let available = gl.getQueryParameter(this._query, gl.QUERY_RESULT_AVAILABLE);
+                let disjoint = gl.getParameter(this._queryExt.GPU_DISJOINT_EXT);
+
+                if (available && !disjoint)
+                {
+                    const timeElapsed = gl.getQueryParameter(this._query, gl.QUERY_RESULT);
+
+                    this._debug.gpuTime = timeElapsed * 1e-6;
+                }
+            }
+            else
+            {
+                this._query = gl.createQuery() as WebGLQuery;
+            }
+
+            gl.beginQuery(this._queryExt.TIME_ELAPSED_EXT, this._query);
+        }
 
         if (null !== scene.light)
         {
@@ -102,6 +135,11 @@ export class WebGLRenderer
         if (null !== camera.screenPosition)
         {
             gl.disable(gl.SCISSOR_TEST);
+        }
+
+        if (null !== this._debug)
+        {
+            gl.endQuery(this._queryExt.TIME_ELAPSED_EXT);
         }
     }
 

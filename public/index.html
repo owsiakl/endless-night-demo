@@ -6,34 +6,52 @@
     <link rel="stylesheet" href="dist/main.css">
 </head>
 <body>
-    <canvas></canvas>
+    <header>
+        <a class="logo" href="/" title="Navigate to github project.">endless night.</a>
 
-    <div class="info-box top-left">
-        <section>
-            <h5>FPS:</h5>
-            <span data-fps-counter>0</span>
-        </section>
-        <section>
-            <h5>MS CPU:</h5>
-            <span data-ms-cpu-counter>0</span>
-        </section>
-        <section>
-            <h5>MS GPU:</h5>
-            <span data-ms-gpu-counter>0</span>
-        </section>
-        <section>
-            <h5>Heap Limit:</h5>
-            <span data-heap-limit>0</span>
-        </section>
-        <section>
-            <h5>Heap Available:</h5>
-            <span data-heap-available>0</span>
-        </section>
-        <section>
-            <h5>Heap Used:</h5>
-            <span data-heap-used>0</span>
-        </section>
-    </div>
+        <a href="https://github.com" target="_blank" title="Navigate to github project.">
+            <img src="image/icon/external-link.png" alt="external link icon" class="external-link">
+            <img src="image/icon/github.png" alt="github icon">
+        </a>
+
+        <a href="https://www.behance.net" target="_blank" title="Navigate to behance project.">
+            <img src="image/icon/external-link.png" alt="external link icon" class="external-link">
+            <img src="image/icon/behance.png" alt="behance icon">
+        </a>
+
+        <button class="open-debug-container" title="Open debug panel." data-toggle-debug-container>
+            <img src="image/icon/bug.png" alt="debug icon">
+        </button>
+
+        <aside id="debug-container" data-debug-container>
+            <section>
+                <h5>FPS:</h5>
+                <span data-fps-counter>0</span>
+            </section>
+            <section>
+                <h5>CPU:</h5>
+                <span data-ms-cpu-counter>0</span>
+            </section>
+            <section>
+                <h5>GPU:</h5>
+                <span data-ms-gpu-counter>0</span>
+            </section>
+            <section>
+                <h5>Heap Used:</h5>
+                <span data-heap-used>0</span>
+            </section>
+            <section>
+                <h5>Heap Available:</h5>
+                <span data-heap-available>0</span>
+            </section>
+            <section>
+                <h5>Heap Limit:</h5>
+                <span data-heap-limit>0</span>
+            </section>
+        </aside>
+    </header>
+
+    <canvas></canvas>
 
     <script src="dist/main.js"></script>
 </body>
