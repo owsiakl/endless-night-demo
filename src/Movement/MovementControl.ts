@@ -39,7 +39,7 @@ export class MovementControl extends StateMachine
 
         self.setState('idle');
 
-        self.object.model.rotation = camera.invertRotY;
+        self.object.model.rotation = camera.rotY;
 
         return self;
     }
@@ -92,7 +92,7 @@ export class MovementControl extends StateMachine
             vec3.scale(forward, forward, 2.5);
         }
 
-        const inputRotAngle = Math.atan2(-forward[0], -forward[2]);
+        const inputRotAngle = Math.atan2(forward[0], forward[2]);
         const forwardLength = vec3.length(forward);
 
         if (forwardLength > 0)

@@ -22,8 +22,8 @@ export class DebugContainer
 
     public static create(document: Document) : DebugContainer
     {
-        const container = document.querySelector('[data-debug-container]') as HTMLElement;
-        const button = document.querySelector('[data-toggle-debug-container]') as HTMLButtonElement;
+        const container = document.querySelector('[data-debug-container]')!;
+        const button = document.querySelector('[data-toggle-debug-container]')!;
 
         const self =  new this(
             container.querySelector('[data-fps-counter]')!,
@@ -60,9 +60,9 @@ export class DebugContainer
 
         // @ts-ignore
         const memory = window.performance.memory;
-        this._jsHeapLimitElement.textContent = Math.round(memory.jsHeapSizeLimit / 1000000).toString().concat(' mb');
-        this._jsHeapAvailableElement.textContent = Math.round(memory.totalJSHeapSize / 1000000).toString().concat(' mb');
-        this._jsHeapUsedElement.textContent = Math.round(memory.usedJSHeapSize / 1000000).toString().concat(' mb');
+        this._jsHeapLimitElement.textContent = Math.round(memory.jsHeapSizeLimit / 1000000).toString().concat(' MB');
+        this._jsHeapAvailableElement.textContent = Math.round(memory.totalJSHeapSize / 1000000).toString().concat(' MB');
+        this._jsHeapUsedElement.textContent = Math.round(memory.usedJSHeapSize / 1000000).toString().concat(' MB');
 
         this._lastUpdate = 0;
     }

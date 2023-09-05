@@ -31,7 +31,7 @@ export class AnimationControl
         this._targetAnimationTime = 0.0;
     }
 
-    public addClip(name: string, clip: AnimationClip)
+    public addClip(name: string, clip: AnimationClip) : void
     {
         this._clips[name] = clip;
     }
@@ -131,10 +131,10 @@ export class AnimationControl
             }
             else
             {
-                const fateTo = this._targets[0].sample(object.skeleton.bindPose, this._targetAnimationTime);
+                const fadeTo = this._targets[0].sample(object.skeleton.bindPose, this._targetAnimationTime);
                 const weight = this._targetTime / this._targetDuration;
 
-                pose = pose.blend(pose, fateTo, weight);
+                pose = pose.blend(pose, fadeTo, weight);
             }
         }
 

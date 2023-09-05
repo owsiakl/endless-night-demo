@@ -91,12 +91,10 @@ export class Transform
         this._calculateMatrix = true;
     }
 
-
     public get scale() : vec3
     {
         return this._scale;
     }
-
 
     public get matrix() : mat4
     {

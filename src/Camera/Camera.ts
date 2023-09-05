@@ -161,13 +161,17 @@ export class Camera
         this._projectionViewChanged = true;
     }
 
-    public get invertRotY() : quat
+    public get rotY() : quat
     {
         const rotation = mat4.getRotation(quat.create(), this.viewMatrix);
         const theta = Math.atan2(rotation[1], rotation[3])
-        const rotY = quat.fromValues(0, Math.sin(theta), 0, Math.cos(theta));
 
-        return quat.invert(quat.create(), rotY);
+        return quat.fromValues(0, Math.sin(theta), 0, Math.cos(theta));
+    }
+
+    public get invertRotY() : quat
+    {
+        return quat.invert(quat.create(), this.rotY);
     }
 
     public splitScreen(position: CameraPosition)

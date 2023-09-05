@@ -49,7 +49,7 @@ export class Pose
                 continue;
             }
 
-            mat4.multiply(result, parentNode.matrix, result);
+            result = mat4.multiply(mat4.create(), parentNode.matrix, result);
         }
 
         return result;

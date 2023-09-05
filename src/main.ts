@@ -44,30 +44,31 @@ async function main()
     );
 
     // ======= SOLDIER =======
-    const soldierModel = await Loader.parseBinary(assets.binaryModels.get('glb_soldier'));
-    const soldier = await soldierModel.getScene();
-    const [idle, run, bind, walk] = soldierModel.getAnimation();
+    const characterModel = await Loader.parseBinary(assets.binaryModels.get('glb_akai'));
+    // const characterModel = await Loader.parseBinary(assets.binaryModels.get('glb_soldier'));
+    const character = await characterModel.getScene();
+    const [idle, run, bind, walk] = characterModel.getAnimation();
 
-    const animations = new AnimationControl(soldier);
+    const animations = new AnimationControl(character);
     animations.addClip('idle', idle);
     animations.addClip('walk', walk);
     animations.addClip('run', run);
 
     const camera = new Camera(canvas, vec3.fromValues(5, 5, 0), mouseInput);
     camera._far = 100;
-    camera.follow(soldier);
+    camera.follow(character);
 
-    const movement = MovementControl.bind(soldier, animations, keyboardInput, camera);
+    const movement = MovementControl.bind(character, animations, keyboardInput, camera);
 
 
     // ======= SCENE =======
     const scene = new Scene();
     const light = new DirectionalLight();
     light.model.translation = vec3.fromValues(0, 4, 4);
-    light.follow(soldier);
+    light.follow(character);
 
     scene.addLight(light);
-    scene.add(soldier);
+    scene.add(character);
     scene.add(plane);
 
     // ======= RENDER =======
