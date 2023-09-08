@@ -48,15 +48,15 @@ export class DirectionalLight extends Object3D implements Light
             return;
         }
 
-        const newTargetPosition = this._followTarget.model.translation;
+        const newTargetPosition = this._followTarget.translation;
 
         if (vec3.equals(this._previousFollowTargetPosition, newTargetPosition))
         {
             return;
         }
 
-        this.model.translation = vec3.fromValues(newTargetPosition[0], 5, newTargetPosition[2] + 5);
-        this._currentTarget = this._followTarget.model.translation;
+        this.translation = vec3.fromValues(newTargetPosition[0], 5, newTargetPosition[2] + 5);
+        this._currentTarget = this._followTarget.translation;
 
         this._viewChanged = true;
         this._projectionViewChanged = true;
@@ -66,7 +66,7 @@ export class DirectionalLight extends Object3D implements Light
     public follow(object: Object3D) : void
     {
         this._followTarget = object;
-        this._previousFollowTargetPosition = object.model.translation;
+        this._previousFollowTargetPosition = object.translation;
     }
 
     public get projectionViewMatrix() : mat4
@@ -84,7 +84,7 @@ export class DirectionalLight extends Object3D implements Light
     {
         if (this._viewChanged)
         {
-            mat4.lookAt(this._viewMatrix, this.model.translation, this._currentTarget, this._worldUp);
+            mat4.lookAt(this._viewMatrix, this.translation, this._currentTarget, this._worldUp);
             this._viewChanged = false;
         }
 

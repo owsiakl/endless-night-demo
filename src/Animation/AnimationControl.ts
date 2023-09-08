@@ -1,6 +1,7 @@
 import {AnimationClip} from "./AnimationClip";
-import {Object3D} from "../Core/Object3D";
 import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
+import {Object3D} from "../Core/Object3D";
+import {Skeleton} from "../Core/Skeleton";
 
 export class AnimationControl
 {
@@ -8,7 +9,7 @@ export class AnimationControl
     private readonly _clips: {[name: string]: AnimationClip};
     private _time: Nullable<float>;
     private readonly _speed: float;
-    private _model: Object3D;
+    private readonly _skeleton: Skeleton;
 
     private readonly _targets: AnimationClip[];
     private readonly _targetDuration;
@@ -16,13 +17,13 @@ export class AnimationControl
     private _targetParallel;
     private _targetAnimationTime: float;
 
-    public constructor(model: Object3D)
+    public constructor(skeleton: Skeleton)
     {
         this._clip = null;
         this._clips = {};
         this._time = null;
         this._speed = 1;
-        this._model = model;
+        this._skeleton = skeleton;
 
         this._targets = [];
         this._targetTime = 0.0;
@@ -94,16 +95,11 @@ export class AnimationControl
             }
         }
 
-        this._model.traverse(object => this._updateObject(object))
+        this._updateObject();
     }
 
-    private _updateObject(object: Object3D) : void
+    private _updateObject() : void
     {
-        if (!(object instanceof SkinnedMesh))
-        {
-            return;
-        }
-
         if (null === this._clip)
         {
             return;
@@ -114,7 +110,7 @@ export class AnimationControl
             return;
         }
 
-        let pose = this._clip.sample(object.skeleton.bindPose, this._time);
+        let pose = this._clip.sample(this._skeleton.bindPose, this._time);
 
         if (this._targets.length > 0)
         {
@@ -123,7 +119,7 @@ export class AnimationControl
                 this._clip = this._targets.shift() as AnimationClip;
                 this._time = this._targetAnimationTime;
 
-                pose = this._clip.sample(object.skeleton.bindPose, this._targetAnimationTime);
+                pose = this._clip.sample(this._skeleton.bindPose, this._targetAnimationTime);
 
                 this._targetAnimationTime = 0;
                 this._targetTime = 0;
@@ -131,13 +127,13 @@ export class AnimationControl
             }
             else
             {
-                const fadeTo = this._targets[0].sample(object.skeleton.bindPose, this._targetAnimationTime);
+                const fadeTo = this._targets[0].sample(this._skeleton.bindPose, this._targetAnimationTime);
                 const weight = this._targetTime / this._targetDuration;
 
-                pose = pose.blend(pose, fadeTo, weight);
+                pose = pose.blendTo(fadeTo, weight);
             }
         }
 
-        object.skeleton.currentPose = pose;
+        this._skeleton.currentPose.apply(pose);
     }
 }

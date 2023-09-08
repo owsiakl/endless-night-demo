@@ -7,14 +7,30 @@ export class SkinnedMesh extends Mesh
 {
     public readonly geometry: Geometry;
     public readonly material: Material;
-    public readonly skeleton: Skeleton;
 
-    constructor(geometry: Geometry, material: Material, skeleton: Skeleton)
+    private _skeleton: Nullable<Skeleton>;
+
+    constructor(geometry: Geometry, material: Material)
     {
         super(geometry, material);
 
         this.geometry = geometry;
         this.material = material;
-        this.skeleton = skeleton;
+        this._skeleton = null;
+    }
+
+    set skeleton(skeleton: Skeleton)
+    {
+        this._skeleton = skeleton;
+    }
+
+    get skeleton() : Skeleton
+    {
+        if (null === this._skeleton)
+        {
+            throw new Error(`Skeleton for a mesh wasn't assigned yet.`);
+        }
+
+        return this._skeleton;
     }
 }

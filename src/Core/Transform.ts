@@ -44,25 +44,6 @@ export class Transform
         );
     }
 
-    public multiply(other: Transform) : Transform
-    {
-
-         return Transform.fromMatrix(mat4.multiply(mat4.create(), this.matrix, other.matrix));
-
-        // const transform = Transform.init();
-        //
-        // transform.translation = vec3.multiply(vec3.create(), this._translation, other._translation);
-        // transform.rotation = quat.multiply(quat.create(), this._rotation, other._rotation);
-        // transform.scale = vec3.multiply(vec3.create(), this._scale, other._scale);
-        //
-        // return transform;
-    }
-
-    public inverse() : Transform
-    {
-        return Transform.fromMatrix(mat4.invert(mat4.create(), this.matrix));
-    }
-
     public set translation(translation: vec3)
     {
         this._translation = translation;
@@ -101,6 +82,7 @@ export class Transform
         if (this._calculateMatrix)
         {
             this._matrix = mat4.fromRotationTranslationScale(mat4.create(), this._rotation, this._translation, this._scale);
+            this._calculateMatrix = false;
         }
 
         return this._matrix;

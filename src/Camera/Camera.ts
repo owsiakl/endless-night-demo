@@ -84,7 +84,7 @@ export class Camera
 
         if (null !== this._followTarget && null !== this._previousTargetPosition)
         {
-            const targetPosition = vec3.clone(this._followTarget.model.translation);
+            const targetPosition = vec3.clone(this._followTarget.translation);
 
             const moveX = targetPosition[0] - this._previousTargetPosition[0];
             const moveZ = targetPosition[2] - this._previousTargetPosition[2];
@@ -103,7 +103,7 @@ export class Camera
     public follow(object: Object3D)
     {
         this._followTarget = object;
-        this._previousTargetPosition = object.model.translation;
+        this._previousTargetPosition = object.translation;
     }
 
     /**

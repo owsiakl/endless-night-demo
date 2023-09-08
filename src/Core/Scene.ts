@@ -1,14 +1,18 @@
 import {Object3D} from "./Object3D";
 import {Light} from "../Light/Light";
+import {Mesh} from "./Object/Mesh";
+import {Line} from "./Object/Line";
 
 export class Scene
 {
     public objects: Array<Object3D>;
     public light: Nullable<Light>;
+    public drawables: Array<Mesh | Line>;
 
     public constructor()
     {
         this.objects = [];
+        this.drawables = [];
         this.light = null;
     }
 
@@ -28,12 +32,24 @@ export class Scene
     {
         this.objects.push(object);
 
+        object.traverse(item => {
+            if (item instanceof Line)
+            {
+                this.drawables.push(item);
+            }
+            else if (item instanceof Mesh)
+            {
+                this.drawables.push(item);
+            }
+        })
+
         return this;
     }
 
     public updateMatrixWorld()
     {
-        for (let i = 0, length = this.objects.length; i < length; i++) {
+        for (let i = 0, length = this.objects.length; i < length; i++)
+        {
             this.objects[i].updateMatrixWorld();
         }
     }

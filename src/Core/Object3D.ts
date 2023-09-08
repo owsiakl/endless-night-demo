@@ -3,89 +3,83 @@ import {Transform} from "./Transform";
 
 export class Object3D
 {
-    private translation: vec3 = vec3.fromValues(0, 0, 0);
-    private rotation: quat = quat.fromValues(0, 0, 0, 1);
-    private scale: vec3 = vec3.fromValues(1, 1, 1);
+    private _worldTransform: mat4 = mat4.create();
+    protected _localTransform: Transform = Transform.init();
 
-    private transformMatrix: Nullable<mat4> = null;
-    private transformChanged: boolean = false;
+    protected _parent: Nullable<Object3D> = null;
+    private _children: Object3D[] = [];
 
-    private parent: Object3D|null = null;
-    public children: Object3D[] = [];
-
-    public worldTransform = mat4.create();
-    public model = Transform.init();
-
-    public setTranslation(translation: vec3): this
+    public set translation(translation: vec3)
     {
-        this.translation = translation;
-        this.transformChanged = true;
-
-        return this;
+        this._localTransform.translation = translation;
     }
 
-    public setRotation(rotation: quat): this
+    public get translation() : vec3
     {
-        this.rotation = rotation;
-        this.transformChanged = true;
-
-        return this;
+        return this._localTransform.translation;
     }
 
-    public setScale(scale: vec3): this
+    public set rotation(rotation: quat)
     {
-        this.scale = scale;
-        this.transformChanged = true;
-
-        return this;
+        this._localTransform.rotation = rotation;
     }
 
-    public updateMatrixWorld() : void
+    public get rotation() : quat
     {
-        if (null === this.parent){
-            mat4.copy(this.worldTransform, this.localTransform)
-        } else {
-            mat4.multiply(this.worldTransform, this.parent.worldTransform, this.localTransform);
-            this.model = this.parent.model;
-        }
-
-        for (const children of this.children) {
-            children.updateMatrixWorld();
-        }
+        return this._localTransform.rotation;
     }
 
-    get localTransform(): mat4
+    public set scale(scale: vec3)
     {
-        if (null === this.transformMatrix) {
-            this.transformMatrix = mat4.fromRotationTranslationScale(mat4.create(), this.rotation, this.translation, this.scale);
-        }
+        this._localTransform.scale = scale;
+    }
 
-        if (null !== this.transformMatrix && this.transformChanged) {
-            this.transformMatrix = mat4.fromRotationTranslationScale(mat4.create(), this.rotation, this.translation, this.scale);
-        }
+    public get scale() : vec3
+    {
+        return this._localTransform.scale;
+    }
 
-        this.transformChanged = false;
+    public get localTransform() : Transform
+    {
+        return this._localTransform;
+    }
 
-        return this.transformMatrix;
+    public get worldTransform() : mat4
+    {
+        return this._worldTransform;
     }
 
     public setChild(child: Object3D) : void
     {
-        child.parent = this;
+        child._parent = this;
 
-        this.children.push(child);
+        this._children.push(child);
     }
 
-    public traverse(callback: (object: Object3D) => boolean|void) : void
+    public traverse(callback: (object: Object3D) => void) : void
     {
-        if (callback(this))
-        {
-            return;
-        }
+        callback(this);
 
-        for (let i = 0, l = this.children.length; i < l; i++)
+        for (let i = 0, length = this._children.length; i < length; i++)
         {
-            this.children[i].traverse(callback);
+            this._children[i].traverse(callback);
+        }
+    }
+
+    public updateMatrixWorld() : void
+    {
+        this.traverse(object => object.calculateWorldTransform());
+    }
+
+    protected calculateWorldTransform() : void
+    {
+        if (null === this._parent)
+        {
+            mat4.copy(this._worldTransform, this._localTransform.matrix)
+        }
+        else
+        {
+            this._worldTransform = mat4.multiply(mat4.create(), this._parent.worldTransform, this._localTransform.matrix);
         }
     }
 }

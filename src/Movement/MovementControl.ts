@@ -39,7 +39,7 @@ export class MovementControl extends StateMachine
 
         self.setState('idle');
 
-        self.object.model.rotation = camera.rotY;
+        self.object.rotation = camera.rotY;
 
         return self;
     }
@@ -97,11 +97,11 @@ export class MovementControl extends StateMachine
 
         if (forwardLength > 0)
         {
-            this.object.model.rotation = quat.rotateY(quat.create(), cameraRot, inputRotAngle);
+            this.object.rotation = quat.rotateY(quat.create(), cameraRot, inputRotAngle);
 
             vec3.transformQuat(forward, forward, cameraRot);
             vec3.scale(forward, forward, this.velocity * dt);
-            this.object.model.translation = vec3.add(vec3.create(), this.object.model.translation, forward);
+            this.object.translation = vec3.add(vec3.create(), this.object.translation, forward);
         }
     }
 

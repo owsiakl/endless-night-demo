@@ -43,6 +43,7 @@ export class Assets
         this.importModelBinary('glb_fox', '/gltf/Fox.glb');
         this.importModelBinary('glb_soldier', '/gltf/Soldier.glb');
         this.importModelBinary('glb_akai', '/gltf/akai.glb');
+        this.importModelBinary('glb_torch', '/gltf/torch.glb');
 
         this.importImage('testTexture.png', 'image/triangle/testTexture.png');
         this.importImage('f-texture', 'image/f-texture.png');

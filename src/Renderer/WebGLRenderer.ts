@@ -53,6 +53,8 @@ export class WebGLRenderer
         const width = this._canvas.width;
         const height = this._canvas.height;
 
+        scene.updateMatrixWorld();
+
         if (null !== this._debug)
         {
             if (null !== this._query)
@@ -118,19 +120,10 @@ export class WebGLRenderer
             gl.viewport(0, 0, width, height);
         }
 
-        scene.updateMatrixWorld();
-
-        const renderList: Array<Mesh | Line> = [];
-
-        scene.traverse(object =>
+        for (let i = 0, length = scene.drawables.length; i < length; i++)
         {
-            if (object instanceof Mesh || object instanceof Line)
-            {
-                renderList.push(object);
-            }
-        })
-
-        this.renderObjects(gl, renderList, camera, scene.light?.projectionViewMatrix);
+            this.renderObject(gl, scene.drawables[i], camera, scene.light?.projectionViewMatrix);
+        }
 
         if (null !== camera.screenPosition)
         {
@@ -140,14 +133,6 @@ export class WebGLRenderer
         if (null !== this._debug)
         {
             gl.endQuery(this._queryExt.TIME_ELAPSED_EXT);
-        }
-    }
-
-    public renderObjects(gl: WebGL2RenderingContext, renderList: Array<Mesh | Line>, camera: Camera, depthTextureMatrix: Nullable<mat4> = null)
-    {
-        for (let i = 0, length = renderList.length; i < length; i++)
-        {
-            this.renderObject(gl, renderList[i], camera, depthTextureMatrix);
         }
     }
 
@@ -212,7 +197,7 @@ export class WebGLRenderer
         }
 
         program.uniforms.get('u_projectionView').set(camera.projectionViewMatrix);
-        program.uniforms.get('u_model').set(object.model.matrix);
+        program.uniforms.get('u_model').set(object.worldTransform);
 
         if (object instanceof SkinnedMesh)
         {
@@ -229,7 +214,7 @@ export class WebGLRenderer
             program.uniforms.get('u_lightPosition').set(object.material.lightPosition)
 
             const matrix = mat4.create();
-            mat4.invert(matrix, object.model.matrix);
+            mat4.invert(matrix, object.worldTransform);
             mat4.transpose(matrix, matrix);
             program.uniforms.get('u_normalMatrix').set(matrix)
         }
@@ -277,19 +262,9 @@ export class WebGLRenderer
         gl.viewport(0, 0, WebGLFramebuffer.textureSize, WebGLFramebuffer.textureSize);
         gl.clear(gl.DEPTH_BUFFER_BIT);
 
-        const renderList: Array<Mesh | Line> = [];
-
-        scene.traverse(object =>
+        for (let i = 0, length = scene.drawables.length; i < length; i++)
         {
-            if (object instanceof Mesh || object instanceof Line)
-            {
-                renderList.push(object);
-            }
-        });
-
-        for (let i = 0, length = renderList.length; i < length; i++)
-        {
-            const object = renderList[i];
+            const object = scene.drawables[i];
             const geometry = object.geometry;
             const program = this._programs.depthProgram(gl, object.material, object);
 
@@ -300,7 +275,7 @@ export class WebGLRenderer
                 program.uniforms.get('u_jointMat').set(object.skeleton.jointMatrix)
             }
 
-            program.uniforms.get('u_model').set(object.model.matrix!);
+            program.uniforms.get('u_model').set(object.worldTransform);
             program.uniforms.get('u_lightSpace').set(textureMatrix);
 
             let mode = null;

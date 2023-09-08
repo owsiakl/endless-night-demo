@@ -8,18 +8,20 @@ import {ATTRIBUTES, TYPE_SIZES} from "./Constants";
 import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
 import {Material} from "../Core/Material";
 import {Mesh} from "../Core/Object/Mesh";
-import {Transform} from "../Core/Transform";
-import {Skeleton} from "../Core/Skeleton";
 import {AnimationClip} from "../Animation/AnimationClip";
 import {TransformTrack} from "../Animation/TransformTrack";
 import {Track} from "../Animation/Track";
 import {VectorFrame} from "../Animation/Frame/VectorFrame";
 import {QuaternionFrame} from "../Animation/Frame/QuaternionFrame";
 import {Interpolation} from "../Animation/Interpolation";
+import {Bone} from "../Core/Object/Bone";
 import {Pose} from "../Animation/Pose";
+import {Skeleton} from "../Core/Skeleton";
 
 export class Loader
 {
+    private _nodesCache: Array<Object3D> = [];
+
     private constructor(
         public model: GLTF,
         public accessors: Array<Accessor>,
@@ -74,7 +76,7 @@ export class Loader
         const binaryByteLength = binaryChunkHeader[0];
         const binary = model.slice(binaryByteOffset, binaryByteOffset + binaryByteLength);
 
-        // console.log(json);
+        console.log(json);
 
         // Attach binary to buffer
         json.buffers[0].binary = binary;
@@ -146,7 +148,7 @@ export class Loader
         return new TypedArray(buffer.arrayBuffer(), bufferView.byteOffset + accessor.byteOffset, accessor.count * accessor.typeSize);
     }
 
-    public async getMesh(index: number) : Promise<Mesh>
+    public async getMeshDeprecated(index: number) : Promise<Mesh>
     {
         const mesh = this.model.meshes ? this.model.meshes[index] : undefined;
 
@@ -239,55 +241,9 @@ export class Loader
         });
     }
 
-    public async traverseNode(index: int, callback: (index: int, node: GLTF_node) => void) : Promise<void>
-    {
-        const node = this.model.nodes ? this.model.nodes[index] : undefined;
-
-        if (undefined === node)
-        {
-            throw new Error(`Scene with index "${index}" doesn't exists.`);
-        }
-
-        await callback(index, node);
-
-        for (const child of node.children ?? [])
-        {
-            await this.traverseNode(child, callback);
-        }
-    }
-
     public get defaultScene() : int
     {
         return this.model.scene ?? 0;
-    }
-
-    public async getScene(index: number = this.defaultScene)
-    {
-        const scene = this.model.scenes ? this.model.scenes[index] : undefined;
-
-        if (undefined === scene)
-        {
-            throw new Error(`Scene with index "${index}" doesn't exists.`);
-        }
-
-        const newScene = new Object3D();
-
-        for (let i = 0; i < scene.nodes.length; i++)
-        {
-            await this.traverseNode(
-                scene.nodes[i],
-                async (index, node) =>
-                {
-                    if (undefined !== node.mesh && undefined !== node.skin)
-                    {
-                        const mesh = await this.getMesh(node.mesh);
-
-                        newScene.setChild(new SkinnedMesh(mesh.geometry, mesh.material, this.getSkeleton(node.skin)));
-                    }
-                });
-        }
-
-        return newScene;
     }
 
     public async getMaterial(index: number)
@@ -296,7 +252,7 @@ export class Loader
 
         if (undefined === material)
         {
-            throw new Error(`Material with index "${index}" doesn't exists.`);
+            return (new Material()).setColor(vec3.fromValues(.4, .4, .4))
         }
 
         const textureIndex = material.pbrMetallicRoughness?.baseColorTexture?.index;
@@ -306,38 +262,16 @@ export class Loader
             throw new Error('Only textured material is supported now.');
         }
 
-        // return (new Material()).setColor(vec3.fromValues(0.4, 0.4, 0));
-
         return (new Material()).setImage(
             await this.getTexture(textureIndex)
         );
     }
 
-    public getNodeParent(index: int) : int
-    {
-        if (undefined === this.model.nodes)
-        {
-            throw new Error('There are no nodes in the model.');
-        }
-
-        for (let i = 0; i < this.model.nodes.length; i++)
-        {
-            const node = this.model.nodes[i];
-
-            if (node.children?.includes(index))
-            {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    public getAnimation() : Array<AnimationClip>
+    public getAnimations() : Nullable<Array<AnimationClip>>
     {
         if (undefined === this.model.animations)
         {
-            throw new Error('There are no animations in the model.');
+            return null;
         }
 
         const clips = [];
@@ -428,86 +362,207 @@ export class Loader
         return clips;
     }
 
-    public getNodeTransform(index: int) : Transform
-    {
-        if (undefined === this.model.nodes)
-        {
-            throw new Error('There are no nodes in the model.');
-        }
-
-        const node = this.model.nodes[index];
-        const transform = Transform.init();
-
-        if (undefined !== node.matrix)
-        {
-            transform.translation = mat4.getTranslation(vec3.create(), node.matrix);
-            transform.rotation = mat4.getRotation(quat.create(), node.matrix);
-            transform.scale = mat4.getScaling(vec3.create(), node.matrix);
-        }
-
-        if (undefined !== node.translation)
-        {
-            transform.translation = vec3.fromValues(...node.translation);
-        }
-
-        if (undefined !== node.rotation)
-        {
-            transform.rotation = quat.fromValues(...node.rotation);
-        }
-
-        if (undefined !== node.scale)
-        {
-            transform.scale = vec3.fromValues(...node.scale);
-        }
-
-        return transform;
-    }
-
-
-    public getBindPose() : Pose
+    public async getBindPose()
     {
         const pose = new Pose();
 
         for (let i = 0; i < this.model.nodes!.length; i++)
         {
             const node = this.model.nodes![i];
+            const object = this._nodesCache[i];
 
             pose.addNode(
                 node.name ?? `node_${i}`,
-                this.getNodeTransform(i),
-                this.getNodeParent(i)
+                object.localTransform,
             );
         }
 
         return pose;
     }
 
-    public getSkeleton(index: int)
+    public async getSkeleton()
     {
         if (undefined === this.model.skins)
         {
-            throw new Error('There are no skins in the model.');
+            return null
         }
 
+        if (this.model.skins.length > 1)
+        {
+            throw new Error(`Multi-skeleton models are not supported.`);
+        }
+
+        const skin = this.model.skins[0];
+        const inverseBindMatrices = this.getAccessorData(skin.inverseBindMatrices);
+        const skeleton = new Skeleton(await this.getBindPose());
+
+        for (let i = 0; i < skin.joints.length; i++)
+        {
+            const jointId = skin.joints[i];
+            const ibm = inverseBindMatrices.slice(i * 16, (i + 1) * 16) as mat4
+            const joint = this._nodesCache[jointId];
+
+            if (joint instanceof Bone)
+            {
+                skeleton.addJoint(joint, ibm);
+            }
+        }
+
+        return skeleton;
+    }
+
+    public async getScene(index: number = this.defaultScene) : Promise<[Object3D, Nullable<Skeleton>, Nullable<Array<AnimationClip>>]>
+    {
+        const scene = this.model.scenes ? this.model.scenes[index] : undefined;
+
+        if (undefined === scene)
+        {
+            throw new Error(`Scene with index "${index}" doesn't exists.`);
+        }
+
+        let tree = new Object3D();
+
+        for (let i = 0; i < scene.nodes.length; i++)
+        {
+            tree.setChild(await this.getNode(scene.nodes[i]));
+        }
+
+        let skeleton = await this.getSkeleton();
+        let animations = this.getAnimations();
+
+        tree.traverse(object =>
+        {
+            if (object instanceof SkinnedMesh)
+            {
+                object.skeleton = skeleton!;
+            }
+        })
+
+        return [tree, skeleton, animations];
+    }
+
+    async getNode(index: int) : Promise<Object3D>
+    {
         if (undefined === this.model.nodes)
         {
             throw new Error('There are no nodes in the model.');
         }
 
-        const skin = this.model.skins[index];
-        const inverseBindMatrices = this.getAccessorData(skin.inverseBindMatrices);
-        const skeleton = new Skeleton(this.getBindPose());
-
-        for (let i = 0; i < skin.joints.length; i++)
+        if (undefined !== this._nodesCache[index])
         {
-            const jointId = skin.joints[i];
-            const name = this.model.nodes[jointId].name ?? `joint_${jointId}`;
-            const parentId = this.getNodeParent(jointId);
-            const ibm = inverseBindMatrices.slice(i * 16, (i + 1) * 16) as mat4
-
-            skeleton.addJoint(name, jointId, parentId, ibm);
+            return Promise.resolve(this._nodesCache[index]);
         }
 
-        return skeleton;
+        const node = this.model.nodes[index];
+        const name = node.name ?? `node_${index}`
+
+        let object = new Object3D();
+
+        if (this.isBone(index))
+        {
+            object = new Bone();
+        }
+
+        if (this.isMesh(index))
+        {
+            const mesh = await this.getMeshDeprecated(node.mesh!);
+
+            object = new Mesh(mesh.geometry, mesh.material);
+        }
+
+        if (this.isSkinnedMesh(index))
+        {
+            const mesh = await this.getMeshDeprecated(node.mesh!);
+
+            object = new SkinnedMesh(mesh.geometry, mesh.material);
+        }
+
+        if (undefined !== node.matrix)
+        {
+            object.translation = mat4.getTranslation(vec3.create(), node.matrix);
+            object.rotation = mat4.getRotation(quat.create(), node.matrix);
+            object.scale = mat4.getScaling(vec3.create(), node.matrix);
+        }
+
+        if (undefined !== node.translation)
+        {
+            object.translation = vec3.fromValues(...node.translation);
+        }
+
+        if (undefined !== node.rotation)
+        {
+            object.rotation = quat.fromValues(...node.rotation);
+        }
+
+        if (undefined !== node.scale)
+        {
+            object.scale = vec3.fromValues(...node.scale);
+        }
+
+        if (undefined !== node.children)
+        {
+            for (let i = 0; i < node.children.length; i++)
+            {
+                object.setChild(await this.getNode(node.children[i]));
+            }
+        }
+
+        this._nodesCache[index] = object;
+
+        return object;
+    }
+
+    public isMesh(nodeId: int) : boolean
+    {
+        if (undefined === this.model.nodes)
+        {
+            return false;
+        }
+
+        const node = this.model.nodes[nodeId];
+
+        if (undefined !== node.mesh && undefined === node.skin)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public isSkinnedMesh(nodeId: int) : boolean
+    {
+        if (undefined === this.model.nodes)
+        {
+            return false;
+        }
+
+        const node = this.model.nodes[nodeId];
+
+        if (undefined !== node.mesh && undefined !== node.skin)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public isBone(nodeId: int) : boolean
+    {
+        if (undefined === this.model.skins)
+        {
+            return false;
+        }
+
+        for (let s = 0; s < this.model.skins.length; s++)
+        {
+            const skin = this.model.skins[s];
+
+            if (skin.joints.includes(nodeId))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

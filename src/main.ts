@@ -15,6 +15,7 @@ import {Camera} from "./Camera/Camera";
 import {Plane} from "./Model/Plane";
 import {DirectionalLight} from "./Light/DirectionalLight";
 import {DebugContainer} from "./Debug/DebugContainer";
+import {Skeleton} from "./Core/Skeleton";
 
 const url = new URLSearchParams(window.location.search);
 const logger = new NullLogger();
@@ -38,38 +39,38 @@ async function main()
     canvas.style.height = `${canvas.offsetHeight}px`;
 
     // ======= GROUND =======
-    const plane = new Mesh(
-        Plane.create(30, 30),
-        (new Material()).setColor(vec3.fromValues(.8, .8, .9))
-    );
+    const plane = new Mesh(Plane.create(50, 50), (new Material()).setColor(vec3.fromValues(.8, .8, .8)));
+
+    // ======= TORCH =======
+    const [torch] = await Loader.parseBinary(assets.binaryModels.get('glb_torch')).then(model => model.getScene());
+    torch.translation = vec3.fromValues(0, -0.05, 0);
 
     // ======= SOLDIER =======
-    const characterModel = await Loader.parseBinary(assets.binaryModels.get('glb_akai'));
-    // const characterModel = await Loader.parseBinary(assets.binaryModels.get('glb_soldier'));
-    const character = await characterModel.getScene();
-    const [idle, run, bind, walk] = characterModel.getAnimation();
+    const [character, skeleton, animations] = await Loader.parseBinary(assets.binaryModels.get('glb_akai')).then(model => model.getScene());
+    skeleton?.getBone(31).setChild(torch);
 
-    const animations = new AnimationControl(character);
-    animations.addClip('idle', idle);
-    animations.addClip('walk', walk);
-    animations.addClip('run', run);
+    const animationControl = new AnimationControl(skeleton as Skeleton);
+    animationControl.addClip('idle', animations![0]);
+    animationControl.addClip('walk', animations![2]);
+    animationControl.addClip('run', animations![1]);
 
     const camera = new Camera(canvas, vec3.fromValues(5, 5, 0), mouseInput);
     camera._far = 100;
     camera.follow(character);
 
-    const movement = MovementControl.bind(character, animations, keyboardInput, camera);
-
+    const movement = MovementControl.bind(character, animationControl, keyboardInput, camera);
 
     // ======= SCENE =======
     const scene = new Scene();
     const light = new DirectionalLight();
-    light.model.translation = vec3.fromValues(0, 4, 4);
+    light.translation = vec3.fromValues(0, 4, 4);
     light.follow(character);
 
     scene.addLight(light);
     scene.add(character);
     scene.add(plane);
+    scene.add(torch);
+
 
     // ======= RENDER =======
     renderLoop.start(time => {
