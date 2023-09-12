@@ -1,6 +1,7 @@
 @import "vendor/bootstrap-reboot.min.css";
 
 $color-black: #000;
+$color-white: #fff;
 $color-background: #EAEFF4;
 $color-primary: #838FA0;
 
@@ -18,10 +19,12 @@ header {
   position: absolute;
   top: 0;
   width: 100%;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   padding: 20px;
   user-select: none;
+  mix-blend-mode: difference;
+  color: darken($color-white, 10);
 
   a, button {
     position: relative;
@@ -31,14 +34,15 @@ header {
     width: 40px;
     height: 40px;
     margin-right: 20px;
-    background-color: rgba($color-primary, 0.2);
-    border: 1px solid rgba($color-primary, 0.1);
+    background-color: rgba($color-primary, .2);
+    border: 1px solid rgba($color-primary, .1);
     border-radius: $border-radius;
     outline: 0;
 
     img {
       max-width: 20px;
       height: auto;
+      filter: invert(1);
     }
 
     .external-link {
@@ -47,7 +51,7 @@ header {
       top: -6px;
       right: -6px;
       padding: 2px;
-      background-color: rgba($color-primary, 0.2);
+      background-color: rgba($color-primary, .2);
       border-radius: 2px;
     }
   }
@@ -59,7 +63,7 @@ header {
     height: 40px;
     width: 160px;
     font-weight: 500;
-    color: $color-black;
+    color: inherit;
     text-decoration: none;
     margin-right: auto;
   }
@@ -75,6 +79,7 @@ header {
 
 .scene {
   position: absolute;
+  z-index: 1;
   width: 100%;
   height: 100%;
 }
@@ -83,8 +88,8 @@ aside {
   width: $debug-container;
   margin-right: -$debug-container - 20px;
   padding: 10px;
-  background-color: rgba($color-primary, 0.2);
-  border: 1px solid rgba($color-primary, 0.1);
+  background-color: rgba($color-primary, .2);
+  border: 1px solid rgba($color-primary, .1);
   border-radius: $border-radius;
   transition: margin-right 300ms;
 
