@@ -47,10 +47,12 @@ async function main()
     // ======= TORCH =======
     const [torch] = await Loader.parseBinary(assets.binaryModels.get('glb_torch')).then(model => model.getScene());
     torch.translation = vec3.fromValues(0, -0.05, 0);
+    torch.traverse(child => { if (child instanceof Mesh) child.material.disableShadows() })
 
     // ======= CHARACTER =======
     const [character, skeleton, animations] = await Loader.parseBinary(assets.binaryModels.get('glb_akai')).then(model => model.getScene());
     skeleton?.getBone(31).setChild(torch);
+
 
     const animationControl = new AnimationControl(skeleton as Skeleton);
     animationControl.addClip('idle', animations![0]);
@@ -69,7 +71,9 @@ async function main()
     // light.follow(character);
 
     const light = new PointLight();
-    light.translation = vec3.fromValues(0, 2, 1);
+    light.translation = vec3.fromValues(0.4, 0.8, 0);
+    torch.setChild(light);
+
 
     // ======= SCENE =======
     const scene = new Scene();
@@ -87,37 +91,22 @@ async function main()
 
     const lightBox = new Mesh(Cube.create(0.05), (new Material()).setColor(vec3.fromValues(1.0, 1.0, .5)));
     lightBox.translation = light.translation;
+    lightBox.material.disableShadows();
+    torch.setChild(lightBox);
 
     scene.add(redBox);
     scene.add(greenBox);
     scene.add(blueBox);
-    scene.add(lightBox);
     scene.add(character);
 
-    let _timer = 0;
     // ======= RENDER =======
     renderLoop.start(time => {
         mouseInput.update();
         camera.update(time);
         movement.update(time);
-
-        if (light instanceof PointLight)
-        {
-            _timer += time;
-            // @ts-ignore
-            light.translation = vec3.fromValues(
-                Math.sin(_timer),
-                // @ts-ignore
-                light.translation[1],
-                Math.cos(_timer),
-            );
-            // @ts-ignore
-            lightBox.translation = light.translation;
-        }
-
         light.update(time);
 
-        renderer.render(scene, camera, light.translation);
+        renderer.render(scene, camera);
 
         if (null !== debug)
         {

@@ -1,4 +1,4 @@
-export class WebGLVertexArrays
+export class VertexArrays
 {
     private vaos: Map<number, WebGLVertexArrayObject> = new Map();
 

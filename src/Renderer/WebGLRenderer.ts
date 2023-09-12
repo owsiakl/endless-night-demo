@@ -1,16 +1,16 @@
 import {Scene} from "../Core/Scene";
 import {Line} from "../Core/Object/Line";
 import {Mesh} from "../Core/Object/Mesh";
-import {WebGLPrograms} from "./webgl/WebGLPrograms";
-import {WebGLTexture} from "./webgl/WebGLTexture";
-import {WebGLVertexArrays} from "./webgl/WebGLVertexArrays";
+import {Programs} from "./WebGL/Programs";
+import {Texture} from "./WebGL/Texture";
+import {VertexArrays} from "./WebGL/VertexArrays";
 import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
 import {Shaders} from "../Assets/Shaders";
-import {WebGLShaderCache} from "./webgl/WebGLShaderCache";
+import {ShaderCache} from "./WebGL/ShaderCache";
 import {Camera} from "../Camera/Camera";
-import {mat4, vec3} from "gl-matrix";
+import {mat4} from "gl-matrix";
 import {CameraPosition} from "../Camera/CameraPosition";
-import {WebGLFramebuffer} from "./webgl/WebGLFramebuffer";
+import {Framebuffer} from "./WebGL/Framebuffer";
 import {DebugContainer} from "../Debug/DebugContainer";
 import {DirectionalLight} from "../Light/DirectionalLight";
 import {PointLight} from "../Light/PointLight";
@@ -20,13 +20,12 @@ export class WebGLRenderer
 {
     private readonly _gl: WebGL2RenderingContext;
     private readonly _canvas: HTMLCanvasElement;
-    private readonly _shaders: Shaders;
     private readonly _debug: Nullable<DebugContainer>;
     private readonly _programs;
     private readonly _shaderCache;
-    private readonly _vertexArrays = new WebGLVertexArrays();
-    private readonly _textures = new WebGLTexture();
-    private _framebuffer: Nullable<WebGLFramebuffer>;
+    private readonly _vertexArrays = new VertexArrays();
+    private readonly _textures = new Texture();
+    private _framebuffer: Nullable<Framebuffer>;
     private _query: Nullable<WebGLQuery>;
     private _queryExt: Nullable<any>;
 
@@ -34,10 +33,9 @@ export class WebGLRenderer
     {
         this._gl = gl;
         this._canvas = canvas;
-        this._shaders = shaders;
         this._debug = debug;
-        this._shaderCache = new WebGLShaderCache(shaders);
-        this._programs = new WebGLPrograms(this._shaderCache);
+        this._shaderCache = new ShaderCache(shaders);
+        this._programs = new Programs(this._shaderCache);
         this._framebuffer = null;
         this._query = null;
 
@@ -50,7 +48,7 @@ export class WebGLRenderer
         }
     }
 
-    public render(scene: Scene, camera: Camera, lightPosition: vec3)
+    public render(scene: Scene, camera: Camera)
     {
         const gl = this._gl;
         const width = this._canvas.width;
@@ -84,8 +82,9 @@ export class WebGLRenderer
         {
             if (scene.light instanceof DirectionalLight)
             {
-                if (null === this._framebuffer) {
-                    this._framebuffer = WebGLFramebuffer.depth(gl);
+                if (null === this._framebuffer)
+                {
+                    this._framebuffer = Framebuffer.depth(gl);
                 }
 
                 this.renderToFramebuffer(scene, scene.light.projectionViewMatrix);
@@ -93,8 +92,9 @@ export class WebGLRenderer
 
             if (scene.light instanceof PointLight)
             {
-                if (null === this._framebuffer) {
-                    this._framebuffer = WebGLFramebuffer.cubeDepth(gl);
+                if (null === this._framebuffer)
+                {
+                    this._framebuffer = Framebuffer.cubeDepth(gl);
                 }
 
                 for (let i = 0; i < scene.light.faces; i++)
@@ -182,11 +182,6 @@ export class WebGLRenderer
             }
 
             geometry.updateBuffers = false;
-
-            if (object.material && object.material.image)
-            {
-                this._textures.set(gl, object.material.image.src, object.material.image);
-            }
         }
 
         program.uniforms.get('u_projectionView').set(camera.projectionViewMatrix);
@@ -194,6 +189,11 @@ export class WebGLRenderer
 
         if (null !== object.material.image)
         {
+            if (!this._textures.textures.has(object.material.image.src))
+            {
+                this._textures.set(gl, object.material.image.src, object.material.image);
+            }
+
             const texture = this._textures.textures.get(object.material.image.src);
 
             if (undefined !== texture)
@@ -220,7 +220,7 @@ export class WebGLRenderer
 
         if (program.uniforms.has('u_lightPosition'))
         {
-            program.uniforms.get('u_lightPosition').set(light.translation);
+            program.uniforms.get('u_lightPosition').set(light.worldTranslation);
         }
 
         if (program.uniforms.has('u_lightProjectionViewMatrix'))
@@ -284,7 +284,7 @@ export class WebGLRenderer
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, this._framebuffer.passDirection(gl, pass), this._framebuffer.depthTexture, 0);
         }
 
-        gl.viewport(0, 0, WebGLFramebuffer.textureSize, WebGLFramebuffer.textureSize);
+        gl.viewport(0, 0, Framebuffer.textureSize, Framebuffer.textureSize);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         for (let i = 0, length = scene.drawables.length; i < length; i++)

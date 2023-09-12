@@ -19,6 +19,11 @@ export class Object3D
         return this._localTransform.translation;
     }
 
+    public get worldTranslation() : vec3
+    {
+        return mat4.getTranslation(vec3.create(), this._worldTransform)
+    }
+
     public set rotation(rotation: quat)
     {
         this._localTransform.rotation = rotation;

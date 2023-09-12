@@ -1,17 +1,17 @@
-export class WebGLFramebuffer
+export class Framebuffer
 {
     public static readonly textureSize = 256;
 
     public readonly depthTexture: WebGLTexture;
-    public readonly depthFramebuffer: globalThis.WebGLFramebuffer;
+    public readonly depthFramebuffer: WebGLFramebuffer;
 
-    constructor(depthTexture: WebGLTexture, depthFramebuffer: globalThis.WebGLFramebuffer)
+    constructor(depthTexture: WebGLTexture, depthFramebuffer: WebGLFramebuffer)
     {
         this.depthTexture = depthTexture;
         this.depthFramebuffer = depthFramebuffer;
     }
 
-    public static depth(gl: WebGL2RenderingContext) : WebGLFramebuffer
+    public static depth(gl: WebGL2RenderingContext) : Framebuffer
     {
         const depthTexture = gl.createTexture();
         const depthFramebuffer = gl.createFramebuffer();
@@ -41,7 +41,7 @@ export class WebGLFramebuffer
         return new this(depthTexture, depthFramebuffer);
     }
 
-    public static cubeDepth(gl: WebGL2RenderingContext) : WebGLFramebuffer
+    public static cubeDepth(gl: WebGL2RenderingContext) : Framebuffer
     {
         const depthTexture = gl.createTexture();
         const depthFramebuffer = gl.createFramebuffer();

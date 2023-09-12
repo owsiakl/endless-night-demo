@@ -1,4 +1,4 @@
-export class WebGLUniform
+export class Uniform
 {
     constructor(
         private readonly gl: WebGL2RenderingContext,

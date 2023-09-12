@@ -124,7 +124,7 @@ void main()
 
         vec3 directionToLight = v_vertex - u_lightPosition;
         float cubeMapDepth = unpack(texture(u_depthCubeMapTexture, directionToLight));
-        float shadow = (cubeMapDepth + 0.001 > directionToDepth(directionToLight)) ? 1.0 : 0.5;
+        float shadow = (cubeMapDepth + 0.00015 > directionToDepth(directionToLight)) ? 1.0 : 0.5;
 
         outColor = vec4(outColor.xyz * attenuation * shadow, outColor.a);
     #endif

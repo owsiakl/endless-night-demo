@@ -1,4 +1,4 @@
-export class WebGLAttribute
+export class Attribute
 {
     private buffer: WebGLBuffer | null = null;
 

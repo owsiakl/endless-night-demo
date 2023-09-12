@@ -1,6 +1,6 @@
-export class WebGLShader
+export class Shader
 {
-    public static create(gl: WebGL2RenderingContext, type: GLenum, source: string): globalThis.WebGLShader
+    public static create(gl: WebGL2RenderingContext, type: GLenum, source: string): WebGLShader
     {
         const shader = gl.createShader(type);
 

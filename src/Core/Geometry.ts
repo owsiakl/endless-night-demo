@@ -1,7 +1,5 @@
 import {GeometryAttribute} from "./GeometryAttribute";
-import {WebGLProgram} from "../Renderer/webgl/WebGLProgram";
 import {AccessorData} from "../GLTF/Accessor";
-import {SkinnedMesh} from "./Object/SkinnedMesh";
 
 export class Geometry
 {
@@ -12,7 +10,6 @@ export class Geometry
     public updateBuffers: boolean = false;
     public count: number = 0;
     public index: AccessorData | null = null;
-    public program: WebGLProgram | null = null;
 
     constructor()
     {

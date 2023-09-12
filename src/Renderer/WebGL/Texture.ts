@@ -1,6 +1,6 @@
-export class WebGLTexture
+export class Texture
 {
-    public textures: Map<string, {index: int, texture: globalThis.WebGLTexture}> = new Map();
+    public textures: Map<string, {index: int, texture: WebGLTexture}> = new Map();
 
     private currentTextureUnit = 1;
 

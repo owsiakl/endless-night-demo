@@ -1,7 +1,7 @@
 import {Hash} from "../../Core/Hash";
 import {Material} from "../../Core/Material";
-import {WebGLProgram} from "./WebGLProgram";
-import {WebGLShaderCache} from "./WebGLShaderCache";
+import {Program} from "./Program";
+import {ShaderCache} from "./ShaderCache";
 import {Object3D} from "../../Core/Object3D";
 import {Mesh} from "../../Core/Object/Mesh";
 import {Line} from "../../Core/Object/Line";
@@ -10,16 +10,16 @@ import {Light} from "../../Light/Light";
 import {DirectionalLight} from "../../Light/DirectionalLight";
 import {PointLight} from "../../Light/PointLight";
 
-export class WebGLPrograms
+export class Programs
 {
-    private programs: Map<number, WebGLProgram> = new Map();
-    private depthPrograms: Map<number, WebGLProgram> = new Map();
+    private programs: Map<number, Program> = new Map();
+    private depthPrograms: Map<number, Program> = new Map();
 
-    constructor(private readonly shaderCache: WebGLShaderCache)
+    constructor(private readonly shaderCache: ShaderCache)
     {
     }
 
-    public initProgram(gl: WebGL2RenderingContext, object: Object3D, light: Light): WebGLProgram
+    public initProgram(gl: WebGL2RenderingContext, object: Object3D, light: Light): Program
     {
         let properties = [];
 
@@ -42,14 +42,14 @@ export class WebGLPrograms
             return this.programs.get(hash)!;
         }
 
-        const program = WebGLProgram.create(gl, this.shaderCache.getVertex(properties), this.shaderCache.getFragment(properties));
+        const program = Program.create(gl, this.shaderCache.getVertex(properties), this.shaderCache.getFragment(properties));
 
         this.programs.set(hash, program);
 
         return program;
     }
 
-    public depthProgram(gl: WebGL2RenderingContext, material: Material, object: Object3D): WebGLProgram
+    public depthProgram(gl: WebGL2RenderingContext, material: Material, object: Object3D): Program
     {
         let properties = [];
 
@@ -64,7 +64,7 @@ export class WebGLPrograms
             return this.depthPrograms.get(hash)!;
         }
 
-        const program = WebGLProgram.create(gl, this.shaderCache.getDepthVertex(properties), this.shaderCache.getDepthFragment(properties));
+        const program = Program.create(gl, this.shaderCache.getDepthVertex(properties), this.shaderCache.getDepthFragment(properties));
 
         this.depthPrograms.set(hash, program);
 

@@ -1,19 +1,19 @@
-import {WebGLUniforms} from "./WebGLUniforms";
-import {WebGLAttributes} from "./WebGLAttributes";
-import {WebGLShader} from "./WebGLShader";
+import {Uniforms} from "./Uniforms";
+import {Attributes} from "./Attributes";
+import {Shader} from "./Shader";
 
-export class WebGLProgram
+export class Program
 {
-    private cachedUniforms: WebGLUniforms | null = null;
-    private cachedAttributes: WebGLAttributes | null = null;
+    private cachedUniforms: Uniforms | null = null;
+    private cachedAttributes: Attributes | null = null;
 
     public constructor(
         private readonly gl: WebGL2RenderingContext,
-        private readonly program: globalThis.WebGLProgram
+        private readonly program: WebGLProgram
     ) {
     }
 
-    public static create(gl: WebGL2RenderingContext, vertexShader: string, fragmentShader: string): WebGLProgram
+    public static create(gl: WebGL2RenderingContext, vertexShader: string, fragmentShader: string): Program
     {
         const program = gl.createProgram();
 
@@ -21,8 +21,8 @@ export class WebGLProgram
             throw new Error('Cannot create webgl program.');
         }
 
-        const vShader = WebGLShader.create(gl, gl.VERTEX_SHADER, vertexShader);
-        const fShader = WebGLShader.create(gl, gl.FRAGMENT_SHADER, fragmentShader);
+        const vShader = Shader.create(gl, gl.VERTEX_SHADER, vertexShader);
+        const fShader = Shader.create(gl, gl.FRAGMENT_SHADER, fragmentShader);
 
         gl.attachShader(program, vShader);
         gl.attachShader(program, fShader);
@@ -35,19 +35,19 @@ export class WebGLProgram
         return new this(gl, program);
     }
 
-    public get attributes(): WebGLAttributes
+    public get attributes(): Attributes
     {
         if (null === this.cachedAttributes) {
-            this.cachedAttributes = WebGLAttributes.create(this.gl, this.program);
+            this.cachedAttributes = Attributes.create(this.gl, this.program);
         }
 
         return this.cachedAttributes;
     }
 
-    public get uniforms(): WebGLUniforms
+    public get uniforms(): Uniforms
     {
         if (null === this.cachedUniforms) {
-            this.cachedUniforms = WebGLUniforms.create(this.gl, this.program);
+            this.cachedUniforms = Uniforms.create(this.gl, this.program);
         }
 
         return this.cachedUniforms;

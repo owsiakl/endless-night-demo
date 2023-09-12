@@ -38,8 +38,8 @@ export class PointLight extends Object3D implements Light
     {
         const view = mat4.lookAt(
             mat4.create(),
-            this.translation,
-            vec3.add(vec3.create(), this.translation, this._directions[index].target),
+            this.worldTranslation,
+            vec3.add(vec3.create(), this.worldTranslation, this._directions[index].target),
             this._directions[index].up
         );
 

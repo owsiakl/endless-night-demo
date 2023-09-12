@@ -1,6 +1,6 @@
 import {Shaders} from "../../Assets/Shaders";
 
-export class WebGLShaderCache
+export class ShaderCache
 {
     private readonly fragmentShader: string;
     private readonly vertexShader: string;

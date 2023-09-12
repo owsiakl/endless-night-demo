@@ -3,6 +3,7 @@ import {Light} from "../Light/Light";
 import {Mesh} from "./Object/Mesh";
 import {Line} from "./Object/Line";
 import {NullLight} from "../Light/NullLight";
+import {PointLight} from "../Light/PointLight";
 
 export class Scene
 {
@@ -24,6 +25,8 @@ export class Scene
             throw new Error('Currently only one scene light is supported.');
         }
 
+        this.objects.push(light);
+
         this.light = light;
 
         return this;
@@ -41,6 +44,10 @@ export class Scene
             else if (item instanceof Mesh)
             {
                 this.drawables.push(item);
+            }
+            else if (item instanceof PointLight)
+            {
+                this.light = item;
             }
         })
 
