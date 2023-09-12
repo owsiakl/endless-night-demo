@@ -12,17 +12,17 @@ export class Bone extends Object3D
         this._boneTransform = mat4.create();
     }
 
-    public calculateWorldTransform() : void
+    public calculateTransforms() : void
     {
-        super.calculateWorldTransform();
+        super.calculateTransforms();
 
-        if (null === this._parent || !(this._parent instanceof Bone))
+        if (this._parent instanceof Bone)
         {
-            mat4.copy(this._boneTransform, this._localTransform.matrix)
+            this._boneTransform = mat4.multiply(mat4.create(), this._parent._boneTransform, this._localTransform.matrix);
         }
         else
         {
-            this._boneTransform = mat4.multiply(mat4.create(), this._parent._boneTransform, this._localTransform.matrix);
+            mat4.copy(this._boneTransform, this._localTransform.matrix)
         }
     }
 

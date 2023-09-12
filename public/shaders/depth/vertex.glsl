@@ -1,8 +1,9 @@
 precision highp float;
 
-in vec4 a_position;
 uniform mat4 u_lightSpace;
 uniform mat4 u_model;
+
+in vec4 a_position;
 
 #ifdef USE_SKINNING
     const int MAX_JOINTS = 80;

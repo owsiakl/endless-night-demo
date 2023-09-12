@@ -16,6 +16,8 @@ import {Plane} from "./Model/Plane";
 import {DirectionalLight} from "./Light/DirectionalLight";
 import {DebugContainer} from "./Debug/DebugContainer";
 import {Skeleton} from "./Core/Skeleton";
+import {Cube} from "./Model/Cube";
+import {PointLight} from "./Light/PointLight";
 
 const url = new URLSearchParams(window.location.search);
 const logger = new NullLogger();
@@ -39,13 +41,14 @@ async function main()
     canvas.style.height = `${canvas.offsetHeight}px`;
 
     // ======= GROUND =======
+    // const plane = new Line(Grid.create, (new Material()).useVertexColors());
     const plane = new Mesh(Plane.create(50, 50), (new Material()).setColor(vec3.fromValues(.8, .8, .8)));
 
     // ======= TORCH =======
     const [torch] = await Loader.parseBinary(assets.binaryModels.get('glb_torch')).then(model => model.getScene());
     torch.translation = vec3.fromValues(0, -0.05, 0);
 
-    // ======= SOLDIER =======
+    // ======= CHARACTER =======
     const [character, skeleton, animations] = await Loader.parseBinary(assets.binaryModels.get('glb_akai')).then(model => model.getScene());
     skeleton?.getBone(31).setChild(torch);
 
@@ -60,30 +63,61 @@ async function main()
 
     const movement = MovementControl.bind(character, animationControl, keyboardInput, camera);
 
+    // ======= LIGHT =======
+    // const light = new DirectionalLight();
+    // light.translation = vec3.fromValues(0, 4, 4);
+    // light.follow(character);
+
+    const light = new PointLight();
+    light.translation = vec3.fromValues(0, 2, 1);
+
     // ======= SCENE =======
     const scene = new Scene();
-    const light = new DirectionalLight();
-    light.translation = vec3.fromValues(0, 4, 4);
-    light.follow(character);
-
     scene.addLight(light);
-    scene.add(character);
     scene.add(plane);
-    scene.add(torch);
 
+    const redBox = new Mesh(Cube.create(0.5), (new Material()).setColor(vec3.fromValues(.6, .0, .0)));
+    redBox.translation = vec3.fromValues(2, 0.5, 0);
 
+    const greenBox = new Mesh(Cube.create(0.5), (new Material()).setColor(vec3.fromValues(.0, .6, .0)));
+    greenBox.translation = vec3.fromValues(-2, 0.5, -1);
+
+    const blueBox = new Mesh(Cube.create(0.5), (new Material()).setColor(vec3.fromValues(.0, .0, .6)));
+    blueBox.translation = vec3.fromValues(-1, 0.5, 1);
+
+    const lightBox = new Mesh(Cube.create(0.05), (new Material()).setColor(vec3.fromValues(1.0, 1.0, .5)));
+    lightBox.translation = light.translation;
+
+    scene.add(redBox);
+    scene.add(greenBox);
+    scene.add(blueBox);
+    scene.add(lightBox);
+    scene.add(character);
+
+    let _timer = 0;
     // ======= RENDER =======
     renderLoop.start(time => {
         mouseInput.update();
         camera.update(time);
         movement.update(time);
 
-        if (null !== scene.light)
+        if (light instanceof PointLight)
         {
-            scene.light.update(time);
+            _timer += time;
+            // @ts-ignore
+            light.translation = vec3.fromValues(
+                Math.sin(_timer),
+                // @ts-ignore
+                light.translation[1],
+                Math.cos(_timer),
+            );
+            // @ts-ignore
+            lightBox.translation = light.translation;
         }
 
-        renderer.render(scene, camera);
+        light.update(time);
+
+        renderer.render(scene, camera, light.translation);
 
         if (null !== debug)
         {

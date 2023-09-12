@@ -2,23 +2,24 @@ import {Object3D} from "./Object3D";
 import {Light} from "../Light/Light";
 import {Mesh} from "./Object/Mesh";
 import {Line} from "./Object/Line";
+import {NullLight} from "../Light/NullLight";
 
 export class Scene
 {
     public objects: Array<Object3D>;
-    public light: Nullable<Light>;
+    public light: Light;
     public drawables: Array<Mesh | Line>;
 
     public constructor()
     {
         this.objects = [];
         this.drawables = [];
-        this.light = null;
+        this.light = new NullLight();
     }
 
     public addLight(light: Light) : this
     {
-        if (null !== this.light)
+        if (!(this.light instanceof NullLight))
         {
             throw new Error('Currently only one scene light is supported.');
         }

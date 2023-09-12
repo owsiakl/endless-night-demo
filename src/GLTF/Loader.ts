@@ -76,7 +76,7 @@ export class Loader
         const binaryByteLength = binaryChunkHeader[0];
         const binary = model.slice(binaryByteOffset, binaryByteOffset + binaryByteLength);
 
-        console.log(json);
+        // console.log(json);
 
         // Attach binary to buffer
         json.buffers[0].binary = binary;

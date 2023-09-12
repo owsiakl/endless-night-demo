@@ -16,6 +16,7 @@ export class WebGLUniform
             case 35675: this.gl.uniformMatrix3fv(this.location, false, data); break;
             case 35665: this.gl.uniform3fv(this.location, data); break;
             case 35678: this.gl.uniform1i(this.location, data); break;
+            case 35680: this.gl.uniform1i(this.location, data); break;
             default: throw new Error(`Cannot set uniform value - unrecognized type "${this.type}".`);
         }
     }

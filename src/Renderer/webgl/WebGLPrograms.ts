@@ -6,6 +6,9 @@ import {Object3D} from "../../Core/Object3D";
 import {Mesh} from "../../Core/Object/Mesh";
 import {Line} from "../../Core/Object/Line";
 import {SkinnedMesh} from "../../Core/Object/SkinnedMesh";
+import {Light} from "../../Light/Light";
+import {DirectionalLight} from "../../Light/DirectionalLight";
+import {PointLight} from "../../Light/PointLight";
 
 export class WebGLPrograms
 {
@@ -16,7 +19,7 @@ export class WebGLPrograms
     {
     }
 
-    public initProgram(gl: WebGL2RenderingContext, material: Material, object: Object3D): WebGLProgram
+    public initProgram(gl: WebGL2RenderingContext, object: Object3D, light: Light): WebGLProgram
     {
         let properties = [];
 
@@ -24,8 +27,9 @@ export class WebGLPrograms
             properties.push(object.material.image ? '#define USE_TEXTURE' : '');
             properties.push(object.material.vertexColors ? '#define USE_COLOR_ATTRIBUTE' : '');
             properties.push(object.material.color ? '#define USE_STATIC_COLOR_ATTRIBUTE' : '');
-            properties.push(object.material.light ? '#define USE_LIGHT' : '');
-            properties.push(object.material.shadow ? '#define USE_SHADOWING' : '');
+            properties.push(light instanceof DirectionalLight ? '#define USE_LIGHT_DIRECTIONAL' : '');
+            properties.push(light instanceof PointLight ? '#define USE_LIGHT_POINT' : '');
+            properties.push((light instanceof DirectionalLight || light instanceof PointLight) ? '#define USE_LIGHT' : '');
         }
 
         if (object instanceof SkinnedMesh) {

@@ -12,7 +12,7 @@ export class WebGLShader
         gl.compileShader(shader);
 
         if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            throw new Error(`Unexpected error while compiling shader: ` + gl.getShaderInfoLog(shader));
+            throw new Error(`Unexpected error while compiling ${type === gl.VERTEX_SHADER ? 'vertex' : 'fragment'} shader: ` + gl.getShaderInfoLog(shader));
         }
 
         return shader;

@@ -8,10 +8,13 @@ import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
 import {Shaders} from "../Assets/Shaders";
 import {WebGLShaderCache} from "./webgl/WebGLShaderCache";
 import {Camera} from "../Camera/Camera";
-import {mat4} from "gl-matrix";
+import {mat4, vec3} from "gl-matrix";
 import {CameraPosition} from "../Camera/CameraPosition";
 import {WebGLFramebuffer} from "./webgl/WebGLFramebuffer";
 import {DebugContainer} from "../Debug/DebugContainer";
+import {DirectionalLight} from "../Light/DirectionalLight";
+import {PointLight} from "../Light/PointLight";
+import {Light} from "../Light/Light";
 
 export class WebGLRenderer
 {
@@ -47,7 +50,7 @@ export class WebGLRenderer
         }
     }
 
-    public render(scene: Scene, camera: Camera)
+    public render(scene: Scene, camera: Camera, lightPosition: vec3)
     {
         const gl = this._gl;
         const width = this._canvas.width;
@@ -79,12 +82,26 @@ export class WebGLRenderer
 
         if (null !== scene.light)
         {
-            if (null === this._framebuffer)
+            if (scene.light instanceof DirectionalLight)
             {
-                this._framebuffer = WebGLFramebuffer.depth(gl);
+                if (null === this._framebuffer) {
+                    this._framebuffer = WebGLFramebuffer.depth(gl);
+                }
+
+                this.renderToFramebuffer(scene, scene.light.projectionViewMatrix);
             }
 
-            this.renderFramebuffer(scene, camera, scene.light.projectionViewMatrix);
+            if (scene.light instanceof PointLight)
+            {
+                if (null === this._framebuffer) {
+                    this._framebuffer = WebGLFramebuffer.cubeDepth(gl);
+                }
+
+                for (let i = 0; i < scene.light.faces; i++)
+                {
+                    this.renderToFramebuffer(scene, scene.light.getFaceProjectionViewMatrix(i), i);
+                }
+            }
         }
 
         if (null !== camera.screenPosition)
@@ -122,7 +139,7 @@ export class WebGLRenderer
 
         for (let i = 0, length = scene.drawables.length; i < length; i++)
         {
-            this.renderObject(gl, scene.drawables[i], camera, scene.light?.projectionViewMatrix);
+            this.renderObject(gl, scene.drawables[i], camera, scene.light);
         }
 
         if (null !== camera.screenPosition)
@@ -136,10 +153,10 @@ export class WebGLRenderer
         }
     }
 
-    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line, camera: Camera, depthTextureMatrix: Nullable<mat4> = null)
+    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line, camera: Camera, light: Light)
     {
         const geometry = object.geometry;
-        const program = this._programs.initProgram(gl, object.material, object);
+        const program = this._programs.initProgram(gl, object, light);
 
         program.useProgram();
         this._vertexArrays.bind(gl, geometry.id);
@@ -172,7 +189,10 @@ export class WebGLRenderer
             }
         }
 
-        if (object.material && object.material.image)
+        program.uniforms.get('u_projectionView').set(camera.projectionViewMatrix);
+        program.uniforms.get('u_model').set(object.worldTransform);
+
+        if (null !== object.material.image)
         {
             const texture = this._textures.textures.get(object.material.image.src);
 
@@ -184,20 +204,29 @@ export class WebGLRenderer
             }
         }
 
-        if (program.uniforms.has('u_projectedTexture') && this._framebuffer?.depthTexture)
+        if (program.uniforms.has('u_depthTexture') && this._framebuffer?.depthTexture)
         {
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, this._framebuffer.depthTexture);
-            program.uniforms.get('u_projectedTexture').set(1);
+            program.uniforms.get('u_depthTexture').set(1);
         }
 
-        if (program.uniforms.has('u_textureMatrix') && depthTextureMatrix)
+        if (program.uniforms.has('u_depthCubeMapTexture'))
         {
-            program.uniforms.get('u_textureMatrix').set(depthTextureMatrix!);
+            gl.activeTexture(gl.TEXTURE2);
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this._framebuffer!.depthTexture);
+            program.uniforms.get('u_depthCubeMapTexture').set(2);
         }
 
-        program.uniforms.get('u_projectionView').set(camera.projectionViewMatrix);
-        program.uniforms.get('u_model').set(object.worldTransform);
+        if (program.uniforms.has('u_lightPosition'))
+        {
+            program.uniforms.get('u_lightPosition').set(light.translation);
+        }
+
+        if (program.uniforms.has('u_lightProjectionViewMatrix'))
+        {
+            program.uniforms.get('u_lightProjectionViewMatrix').set(light.projectionViewMatrix);
+        }
 
         if (object instanceof SkinnedMesh)
         {
@@ -207,16 +236,6 @@ export class WebGLRenderer
         if (null !== object.material.color)
         {
             program.uniforms.get('u_color').set(object.material.color)
-        }
-
-        if (null !== object.material.lightPosition)
-        {
-            program.uniforms.get('u_lightPosition').set(object.material.lightPosition)
-
-            const matrix = mat4.create();
-            mat4.invert(matrix, object.worldTransform);
-            mat4.transpose(matrix, matrix);
-            program.uniforms.get('u_normalMatrix').set(matrix)
         }
 
         let mode = null;
@@ -249,7 +268,7 @@ export class WebGLRenderer
         program.stopProgram();
     }
 
-    private renderFramebuffer(scene: Scene, camera: Camera, textureMatrix: mat4)
+    public renderToFramebuffer(scene: Scene, lightProjectionViewMatrix: mat4, pass: Nullable<int> = null) : void
     {
         if (null === this._framebuffer)
         {
@@ -259,12 +278,24 @@ export class WebGLRenderer
         const gl = this._gl;
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer.depthFramebuffer);
+
+        if (null !== pass)
+        {
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, this._framebuffer.passDirection(gl, pass), this._framebuffer.depthTexture, 0);
+        }
+
         gl.viewport(0, 0, WebGLFramebuffer.textureSize, WebGLFramebuffer.textureSize);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         for (let i = 0, length = scene.drawables.length; i < length; i++)
         {
             const object = scene.drawables[i];
+
+            if (!object.material.castShadow)
+            {
+                continue;
+            }
+
             const geometry = object.geometry;
             const program = this._programs.depthProgram(gl, object.material, object);
 
@@ -276,18 +307,18 @@ export class WebGLRenderer
             }
 
             program.uniforms.get('u_model').set(object.worldTransform);
-            program.uniforms.get('u_lightSpace').set(textureMatrix);
+            program.uniforms.get('u_lightSpace').set(lightProjectionViewMatrix);
 
             let mode = null;
 
             if (object instanceof Line)
             {
-                mode = this._gl.LINES;
+                mode = gl.LINES;
             }
 
             if (object instanceof Mesh)
             {
-                mode = this._gl.TRIANGLES;
+                mode = gl.TRIANGLES;
             }
 
             if (null === mode)

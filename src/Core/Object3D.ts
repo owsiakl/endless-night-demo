@@ -68,10 +68,10 @@ export class Object3D
 
     public updateMatrixWorld() : void
     {
-        this.traverse(object => object.calculateWorldTransform());
+        this.traverse(object => object.calculateTransforms());
     }
 
-    protected calculateWorldTransform() : void
+    protected calculateTransforms() : void
     {
         if (null === this._parent)
         {

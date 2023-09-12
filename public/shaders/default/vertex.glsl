@@ -21,16 +21,15 @@ uniform mat4 u_model;
     out vec4 v_color;
 #endif
 
+#ifdef USE_LIGHT_DIRECTIONAL
+    uniform mat4 u_lightProjectionViewMatrix;
+    out vec4 v_lightModelPosition;
+#endif
+
 #ifdef USE_LIGHT
-    uniform mat4 u_normalMatrix;
     in vec3 a_normal;
     out vec3 v_vertex;
     out vec3 v_normal;
-#endif
-
-#ifdef USE_SHADOWING
-    uniform mat4 u_textureMatrix;
-    out vec4 v_projectedTexCoord;
 #endif
 
 void main()
@@ -55,9 +54,7 @@ void main()
         #endif
     #endif
 
-    gl_Position = u_projectionView * u_model * position;
-
-
+    vec4 worldPosition = u_model * position;
 
     #ifdef USE_COLOR_ATTRIBUTE
         v_color = a_color;
@@ -67,12 +64,14 @@ void main()
         v_texcoord = a_uv;
     #endif
 
-    #ifdef USE_LIGHT
-        v_normal = vec3(mat3(u_normalMatrix) * normal);
-        v_vertex = vec3(u_model * position);
+    #ifdef USE_LIGHT_DIRECTIONAL
+        v_lightModelPosition = u_lightProjectionViewMatrix * worldPosition;
     #endif
 
-    #ifdef USE_SHADOWING
-        v_projectedTexCoord = u_textureMatrix * u_model * position;
+    #ifdef USE_LIGHT
+        v_normal = normal;
+        v_vertex = vec3(worldPosition);
     #endif
+
+    gl_Position = u_projectionView * worldPosition;
 }
