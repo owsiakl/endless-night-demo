@@ -47,7 +47,8 @@ async function main()
     // ======= TORCH =======
     const [torch] = await Loader.parseBinary(assets.binaryModels.get('glb_torch')).then(model => model.getScene());
     torch.translation = vec3.fromValues(0, -0.05, 0);
-    torch.traverse(child => { if (child instanceof Mesh) child.material.disableShadows() })
+    torch.rotation = quat.rotateY(quat.create(), quat.create(), Math.PI / 2);
+    // torch.traverse(child => { if (child instanceof Mesh) child.material.disableShadows() })
 
     // ======= CHARACTER =======
     const [character, skeleton, animations] = await Loader.parseBinary(assets.binaryModels.get('glb_akai')).then(model => model.getScene());
