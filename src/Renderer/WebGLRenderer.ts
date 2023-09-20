@@ -15,6 +15,9 @@ import {DebugContainer} from "../Debug/DebugContainer";
 import {DirectionalLight} from "../Light/DirectionalLight";
 import {PointLight} from "../Light/PointLight";
 import {Light} from "../Light/Light";
+import {Point} from "../Core/Object/Point";
+import {Particle} from "../Core/Object/Particle";
+import {TransformFeedback} from "./WebGL/TransformFeedback";
 
 export class WebGLRenderer
 {
@@ -28,6 +31,7 @@ export class WebGLRenderer
     private _framebuffer: Nullable<Framebuffer>;
     private _query: Nullable<WebGLQuery>;
     private _queryExt: Nullable<any>;
+    private _transformFeedback: Nullable<TransformFeedback>;
 
     public constructor(canvas: HTMLCanvasElement, gl: WebGL2RenderingContext, shaders: Shaders, debug: Nullable<DebugContainer>)
     {
@@ -38,6 +42,7 @@ export class WebGLRenderer
         this._programs = new Programs(this._shaderCache);
         this._framebuffer = null;
         this._query = null;
+        this._transformFeedback = null;
 
         gl.enable(gl.DEPTH_TEST);
         gl.enable(gl.CULL_FACE);
@@ -66,7 +71,6 @@ export class WebGLRenderer
                 if (available && !disjoint)
                 {
                     const timeElapsed = gl.getQueryParameter(this._query, gl.QUERY_RESULT);
-
                     this._debug.gpuTime = timeElapsed * 1e-6;
                 }
             }
@@ -142,6 +146,11 @@ export class WebGLRenderer
             this.renderObject(gl, scene.drawables[i], camera, scene.light);
         }
 
+        if (null !== scene.particles)
+        {
+            this.renderParticle(gl, scene.particles, camera);
+        }
+
         if (null !== camera.screenPosition)
         {
             gl.disable(gl.SCISSOR_TEST);
@@ -151,6 +160,57 @@ export class WebGLRenderer
         {
             gl.endQuery(this._queryExt.TIME_ELAPSED_EXT);
         }
+    }
+
+    public renderParticle(gl: WebGL2RenderingContext, object: Particle, camera: Camera)
+    {
+        const emitProgram = this._programs.particleProgram(gl, 0, [
+            'v_position',
+            'v_spawnTime',
+            'v_life',
+            'v_size',
+            'v_velocity',
+            'v_textureUnit',
+            'v_color',
+        ]);
+
+        const renderProgram = this._programs.particleProgram(gl, 1);
+
+        if (null === this._transformFeedback)
+        {
+            this._transformFeedback = TransformFeedback.create(gl, object, emitProgram, renderProgram);
+        }
+
+        // ===== UPDATE PASS =====
+        this._transformFeedback.preUpdate(gl);
+
+        emitProgram.uniforms.get('u_time').set(object.time);
+
+        gl.drawArrays(gl.POINTS, 0, object.geometry.count);
+
+        this._transformFeedback.postUpdate(gl);
+
+        // ===== RENDER PASS =====
+        this._transformFeedback.preRender(gl);
+
+        if (null !== object.material.image)
+        {
+            if (!this._textures.has(object.material.image.src)) {
+                this._textures.set(gl, object.material.image.src, object.material.image);
+            }
+
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this._textures.get(object.material.image.src));
+            renderProgram.uniforms.get('u_texture').set(0);
+        }
+
+        renderProgram.uniforms.get('u_time').set(object.time);
+        renderProgram.uniforms.get('u_projectionView').set(camera.projectionViewMatrix);
+        renderProgram.uniforms.get('u_model').set(object.worldTranslation);
+
+        gl.drawArrays(gl.POINTS, 0, object.geometry.count);
+
+        this._transformFeedback.postRender(gl);
     }
 
     public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line, camera: Camera, light: Light)
@@ -169,7 +229,7 @@ export class WebGLRenderer
 
                 if (program.attributes.has(attribute.name))
                 {
-                    program.attributes.get(attribute.name).set(attribute.data, gl.ARRAY_BUFFER, attribute.itemSize, attribute.normalized);
+                    program.attributes.get(attribute.name).set(attribute);
                 }
             }
 
@@ -250,6 +310,11 @@ export class WebGLRenderer
             mode = this._gl.TRIANGLES;
         }
 
+        if (object instanceof Point)
+        {
+            mode = this._gl.POINTS;
+        }
+
         if (null === mode)
         {
             throw new Error('Cannot get rendering mode.');
@@ -319,6 +384,11 @@ export class WebGLRenderer
             if (object instanceof Mesh)
             {
                 mode = gl.TRIANGLES;
+            }
+
+            if (object instanceof Point)
+            {
+                mode = this._gl.POINTS;
             }
 
             if (null === mode)

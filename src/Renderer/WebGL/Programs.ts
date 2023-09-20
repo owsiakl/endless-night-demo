@@ -14,6 +14,7 @@ export class Programs
 {
     private programs: Map<number, Program> = new Map();
     private depthPrograms: Map<number, Program> = new Map();
+    private particlePrograms: Map<number, Program> = new Map();
 
     constructor(private readonly shaderCache: ShaderCache)
     {
@@ -67,6 +68,19 @@ export class Programs
         const program = Program.create(gl, this.shaderCache.getDepthVertex(properties), this.shaderCache.getDepthFragment(properties));
 
         this.depthPrograms.set(hash, program);
+
+        return program;
+    }
+
+    public particleProgram(gl: WebGL2RenderingContext, pass: int, feedbackVaryings: Array<string> = []) : Program
+    {
+        if (this.particlePrograms.has(pass)) {
+            return this.particlePrograms.get(pass)!;
+        }
+
+        const program = Program.create(gl, this.shaderCache.getParticleVertex(pass), this.shaderCache.getParticleFragment(pass), feedbackVaryings);
+
+        this.particlePrograms.set(pass, program);
 
         return program;
     }

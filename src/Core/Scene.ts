@@ -4,17 +4,21 @@ import {Mesh} from "./Object/Mesh";
 import {Line} from "./Object/Line";
 import {NullLight} from "../Light/NullLight";
 import {PointLight} from "../Light/PointLight";
+import {Point} from "./Object/Point";
+import {Particle} from "./Object/Particle";
 
 export class Scene
 {
     public objects: Array<Object3D>;
     public light: Light;
     public drawables: Array<Mesh | Line>;
+    public particles: Nullable<Particle>;
 
     public constructor()
     {
         this.objects = [];
         this.drawables = [];
+        this.particles = null;
         this.light = new NullLight();
     }
 
@@ -44,6 +48,10 @@ export class Scene
             else if (item instanceof Mesh)
             {
                 this.drawables.push(item);
+            }
+            else if (item instanceof Particle)
+            {
+                this.particles = item;
             }
             else if (item instanceof PointLight)
             {

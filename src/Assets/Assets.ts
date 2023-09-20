@@ -32,21 +32,17 @@ export class Assets
 
         this.importShader('default_vertex', '/shaders/default/vertex.glsl', ShaderType.VERTEX);
         this.importShader('default_fragment', '/shaders/default/fragment.glsl', ShaderType.FRAGMENT);
-
         this.importShader('depth_vertex', '/shaders/depth/vertex.glsl', ShaderType.VERTEX);
         this.importShader('depth_fragment', '/shaders/depth/fragment.glsl', ShaderType.FRAGMENT);
+        this.importShader('particle_emit_vertex', '/shaders/particle/emit/vertex.glsl', ShaderType.VERTEX);
+        this.importShader('particle_emit_fragment', '/shaders/particle/emit/fragment.glsl', ShaderType.FRAGMENT);
+        this.importShader('particle_render_vertex', '/shaders/particle/render/vertex.glsl', ShaderType.VERTEX);
+        this.importShader('particle_render_fragment', '/shaders/particle/render/fragment.glsl', ShaderType.FRAGMENT);
 
-        this.importModel('gltf_triangle', '/gltf/triangle.gltf');
-        this.importModel('gltf_cube_guy', '/gltf/cube-guy.gltf');
-        this.importModel('gltf_fox', '/gltf/Fox.gltf');
-        this.importModel('gltf_cesium_man', '/gltf/cesium-man.gltf');
-        this.importModelBinary('glb_fox', '/gltf/Fox.glb');
-        this.importModelBinary('glb_soldier', '/gltf/Soldier.glb');
+        this.importImage('fire_particle', 'image/fire.png');
+
         this.importModelBinary('glb_akai', '/gltf/akai.glb');
         this.importModelBinary('glb_torch', '/gltf/torch.glb');
-
-        this.importImage('testTexture.png', 'image/triangle/testTexture.png');
-        this.importImage('f-texture', 'image/f-texture.png');
     }
 
     private checkAssets()

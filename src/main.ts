@@ -13,11 +13,10 @@ import {MovementControl} from "./Movement/MovementControl";
 import {Mouse} from "./Input/Mouse";
 import {Camera} from "./Camera/Camera";
 import {Plane} from "./Model/Plane";
-import {DirectionalLight} from "./Light/DirectionalLight";
 import {DebugContainer} from "./Debug/DebugContainer";
 import {Skeleton} from "./Core/Skeleton";
-import {Cube} from "./Model/Cube";
 import {PointLight} from "./Light/PointLight";
+import {Particle} from "./Core/Object/Particle";
 
 const url = new URLSearchParams(window.location.search);
 const logger = new NullLogger();
@@ -40,78 +39,64 @@ async function main()
     canvas.height = canvas.offsetHeight;
     canvas.style.height = `${canvas.offsetHeight}px`;
 
+    // ======= CAMERA =======
+    const camera = new Camera(canvas, vec3.fromValues(5, 5, 0), mouseInput);
+    camera._far = 200;
+
     // ======= GROUND =======
-    // const plane = new Line(Grid.create, (new Material()).useVertexColors());
-    const plane = new Mesh(Plane.create(50, 50), (new Material()).setColor(vec3.fromValues(.8, .8, .8)));
+    const plane = new Mesh(Plane.create(25, 25), (new Material()).setColor(vec3.fromValues(.8, .8, .8)));
 
     // ======= TORCH =======
     const [torch] = await Loader.parseBinary(assets.binaryModels.get('glb_torch')).then(model => model.getScene());
     torch.translation = vec3.fromValues(0, -0.05, 0);
     torch.rotation = quat.rotateY(quat.create(), quat.create(), Math.PI / 2);
-    // torch.traverse(child => { if (child instanceof Mesh) child.material.disableShadows() })
 
     // ======= CHARACTER =======
     const [character, skeleton, animations] = await Loader.parseBinary(assets.binaryModels.get('glb_akai')).then(model => model.getScene());
     skeleton?.getBone(31).setChild(torch);
-
 
     const animationControl = new AnimationControl(skeleton as Skeleton);
     animationControl.addClip('idle', animations![0]);
     animationControl.addClip('walk', animations![2]);
     animationControl.addClip('run', animations![1]);
 
-    const camera = new Camera(canvas, vec3.fromValues(5, 5, 0), mouseInput);
-    camera._far = 100;
-    camera.follow(character);
-
     const movement = MovementControl.bind(character, animationControl, keyboardInput, camera);
 
-    // ======= LIGHT =======
-    // const light = new DirectionalLight();
-    // light.translation = vec3.fromValues(0, 4, 4);
-    // light.follow(character);
+    camera.follow(character);
 
+    // ======= LIGHT =======
     const light = new PointLight();
-    light.translation = vec3.fromValues(0.4, 0.8, 0);
+    light.translation = vec3.fromValues(0, 0.8, 0.4);
     torch.setChild(light);
 
+    // ======= PARTICLE =======
+    const particle = new Particle(assets.images.get('fire_particle'), 1_000);
+    torch.setChild(particle);
+    particle.translation = vec3.fromValues(0, 0.36, 0.0);
 
     // ======= SCENE =======
     const scene = new Scene();
     scene.addLight(light);
     scene.add(plane);
-
-    const redBox = new Mesh(Cube.create(0.5), (new Material()).setColor(vec3.fromValues(.6, .0, .0)));
-    redBox.translation = vec3.fromValues(2, 0.5, 0);
-
-    const greenBox = new Mesh(Cube.create(0.5), (new Material()).setColor(vec3.fromValues(.0, .6, .0)));
-    greenBox.translation = vec3.fromValues(-2, 0.5, -1);
-
-    const blueBox = new Mesh(Cube.create(0.5), (new Material()).setColor(vec3.fromValues(.0, .0, .6)));
-    blueBox.translation = vec3.fromValues(-1, 0.5, 1);
-
-    const lightBox = new Mesh(Cube.create(0.05), (new Material()).setColor(vec3.fromValues(1.0, 1.0, .5)));
-    lightBox.translation = light.translation;
-    lightBox.material.disableShadows();
-    torch.setChild(lightBox);
-
-    scene.add(redBox);
-    scene.add(greenBox);
-    scene.add(blueBox);
     scene.add(character);
 
     // ======= RENDER =======
-    renderLoop.start(time => {
+    renderLoop.start(dt => {
         mouseInput.update();
-        camera.update(time);
-        movement.update(time);
-        light.update(time);
+        camera.update(dt);
+        movement.update(dt);
+        scene.light.update(dt);
+
+        if (null !== scene.particles)
+        {
+            scene.particles.update(dt);
+        }
 
         renderer.render(scene, camera);
 
         if (null !== debug)
         {
-            debug.update(time);
+            debug.update(dt);
         }
     });
 }

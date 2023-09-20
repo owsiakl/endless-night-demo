@@ -1,66 +1,83 @@
 import {Shaders} from "../../Assets/Shaders";
 
+const VERSION = '#version 300 es';
+
 export class ShaderCache
 {
-    private readonly fragmentShader: string;
-    private readonly vertexShader: string;
-
-    private readonly depthFragmentShader: string;
-    private readonly depthVertexShader: string;
+    private readonly _shaders: Shaders;
 
     public constructor(shaders: Shaders)
     {
-        this.vertexShader = shaders.get('default_vertex').textContent
-        this.fragmentShader = shaders.get('default_fragment').textContent
-        this.depthVertexShader = shaders.get('depth_vertex').textContent
-        this.depthFragmentShader = shaders.get('depth_fragment').textContent
+        this._shaders = shaders;
     }
 
     public getVertex(defines: string[]) : string
     {
-        const version = '#version 300 es';
-
-        return `${version}
+        return `${VERSION}
         
         ${defines.join('\n')}
         
-        ${this.vertexShader}
+        ${this._shaders.get('default_vertex').textContent}
         `;
     }
 
     public getFragment(defines: string[]) : string
     {
-        const version = '#version 300 es';
-
-        return `${version}
+        return `${VERSION}
         
         ${defines.join('\n')}
         
-        ${this.fragmentShader}
+        ${this._shaders.get('default_fragment').textContent}
         `;
     }
 
     public getDepthVertex(defines: string[]) : string
     {
-        const version = '#version 300 es';
-
-        return `${version}
+        return `${VERSION}
             
         ${defines.join('\n')}
     
-        ${this.depthVertexShader}
+        ${this._shaders.get('depth_vertex').textContent}
         `;
     }
 
     public getDepthFragment(defines: string[]) : string
     {
-        const version = '#version 300 es';
-
-        return `${version}
+        return `${VERSION}
                 
         ${defines.join('\n')}
 
-        ${this.depthFragmentShader}
+        ${this._shaders.get('depth_fragment').textContent}
         `;
+    }
+
+    public getParticleVertex(pass: int) : string
+    {
+        if (pass === 0)
+        {
+            return this._shaders.get('particle_emit_vertex').textContent;
+        }
+
+        if (pass === 1)
+        {
+            return this._shaders.get('particle_render_vertex').textContent;
+        }
+
+        throw new Error(`Unrecognized particle vertex pass "${pass}", available are: [0, 1]`);
+    }
+
+    public getParticleFragment(pass: int) : string
+    {
+        if (pass === 0)
+        {
+            return this._shaders.get('particle_emit_fragment').textContent;
+        }
+
+        if (pass === 1)
+        {
+            return this._shaders.get('particle_render_fragment').textContent;
+        }
+
+        throw new Error(`Unrecognized particle fragment pass "${pass}", available are: [0, 1]`);
     }
 }

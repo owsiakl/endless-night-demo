@@ -13,7 +13,7 @@ export class Program
     ) {
     }
 
-    public static create(gl: WebGL2RenderingContext, vertexShader: string, fragmentShader: string): Program
+    public static create(gl: WebGL2RenderingContext, vertexShader: string, fragmentShader: string, feedbackVaryings: Array<string> = []): Program
     {
         const program = gl.createProgram();
 
@@ -26,6 +26,12 @@ export class Program
 
         gl.attachShader(program, vShader);
         gl.attachShader(program, fShader);
+
+        if (feedbackVaryings.length > 0)
+        {
+            gl.transformFeedbackVaryings(program, feedbackVaryings, gl.INTERLEAVED_ATTRIBS);
+        }
+
         gl.linkProgram(program);
 
         if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {

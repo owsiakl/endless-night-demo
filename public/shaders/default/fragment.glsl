@@ -57,7 +57,7 @@ out vec4 outColor;
 
     in vec3 v_vertex;
 
-    const float far = 10.0;
+    const float far = 20.0;
     const float near = 0.1;
 
     float unpack(vec4 color)
@@ -110,14 +110,14 @@ void main()
         // 3250	    1.0	        0.0014	0.000007
 
         // 20
-        //float constant = 1.0;
-        //float linear = 0.22;
-        //float quadratic = 0.20;
+        float constant = 1.0;
+        float linear = 0.22;
+        float quadratic = 0.20;
 
         // 50
-        float constant = 1.0;
-        float linear = 0.09;
-        float quadratic = 0.032;
+//        float constant = 1.0;
+//        float linear = 0.09;
+//        float quadratic = 0.032;
 
         float distance = length(u_lightPosition - v_vertex);
         float attenuation = 1.0 / (constant + linear * distance + quadratic * (distance * distance));

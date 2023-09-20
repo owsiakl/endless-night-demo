@@ -48,7 +48,7 @@ export class PointLight extends Object3D implements Light
             Math.PI / 2,
             1,
             0.1,
-            10
+            20
         );
 
         return mat4.multiply(mat4.create(), projection, view);

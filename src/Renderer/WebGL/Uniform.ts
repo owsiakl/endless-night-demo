@@ -17,6 +17,8 @@ export class Uniform
             case 35665: this.gl.uniform3fv(this.location, data); break;
             case 35678: this.gl.uniform1i(this.location, data); break;
             case 35680: this.gl.uniform1i(this.location, data); break;
+            case 5126: this.gl.uniform1f(this.location, data); break;
+            case 5124: this.gl.uniform1i(this.location, data); break;
             default: throw new Error(`Cannot set uniform value - unrecognized type "${this.type}".`);
         }
     }
