@@ -12,6 +12,8 @@ export class TransformFeedback
     private _srcBufferIndex: float;
     private _dstBufferIndex: float;
 
+    private _emitSync: Nullable<WebGLSync>;
+
     public constructor(updateProgram: Program, renderProgram: Program)
     {
         this._updateProgram = updateProgram;
@@ -21,6 +23,7 @@ export class TransformFeedback
         this._dstBufferIndex = 1;
         this._buffers = [];
         this._vertexArrayObjects = [];
+        this._emitSync = null;
     }
 
     public static create(gl: WebGL2RenderingContext, particles: Particle, updateProgram: Program, renderProgram: Program) : TransformFeedback
@@ -57,6 +60,9 @@ export class TransformFeedback
     public postUpdate(gl: WebGL2RenderingContext)
     {
         gl.endTransformFeedback();
+
+        this._emitSync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+
         gl.disable(gl.RASTERIZER_DISCARD);
         gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, null);
 
@@ -65,6 +71,12 @@ export class TransformFeedback
 
     public preRender(gl: WebGL2RenderingContext)
     {
+        if (null !== this._emitSync)
+        {
+            gl.waitSync(this._emitSync, 0, gl.TIMEOUT_IGNORED);
+            gl.deleteSync(this._emitSync);
+        }
+
         this._renderProgram.useProgram();
         gl.disable(gl.DEPTH_TEST);
         gl.enable(gl.BLEND);

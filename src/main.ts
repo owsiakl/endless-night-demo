@@ -29,7 +29,7 @@ async function main()
     const debug = url.has('debug') ? DebugContainer.create(document) : null;
     const renderLoop = new RenderLoop(debug);
     const canvas = document.querySelector('canvas') as HTMLCanvasElement;
-    const gl = canvas.getContext('webgl2', {antialias: false}) as WebGL2RenderingContext;
+    const gl = canvas.getContext('webgl2', {powerPreference: 'high-performance'}) as WebGL2RenderingContext;
     const keyboardInput = Keyboard.create();
     const mouseInput = Mouse.create();
     const renderer = new WebGLRenderer(canvas, gl, assets.shaders, debug);
