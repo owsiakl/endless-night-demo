@@ -40,6 +40,10 @@ export class Assets
         this.importShader('particle_render_fragment', '/shaders/particle/render/fragment.glsl', ShaderType.FRAGMENT);
 
         this.importImage('fire_particle', 'image/fire.png');
+        this.importImage('ground', 'image/ground.jpg');
+        this.importImage('ground_normal', 'image/ground_normal.jpg');
+        this.importImage('brickwall', 'image/brickwall.jpg');
+        this.importImage('brickwall_normal', 'image/brickwall_normal.jpg');
 
         this.importModelBinary('glb_akai', '/gltf/akai.glb');
         this.importModelBinary('glb_torch', '/gltf/torch.glb');

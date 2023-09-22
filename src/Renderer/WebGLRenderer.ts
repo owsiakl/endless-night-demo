@@ -251,7 +251,7 @@ export class WebGLRenderer
         {
             if (!this._textures.textures.has(object.material.image.src))
             {
-                this._textures.set(gl, object.material.image.src, object.material.image);
+                this._textures.set(gl, object.material.image.src, object.material.image, gl.LINEAR, object.material.imageRepeat ? gl.REPEAT : gl.CLAMP_TO_EDGE);
             }
 
             const texture = this._textures.textures.get(object.material.image.src);
@@ -261,6 +261,23 @@ export class WebGLRenderer
                 gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, texture.texture);
                 program.uniforms.get('u_texture').set(0);
+            }
+        }
+
+        if (null !== object.material.normal && program.uniforms.has('u_textureNormal'))
+        {
+            if (!this._textures.textures.has(object.material.normal.src))
+            {
+                this._textures.set(gl, object.material.normal.src, object.material.normal, gl.LINEAR, object.material.normalRepeat ? gl.REPEAT : gl.CLAMP_TO_EDGE);
+            }
+
+            const texture = this._textures.textures.get(object.material.normal.src);
+
+            if (undefined !== texture)
+            {
+                gl.activeTexture(gl.TEXTURE3);
+                gl.bindTexture(gl.TEXTURE_2D, texture.texture);
+                program.uniforms.get('u_textureNormal').set(3);
             }
         }
 
@@ -286,6 +303,19 @@ export class WebGLRenderer
         if (program.uniforms.has('u_lightProjectionViewMatrix'))
         {
             program.uniforms.get('u_lightProjectionViewMatrix').set(light.projectionViewMatrix);
+        }
+
+        if (program.uniforms.has('u_cameraPosition'))
+        {
+            program.uniforms.get('u_cameraPosition').set(camera._position);
+        }
+
+        if (program.uniforms.has('u_normalMatrix'))
+        {
+            const matrix = mat4.create();
+            mat4.invert(matrix, object.worldTransform);
+            mat4.transpose(matrix, matrix);
+            program.uniforms.get('u_normalMatrix').set(matrix)
         }
 
         if (object instanceof SkinnedMesh)
@@ -351,6 +381,8 @@ export class WebGLRenderer
 
         gl.viewport(0, 0, Framebuffer.textureSize, Framebuffer.textureSize);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(4.0, 100.0);
 
         for (let i = 0, length = scene.drawables.length; i < length; i++)
         {
@@ -388,7 +420,7 @@ export class WebGLRenderer
 
             if (object instanceof Point)
             {
-                mode = this._gl.POINTS;
+                mode = gl.POINTS;
             }
 
             if (null === mode)

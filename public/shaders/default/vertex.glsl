@@ -27,9 +27,24 @@ uniform mat4 u_model;
 #endif
 
 #ifdef USE_LIGHT
+    uniform mat4 u_normalMatrix;
+
     in vec3 a_normal;
+
     out vec3 v_vertex;
     out vec3 v_normal;
+#endif
+
+#ifdef USE_NORMAL_MAPPING
+    uniform vec3 u_cameraPosition;
+    uniform vec3 u_lightPosition;
+
+    in vec3 a_tangents;
+    in vec3 a_bitangents;
+
+    out vec3 v_tangentLightPosition;
+    out vec3 v_tangentCameraPosition;
+    out vec3 v_tangentVertex;
 #endif
 
 void main()
@@ -69,8 +84,23 @@ void main()
     #endif
 
     #ifdef USE_LIGHT
-        v_normal = normal;
+        v_normal = vec3(mat3(u_normalMatrix) * normal);
         v_vertex = vec3(worldPosition);
+    #endif
+
+    #ifdef USE_NORMAL_MAPPING
+        vec3 T = normalize(mat3(u_normalMatrix) * a_tangents);
+        vec3 B = normalize(mat3(u_normalMatrix) * a_bitangents);
+        vec3 N = normalize(mat3(u_normalMatrix) * normal);
+
+//        T = normalize(T - dot(T, N) * N);
+//        vec3 B = cross(N, T);
+
+        mat3 TBN = transpose(mat3(T, B, N));
+
+        v_tangentLightPosition = TBN * u_lightPosition;
+        v_tangentCameraPosition  = TBN * u_cameraPosition;
+        v_tangentVertex  = TBN * vec3(worldPosition);
     #endif
 
     gl_Position = u_projectionView * worldPosition;

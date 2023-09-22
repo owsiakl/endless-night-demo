@@ -28,6 +28,7 @@ export class Programs
             properties.push(object.material.image ? '#define USE_TEXTURE' : '');
             properties.push(object.material.vertexColors ? '#define USE_COLOR_ATTRIBUTE' : '');
             properties.push(object.material.color ? '#define USE_STATIC_COLOR_ATTRIBUTE' : '');
+            properties.push(object.material.normal ? '#define USE_NORMAL_MAPPING' : '');
             properties.push(light instanceof DirectionalLight ? '#define USE_LIGHT_DIRECTIONAL' : '');
             properties.push(light instanceof PointLight ? '#define USE_LIGHT_POINT' : '');
             properties.push((light instanceof DirectionalLight || light instanceof PointLight) ? '#define USE_LIGHT' : '');

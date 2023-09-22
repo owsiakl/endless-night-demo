@@ -40,11 +40,12 @@ async function main()
     canvas.style.height = `${canvas.offsetHeight}px`;
 
     // ======= CAMERA =======
-    const camera = new Camera(canvas, vec3.fromValues(5, 5, 0), mouseInput);
+    const camera = new Camera(canvas, vec3.fromValues(4, 4, 0), mouseInput);
     camera._far = 200;
 
     // ======= GROUND =======
-    const plane = new Mesh(Plane.create(25, 25), (new Material()).setColor(vec3.fromValues(.8, .8, .8)));
+    const plane = new Mesh(Plane.create(25, 25, 4, 4), (new Material()).setImage(assets.images.get('ground'), true).setNormal(assets.images.get('ground_normal'), true));
+    plane.rotation = quat.rotateX(quat.create(), plane.rotation, -Math.PI / 2);
 
     // ======= TORCH =======
     const [torch] = await Loader.parseBinary(assets.binaryModels.get('glb_torch')).then(model => model.getScene());
@@ -65,8 +66,12 @@ async function main()
     camera.follow(character);
 
     // ======= LIGHT =======
+    // const light = new DirectionalLight();
+    // light.translation = vec3.fromValues(0, 4, 4);
+    // light.follow(character);
+
     const light = new PointLight();
-    light.translation = vec3.fromValues(0, 0.8, 0.4);
+    light.translation = vec3.fromValues(0, 0.8, 0.2);
     torch.setChild(light);
 
     // ======= PARTICLE =======

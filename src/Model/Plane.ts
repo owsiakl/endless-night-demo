@@ -1,69 +1,112 @@
 import {Geometry} from "../Core/Geometry";
+import {vec2, vec3} from "gl-matrix";
 
 export class Plane
 {
     static create(width: int = 1, height: int = 1, widthSegments: int = 1, heightSegments: int = 1) : Geometry
     {
-        const width_half = width / 2;
-        const height_half = height / 2;
-
-        const gridX = Math.floor( widthSegments );
-        const gridY = Math.floor( heightSegments );
-
-        const gridX1 = gridX + 1;
-        const gridY1 = gridY + 1;
-
-        const segment_width = width / gridX;
-        const segment_height = height / gridY;
-
-        //
-
-        const indices = [];
-        const vertices = [];
+        const positions = [];
         const normals = [];
         const uvs = [];
+        const tangents = [];
+        const bitangents = [];
 
-        for ( let iy = 0; iy < gridY1; iy ++ ) {
+        // vertices
+        const halfWidth = width / 2.0;
+        const halfHeight = height / 2.0;
+        const normal = vec3.fromValues(0.0, 0.0, 1.0);
 
-            const y = iy * segment_height - height_half;
+        const pos1 = vec3.fromValues(-halfWidth, halfHeight, 0);
+        const pos2 = vec3.fromValues(-halfWidth, -halfHeight, 0);
+        const pos3 = vec3.fromValues(halfWidth, -halfHeight, 0);
+        const pos4 = vec3.fromValues(halfWidth, halfHeight, 0);
 
-            for ( let ix = 0; ix < gridX1; ix ++ ) {
+        const uv1 = vec2.fromValues(0.0, 1.0 * heightSegments);
+        const uv2 = vec2.fromValues(0.0, 0.0);
+        const uv3 = vec2.fromValues(1.0 * widthSegments, 0.0);
+        const uv4 = vec2.fromValues(1.0 * widthSegments, 1.0 * heightSegments);
 
-                const x = ix * segment_width - width_half;
+        // first triangle
+        let edge1 = vec3.subtract(vec3.create(), pos2, pos1);
+        let edge2 = vec3.subtract(vec3.create(), pos3, pos1);
+        let deltaUV1 = vec2.subtract(vec2.create(), uv2, uv1);
+        let deltaUV2 = vec2.subtract(vec2.create(), uv3, uv1);
 
-                vertices.push( x, 0, y );
+        let f = 1.0 / (deltaUV1[0] * deltaUV2[1] - deltaUV2[0] * deltaUV1[1]);
+        const tangent1 = vec3.create();
+        const bitangent1 = vec3.create();
 
-                normals.push( 0, 0, 1 );
+        tangent1[0] = f * (deltaUV2[1] * edge1[0] - deltaUV1[1] * edge2[0]);
+        tangent1[1] = f * (deltaUV2[1] * edge1[1] - deltaUV1[1] * edge2[1]);
+        tangent1[2] = f * (deltaUV2[1] * edge1[2] - deltaUV1[1] * edge2[2]);
 
-                uvs.push( ix / gridX );
-                uvs.push( 1 - ( iy / gridY ) );
+        bitangent1[0] = f * (-deltaUV2[0] * edge1[0] + deltaUV1[0] * edge2[0]);
+        bitangent1[1] = f * (-deltaUV2[0] * edge1[1] + deltaUV1[0] * edge2[1]);
+        bitangent1[2] = f * (-deltaUV2[0] * edge1[2] + deltaUV1[0] * edge2[2]);
 
-            }
-        }
+        // second triangle
+        edge1 = vec3.subtract(vec3.create(), pos3, pos1);
+        edge2 = vec3.subtract(vec3.create(), pos4, pos1);
+        deltaUV1 = vec2.subtract(vec2.create(), uv3, uv1);
+        deltaUV2 = vec2.subtract(vec2.create(), uv4, uv1);
 
-        for ( let iy = 0; iy < gridY; iy ++ ) {
+        f = 1.0 / (deltaUV1[0] * deltaUV2[1] - deltaUV2[0] * deltaUV1[1]);
+        const tangent2 = vec3.create();
+        const bitangent2 = vec3.create();
 
-            for ( let ix = 0; ix < gridX; ix ++ ) {
+        tangent2[0] = f * (deltaUV2[1] * edge1[0] - deltaUV1[1] * edge2[0]);
+        tangent2[1] = f * (deltaUV2[1] * edge1[1] - deltaUV1[1] * edge2[1]);
+        tangent2[2] = f * (deltaUV2[1] * edge1[2] - deltaUV1[1] * edge2[2]);
 
-                const a = ix + gridX1 * iy;
-                const b = ix + gridX1 * ( iy + 1 );
-                const c = ( ix + 1 ) + gridX1 * ( iy + 1 );
-                const d = ( ix + 1 ) + gridX1 * iy;
+        bitangent2[0] = f * (-deltaUV2[0] * edge1[0] + deltaUV1[0] * edge2[0]);
+        bitangent2[1] = f * (-deltaUV2[0] * edge1[1] + deltaUV1[0] * edge2[1]);
+        bitangent2[2] = f * (-deltaUV2[0] * edge1[2] + deltaUV1[0] * edge2[2]);
 
-                indices.push( a, b, d );
-                indices.push( b, c, d );
 
-            }
+        positions.push(...pos1);
+        normals.push(...normal);
+        uvs.push(...uv1);
+        tangents.push(...tangent1);
+        bitangents.push(...bitangent1);
 
-        }
+        positions.push(...pos2);
+        normals.push(...normal);
+        uvs.push(...uv2);
+        tangents.push(...tangent1);
+        bitangents.push(...bitangent1);
+
+        positions.push(...pos3);
+        normals.push(...normal);
+        uvs.push(...uv3);
+        tangents.push(...tangent1);
+        bitangents.push(...bitangent1);
+
+        positions.push(...pos1);
+        normals.push(...normal);
+        uvs.push(...uv1);
+        tangents.push(...tangent2);
+        bitangents.push(...bitangent2);
+
+        positions.push(...pos3);
+        normals.push(...normal);
+        uvs.push(...uv3);
+        tangents.push(...tangent2);
+        bitangents.push(...bitangent2);
+
+        positions.push(...pos4);
+        normals.push(...normal);
+        uvs.push(...uv4);
+        tangents.push(...tangent2);
+        bitangents.push(...bitangent2);
 
         const geometry = new Geometry();
 
-        geometry.setAttribute('a_position', new Float32Array(vertices), 3);
+        geometry.setAttribute('a_position', new Float32Array(positions), 3);
         geometry.setAttribute('a_normal', new Float32Array(normals), 3);
         geometry.setAttribute('a_uv', new Float32Array(uvs), 2);
-        geometry.index = new Uint16Array(indices);
-        geometry.count = indices.length;
+        geometry.setAttribute('a_tangents', new Float32Array(tangents), 3);
+        geometry.setAttribute('a_bitangents', new Float32Array(bitangents), 3);
+        geometry.count = positions.length / 3;
 
         return geometry;
     }

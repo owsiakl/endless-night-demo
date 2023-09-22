@@ -3,6 +3,9 @@ import { vec3} from "gl-matrix";
 export class Material
 {
     public image:  Nullable<HTMLImageElement>;
+    public imageRepeat:  boolean;
+    public normal:  Nullable<HTMLImageElement>;
+    public normalRepeat:  boolean;
     public color:  Nullable<vec3>;
     public vertexColors;
     public castShadow: boolean;
@@ -10,14 +13,26 @@ export class Material
     public constructor()
     {
         this.image = null;
+        this.imageRepeat = false;
+        this.normal = null;
+        this.normalRepeat = false;
         this.color = null;
         this.vertexColors = false;
         this.castShadow = true;
     }
 
-    public setImage(image: HTMLImageElement) : this
+    public setImage(image: HTMLImageElement, repeat: boolean = false) : this
     {
         this.image = image;
+        this.imageRepeat = repeat;
+
+        return this;
+    }
+
+    public setNormal(normal: HTMLImageElement, repeat: boolean = false) : this
+    {
+        this.normal = normal;
+        this.normalRepeat = repeat;
 
         return this;
     }
@@ -32,6 +47,13 @@ export class Material
     public disableShadows() : this
     {
         this.castShadow = false;
+
+        return this;
+    }
+
+    public useVertexColors()
+    {
+        this.vertexColors = true;
 
         return this;
     }
