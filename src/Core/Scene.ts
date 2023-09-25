@@ -36,28 +36,31 @@ export class Scene
         return this;
     }
 
-    public add(object: Object3D) : this
+    public add(...objects: Array<Object3D>) : this
     {
-        this.objects.push(object);
+        this.objects.push(...objects);
 
-        object.traverse(item => {
-            if (item instanceof Line)
-            {
-                this.drawables.push(item);
-            }
-            else if (item instanceof Mesh)
-            {
-                this.drawables.push(item);
-            }
-            else if (item instanceof Particle)
-            {
-                this.particles = item;
-            }
-            else if (item instanceof PointLight)
-            {
-                this.light = item;
-            }
-        })
+        for (let i = 0; i < objects.length; i++)
+        {
+            objects[i].traverse(item => {
+                if (item instanceof Line)
+                {
+                    this.drawables.push(item);
+                }
+                else if (item instanceof Mesh)
+                {
+                    this.drawables.push(item);
+                }
+                else if (item instanceof Particle)
+                {
+                    this.particles = item;
+                }
+                else if (item instanceof PointLight)
+                {
+                    this.light = item;
+                }
+            })
+        }
 
         return this;
     }

@@ -1,7 +1,7 @@
 import {Geometry} from "../Core/Geometry";
 
 const CELL_SIZE: number = 1;
-const COLUMNS: number = 20;
+const COLUMNS: number = 5;
 
 export class Grid
 {

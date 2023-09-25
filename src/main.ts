@@ -4,19 +4,18 @@ import {RenderLoop} from "./Engine/RenderLoop";
 import {Loader} from "./GLTF/Loader";
 import {Scene} from "./Core/Scene";
 import {WebGLRenderer} from "./Renderer/WebGLRenderer";
-import {Mesh} from "./Core/Object/Mesh";
-import {Material} from "./Core/Material";
 import {mat4, quat, vec3, vec4} from "gl-matrix";
 import {Keyboard} from "./Input/Keyboard";
 import {AnimationControl} from "./Animation/AnimationControl";
 import {MovementControl} from "./Movement/MovementControl";
 import {Mouse} from "./Input/Mouse";
 import {Camera} from "./Camera/Camera";
-import {Plane} from "./Model/Plane";
 import {DebugContainer} from "./Debug/DebugContainer";
 import {Skeleton} from "./Core/Skeleton";
 import {PointLight} from "./Light/PointLight";
 import {Particle} from "./Core/Object/Particle";
+import {DirectionalLight} from "./Light/DirectionalLight";
+import {Map} from "./Model/Map";
 
 const url = new URLSearchParams(window.location.search);
 const logger = new NullLogger();
@@ -44,8 +43,10 @@ async function main()
     camera._far = 200;
 
     // ======= GROUND =======
-    const plane = new Mesh(Plane.create(25, 25, 4, 4), (new Material()).setImage(assets.images.get('ground'), true).setNormal(assets.images.get('ground_normal'), true));
-    plane.rotation = quat.rotateX(quat.create(), plane.rotation, -Math.PI / 2);
+    // const plane = new Line(Grid.create, (new Material()).useVertexColors());
+    // const plane = new Mesh(Plane.create(25, 25, 4, 4), (new Material()).setImage(assets.images.get('ground'), true).setNormal(assets.images.get('ground_normal'), true));
+    // plane.rotation = quat.rotateX(quat.create(), plane.rotation, -Math.PI / 2);
+    const map = new Map(assets);
 
     // ======= TORCH =======
     const [torch] = await Loader.parseBinary(assets.binaryModels.get('glb_torch')).then(model => model.getScene());
@@ -82,7 +83,7 @@ async function main()
     // ======= SCENE =======
     const scene = new Scene();
     scene.addLight(light);
-    scene.add(plane);
+    scene.add(...map._tiles);
     scene.add(character);
 
     // ======= RENDER =======
@@ -90,6 +91,7 @@ async function main()
         mouseInput.update();
         camera.update(dt);
         movement.update(dt);
+        map.update(character.translation);
         scene.light.update(dt);
 
         if (null !== scene.particles)
