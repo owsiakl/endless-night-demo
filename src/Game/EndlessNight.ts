@@ -12,7 +12,7 @@ import {PointLight} from "../Light/PointLight";
 import {Particle} from "../Core/Object/Particle";
 import {Scene} from "../Core/Scene";
 import {Assets} from "../Core/Assets";
-import {Map} from "../Model/Map";
+import {Ground} from "../Model/Ground";
 import {Renderer} from "../Core/Renderer";
 
 export class EndlessNight
@@ -42,7 +42,7 @@ export class EndlessNight
         const camera = new Camera(this._renderer.canvas, vec3.fromValues(4, 4, 0), this._mouse);
 
         // ======= GROUND =======
-        const map = new Map(this._assets);
+        const ground = new Ground(this._assets);
 
         // ======= TORCH =======
         const [torch] = this._assets.model('torch').scene;
@@ -74,7 +74,7 @@ export class EndlessNight
         // ======= SCENE =======
         const scene = new Scene();
         scene.addLight(light);
-        scene.add(...map.tiles);
+        scene.add(...ground.tiles);
         scene.add(character);
 
         // ======= LOOP =======
@@ -82,20 +82,13 @@ export class EndlessNight
             this._mouse.update();
             camera.update(dt);
             movement.update(dt);
-            map.update(character.translation);
-            scene.light.update(dt);
-
-            if (null !== scene.particles)
-            {
-                scene.particles.update(dt);
-            }
+            ground.update(character.translation);
+            scene.light?.update(dt);
+            scene.particles?.update(dt);
 
             this._renderer.render(scene, camera);
 
-            if (null !== this._debug)
-            {
-                this._debug.update(dt);
-            }
+            this._debug?.update(dt);
         });
     }
 }

@@ -222,7 +222,7 @@ export class WebGLRenderer implements Renderer
         this._transformFeedback.postRender(gl);
     }
 
-    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line, camera: Camera, light: Light)
+    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line, camera: Camera, light: Nullable<Light>)
     {
         const geometry = object.geometry;
         const program = this._programs.initProgram(gl, object, light);
@@ -294,12 +294,12 @@ export class WebGLRenderer implements Renderer
             program.uniforms.get('u_depthCubeMapTexture').set(4);
         }
 
-        if (program.uniforms.has('u_lightPosition'))
+        if (light && program.uniforms.has('u_lightPosition'))
         {
             program.uniforms.get('u_lightPosition').set(light.worldTranslation);
         }
 
-        if (program.uniforms.has('u_lightProjectionViewMatrix'))
+        if (light && program.uniforms.has('u_lightProjectionViewMatrix'))
         {
             program.uniforms.get('u_lightProjectionViewMatrix').set(light.projectionViewMatrix);
         }

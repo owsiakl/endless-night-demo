@@ -7,7 +7,7 @@ import {Assets} from "../Core/Assets";
 const SIZE: int = 10;
 const SEGMENTS: int = 1;
 
-export class Map
+export class Ground
 {
     private readonly _tiles: Array<Mesh>;
 

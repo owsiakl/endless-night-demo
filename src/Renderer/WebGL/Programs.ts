@@ -24,7 +24,7 @@ export class Programs
         this._particlePrograms = new Map();
     }
 
-    public initProgram(gl: WebGL2RenderingContext, object: Object3D, light: Light) : Program
+    public initProgram(gl: WebGL2RenderingContext, object: Object3D, light: Nullable<Light>) : Program
     {
         let properties = [];
 

@@ -2,15 +2,13 @@ import {Object3D} from "./Object3D";
 import {Light} from "../Light/Light";
 import {Mesh} from "./Object/Mesh";
 import {Line} from "./Object/Line";
-import {NullLight} from "../Light/NullLight";
 import {PointLight} from "../Light/PointLight";
-import {Point} from "./Object/Point";
 import {Particle} from "./Object/Particle";
 
 export class Scene
 {
     public objects: Array<Object3D>;
-    public light: Light;
+    public light: Nullable<Light>;
     public drawables: Array<Mesh | Line>;
     public particles: Nullable<Particle>;
 
@@ -19,16 +17,11 @@ export class Scene
         this.objects = [];
         this.drawables = [];
         this.particles = null;
-        this.light = new NullLight();
+        this.light = null;
     }
 
     public addLight(light: Light) : this
     {
-        if (!(this.light instanceof NullLight))
-        {
-            throw new Error('Currently only one scene light is supported.');
-        }
-
         this.objects.push(light);
 
         this.light = light;

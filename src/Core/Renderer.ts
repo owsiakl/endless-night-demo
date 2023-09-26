@@ -1,5 +1,5 @@
-import {Scene} from "../Core/Scene";
 import {Camera} from "../Camera/Camera";
+import {Scene} from "./Scene";
 
 export interface Renderer
 {
