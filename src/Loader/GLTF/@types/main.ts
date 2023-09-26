@@ -1,59 +1,60 @@
-type GLTF = {
+type khr_gltf = {
     asset: {
         version: string,
     },
     scene: number | undefined,
-    meshes: Array<GLTF_mesh> | undefined,
-    accessors: Array<GLTF_accessor> | undefined,
-    bufferViews: Array<GLTF_buffer_view> | undefined,
-    buffers: Array<GLTF_buffer> | undefined,
-    scenes: Array<GLTF_scene> | undefined,
-    nodes: Array<GLTF_node> | undefined,
-    materials: Array<GLTF_material> | undefined,
-    textures: Array<GLTF_texture> | undefined,
-    images: Array<GLTF_image> | undefined,
-    samplers: Array<GLTF_sampler> | undefined,
-    animations: Array<GLTF_animation> | undefined,
-    skins: Array<GLTF_skin> | undefined,
+    meshes: Array<khr_gltf_mesh> | undefined,
+    accessors: Array<khr_gltf_accessor> | undefined,
+    bufferViews: Array<khr_gltf_buffer_view> | undefined,
+    buffers: Array<khr_gltf_buffer> | undefined,
+    scenes: Array<khr_gltf_scene> | undefined,
+    nodes: Array<khr_gltf_node> | undefined,
+    materials: Array<khr_gltf_material> | undefined,
+    textures: Array<khr_gltf_texture> | undefined,
+    images: Array<khr_gltf_image> | undefined,
+    samplers: Array<khr_gltf_sampler> | undefined,
+    animations: Array<khr_gltf_animation> | undefined,
+    skins: Array<khr_gltf_skin> | undefined,
 }
 
-type GLTF_mesh = {
+type khr_gltf_mesh = {
     name: string | undefined,
-    primitives: Array<GLTF_primitive>
+    primitives: Array<khr_gltf_primitive>
 }
 
-type GLTF_primitive = {
+type khr_gltf_primitive = {
     attributes: {[key: string]: number},
     indices: number | undefined,
     material: number | undefined,
 }
 
-type GLTF_accessor = {
+type khr_gltf_accessor = {
     bufferView: number,
     byteOffset: number | undefined,
-    componentType: GLTF_accessor_component_type,
+    componentType: khr_gltf_accessor_component_type,
     count: number,
-    type: GLTF_accessor_type,
+    type: khr_gltf_accessor_type,
 }
 
-type GLTF_buffer_view = {
+type khr_gltf_buffer_view = {
     buffer: number,
     byteOffset: number | undefined,
     byteLength: number,
     byteStride: number | undefined,
-    target: GLTF_buffer_view_target | undefined
+    target: khr_gltf_buffer_view_target | undefined
 }
 
-type GLTF_buffer = {
+type khr_gltf_buffer = {
     uri: string,
     byteLength: number,
+    binary: ArrayBuffer | undefined,
 }
 
-type GLTF_scene = {
+type khr_gltf_scene = {
     nodes: Array<number>,
 }
 
-type GLTF_node = {
+type khr_gltf_node = {
     name: string | undefined,
     mesh: number | undefined,
     skin: number | undefined,
@@ -64,47 +65,47 @@ type GLTF_node = {
     matrix: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number] | undefined,
 }
 
-type GLTF_material = {
+type khr_gltf_material = {
     name: string | undefined,
-    pbrMetallicRoughness: GLTF_material_pbr_metallic_roughness | undefined,
+    pbrMetallicRoughness: khr_gltf_material_pbr_metallic_roughness | undefined,
 }
 
-type GLTF_material_pbr_metallic_roughness = {
+type khr_gltf_material_pbr_metallic_roughness = {
     baseColorFactor: [number, number, number, number] | undefined,
-    baseColorTexture: GLTF_material_pbr_metallic_roughness_base_color_texture | undefined,
+    baseColorTexture: khr_gltf_material_pbr_metallic_roughness_base_color_texture | undefined,
 }
 
-type GLTF_material_pbr_metallic_roughness_base_color_texture = {
+type khr_gltf_material_pbr_metallic_roughness_base_color_texture = {
     index: number,
     texCoord: number | undefined,
 }
 
-type GLTF_texture = {
+type khr_gltf_texture = {
     sampler: number | undefined,
     source: number | undefined,
 }
 
-type GLTF_image = {
+type khr_gltf_image = {
     name: string | undefined
     bufferView: number | undefined,
     mimeType: string | undefined,
     uri: string | undefined,
 }
 
-type GLTF_sampler = {
+type khr_gltf_sampler = {
     minFilter: number | undefined,
     magFilter: number | undefined,
     wrapS: number | undefined,
     wrapT: number | undefined,
 }
 
-type GLTF_animation = {
+type khr_gltf_animation = {
     name: string | undefined,
-    channels: Array<GLTF_animation_channel>,
-    samplers: Array<GLTF_animation_sampler>,
+    channels: Array<khr_gltf_animation_channel>,
+    samplers: Array<khr_gltf_animation_sampler>,
 }
 
-type GLTF_animation_channel = {
+type khr_gltf_animation_channel = {
     sampler: number,
     target: {
         node: number | undefined,
@@ -112,18 +113,18 @@ type GLTF_animation_channel = {
     },
 }
 
-type GLTF_animation_sampler = {
+type khr_gltf_animation_sampler = {
     input: number,
     interpolation: string | undefined,
     output: number,
 }
 
-type GLTF_skin = {
+type khr_gltf_skin = {
     inverseBindMatrices: number,
     joints: Array<number>,
 }
 
-enum GLTF_accessor_component_type {
+enum khr_gltf_accessor_component_type {
     BYTE = 5120,
     UNSIGNED_BYTE = 5121,
     SHORT = 5122,
@@ -132,7 +133,7 @@ enum GLTF_accessor_component_type {
     FLOAT = 5126,
 }
 
-enum GLTF_accessor_type {
+enum khr_gltf_accessor_type {
     SCALAR = 'SCALAR',
     VEC2 = 'VEC2',
     VEC3 = 'VEC3',
@@ -142,7 +143,7 @@ enum GLTF_accessor_type {
     MAT4 = 'MAT4',
 }
 
-enum GLTF_buffer_view_target {
+enum khr_gltf_buffer_view_target {
     ARRAY_BUFFER = 34962,
     ELEMENT_ARRAY_BUFFER = 34963,
 }

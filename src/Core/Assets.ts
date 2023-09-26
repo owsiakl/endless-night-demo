@@ -1,11 +1,12 @@
-import {Loader} from "../GLTF/Loader";
+import {GLTFLoader} from "../Loader/GLTFLoader";
+import {Model} from "./Model";
 
 export class Assets
 {
     private readonly _queue: Array<Function>;
     private readonly _shaders: Map<string, string>;
     private readonly _images: Map<string, HTMLImageElement>;
-    private readonly _models: Map<string, Loader>;
+    private readonly _models: Map<string, Model>;
 
     private _afterLoad: Function;
     private _assetsCount: number = 0;
@@ -63,13 +64,13 @@ export class Assets
         });
     }
 
-    public importBinaryModel(name: string, path: string) : void
+    public importModel(name: string, path: string) : void
     {
         this._assetsCount++;
 
         this._queue.push(() => fetch(path)
-            .then(response => response.arrayBuffer())
-            .then(buffer => Loader.parseBinary(buffer))
+            .then(response => response.json())
+            .then(buffer => GLTFLoader.parse(buffer))
             .then(model => {
                 this._models.set(name, model);
                 this._assetsLoaded++;
@@ -82,7 +83,26 @@ export class Assets
         );
     }
 
-    public getShader(name: string) : string
+    public importBinaryModel(name: string, path: string) : void
+    {
+        this._assetsCount++;
+
+        this._queue.push(() => fetch(path)
+            .then(response => response.arrayBuffer())
+            .then(buffer => GLTFLoader.parseBinary(buffer))
+            .then(model => {
+                this._models.set(name, model);
+                this._assetsLoaded++;
+
+                this.checkAssets();
+            })
+            .catch(error => {
+                throw new Error(error);
+            })
+        );
+    }
+
+    public shader(name: string) : string
     {
         if (!this._shaders.has(name))
         {
@@ -92,7 +112,7 @@ export class Assets
         return this._shaders.get(name)!;
     }
 
-    public getImage(name: string) : HTMLImageElement
+    public image(name: string) : HTMLImageElement
     {
         if (!this._images.has(name))
         {
@@ -102,7 +122,7 @@ export class Assets
         return this._images.get(name)!;
     }
 
-    public getModel(name: string) : Loader
+    public model(name: string) : Model
     {
         if (!this._models.has(name))
         {

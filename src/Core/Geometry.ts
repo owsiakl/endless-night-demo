@@ -1,5 +1,4 @@
 import {GeometryAttribute} from "./GeometryAttribute";
-import {AccessorData} from "../GLTF/Accessor";
 
 export class Geometry
 {

@@ -17,7 +17,7 @@ export class ShaderCache
         
         ${defines.join('\n')}
         
-        ${this._assets.getShader('default_vertex')}
+        ${this._assets.shader('default_vertex')}
         `;
     }
 
@@ -27,7 +27,7 @@ export class ShaderCache
         
         ${defines.join('\n')}
         
-        ${this._assets.getShader('default_fragment')}
+        ${this._assets.shader('default_fragment')}
         `;
     }
 
@@ -37,7 +37,7 @@ export class ShaderCache
             
         ${defines.join('\n')}
     
-        ${this._assets.getShader('depth_vertex')}
+        ${this._assets.shader('depth_vertex')}
         `;
     }
 
@@ -47,7 +47,7 @@ export class ShaderCache
                 
         ${defines.join('\n')}
 
-        ${this._assets.getShader('depth_fragment')}
+        ${this._assets.shader('depth_fragment')}
         `;
     }
 
@@ -55,12 +55,12 @@ export class ShaderCache
     {
         if (pass === 0)
         {
-            return this._assets.getShader('particle_emit_vertex');
+            return this._assets.shader('particle_emit_vertex');
         }
 
         if (pass === 1)
         {
-            return this._assets.getShader('particle_render_vertex');
+            return this._assets.shader('particle_render_vertex');
         }
 
         throw new Error(`Unrecognized particle vertex pass "${pass}", available are: [0, 1]`);
@@ -70,12 +70,12 @@ export class ShaderCache
     {
         if (pass === 0)
         {
-            return this._assets.getShader('particle_emit_fragment');
+            return this._assets.shader('particle_emit_fragment');
         }
 
         if (pass === 1)
         {
-            return this._assets.getShader('particle_render_fragment');
+            return this._assets.shader('particle_render_fragment');
         }
 
         throw new Error(`Unrecognized particle fragment pass "${pass}", available are: [0, 1]`);

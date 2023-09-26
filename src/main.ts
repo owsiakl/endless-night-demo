@@ -1,5 +1,5 @@
 import {Assets} from "./Core/Assets";
-import {EndlessNight} from "./Main/EndlessNight";
+import {EndlessNight} from "./Game/EndlessNight";
 import {WindowDecorator} from "./Core/WindowDecorator";
 
 const windowDecorator = new WindowDecorator(window);

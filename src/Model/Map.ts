@@ -25,8 +25,8 @@ export class Map
                 const tile = new Mesh(
                     Plane.create(SIZE, SIZE, SEGMENTS, SEGMENTS),
                     (new Material())
-                        .setImage(assets.getImage('ground'), true)
-                        .setNormal(assets.getImage('ground_normal'), true)
+                        .setImage(assets.image('ground'), true)
+                        .setNormal(assets.image('ground_normal'), true)
                 );
 
                 tile.rotation = quat.rotateX(quat.create(), tile.rotation, -Math.PI / 2);

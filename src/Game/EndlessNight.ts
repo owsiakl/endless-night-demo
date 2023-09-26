@@ -36,7 +36,7 @@ export class EndlessNight
         this._mouse = new Mouse(this._window);
     }
 
-    async bootstrap() : Promise<void>
+    public bootstrap() : void
     {
         // ======= CAMERA =======
         const camera = new Camera(this._renderer.canvas, vec3.fromValues(4, 4, 0), this._mouse);
@@ -45,12 +45,12 @@ export class EndlessNight
         const map = new Map(this._assets);
 
         // ======= TORCH =======
-        const [torch] = await this._assets.getModel('torch').getScene();
+        const [torch] = this._assets.model('torch').scene;
         torch.translation = vec3.fromValues(0, -0.05, 0);
         torch.rotation = quat.rotateY(quat.create(), quat.create(), Math.PI / 2);
 
         // ======= CHARACTER =======
-        const [character, skeleton, animations] = await this._assets.getModel('akai').getScene();
+        const [character, skeleton, animations] = this._assets.model('akai').scene;
         skeleton?.getBone(31).setChild(torch);
         camera.follow(character);
 
@@ -67,7 +67,7 @@ export class EndlessNight
         torch.setChild(light);
 
         // ======= PARTICLE =======
-        const particle = new Particle(this._assets.getImage('fire_particle'), 1_000);
+        const particle = new Particle(this._assets.image('fire_particle'), 1_000);
         torch.setChild(particle);
         particle.translation = vec3.fromValues(0, 0.36, 0.0);
 
