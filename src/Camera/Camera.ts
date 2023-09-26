@@ -12,7 +12,6 @@ export class Camera
     private readonly _zoomFactor = 0.06
     private readonly _rotateFactor = 0.01;
 
-    private _canvas: HTMLCanvasElement;
     private _width: int;
     private _height: int;
     private _mouseInput: Mouse;
@@ -38,7 +37,6 @@ export class Camera
 
     public constructor(canvas: HTMLCanvasElement, position: vec3, mouseInput: Mouse)
     {
-        this._canvas = canvas;
         this._width = canvas.width;
         this._height = canvas.height;
 

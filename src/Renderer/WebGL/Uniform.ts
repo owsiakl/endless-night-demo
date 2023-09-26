@@ -1,26 +1,33 @@
 export class Uniform
 {
-    constructor(
-        private readonly gl: WebGL2RenderingContext,
-        private readonly name: string,
-        private readonly location: WebGLUniformLocation,
-        private readonly type: GLenum,
-        private readonly size: number,
-    ) {
+    private readonly _gl: WebGL2RenderingContext;
+    private readonly _name: string;
+    private readonly _location: WebGLUniformLocation;
+    private readonly _type: GLenum;
+    private readonly _size: number;
+
+    public constructor(gl: WebGL2RenderingContext, name: string, location: WebGLUniformLocation, type: GLenum, size: number)
+    {
+        this._gl = gl;
+        this._name = name;
+        this._location = location;
+        this._type = type;
+        this._size = size;
     }
 
-    public set(data: any)
+    public set(data: any) : void
     {
-        switch (this.type) {
-            case 35676: this.gl.uniformMatrix4fv(this.location, false, data); break;
-            case 35675: this.gl.uniformMatrix3fv(this.location, false, data); break;
-            case 35665: this.gl.uniform3fv(this.location, data); break;
-            case 35678: this.gl.uniform1i(this.location, data); break;
-            case 35680: this.gl.uniform1i(this.location, data); break;
-            case 5126: this.gl.uniform1f(this.location, data); break;
-            case 5124: this.gl.uniform1i(this.location, data); break;
-            case 35682: this.gl.uniform1i(this.location, data); break;
-            default: throw new Error(`Cannot set uniform value - unrecognized type "${this.type}".`);
+        switch (this._type)
+        {
+            case 35676: this._gl.uniformMatrix4fv(this._location, false, data); break;
+            case 35675: this._gl.uniformMatrix3fv(this._location, false, data); break;
+            case 35665: this._gl.uniform3fv(this._location, data); break;
+            case 35678: this._gl.uniform1i(this._location, data); break;
+            case 35680: this._gl.uniform1i(this._location, data); break;
+            case 5126: this._gl.uniform1f(this._location, data); break;
+            case 5124: this._gl.uniform1i(this._location, data); break;
+            case 35682: this._gl.uniform1i(this._location, data); break;
+            default: throw new Error(`Cannot set uniform value - unrecognized type "${this._type}".`);
         }
     }
 }

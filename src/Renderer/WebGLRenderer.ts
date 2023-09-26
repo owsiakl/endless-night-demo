@@ -32,7 +32,7 @@ export class WebGLRenderer implements Renderer
     private readonly _textures = new Texture();
     private _framebuffer: Nullable<Framebuffer>;
     private _query: Nullable<WebGLQuery>;
-    private _queryExt: Nullable<any>;
+    private readonly _queryExt: Nullable<any>;
     private _transformFeedback: Nullable<TransformFeedback>;
 
     public constructor(windowDecorator: WindowDecorator, assets: Assets, debug: Nullable<DebugContainer>)
@@ -203,7 +203,8 @@ export class WebGLRenderer implements Renderer
 
         if (null !== object.material.image)
         {
-            if (!this._textures.has(object.material.image.src)) {
+            if (!this._textures.has(object.material.image.src))
+            {
                 this._textures.set(gl, object.material.image.src, object.material.image);
             }
 
@@ -257,50 +258,40 @@ export class WebGLRenderer implements Renderer
 
         if (null !== object.material.image)
         {
-            if (!this._textures.textures.has(object.material.image.src))
+            if (!this._textures.has(object.material.image.src))
             {
                 this._textures.set(gl, object.material.image.src, object.material.image, gl.LINEAR, object.material.imageRepeat ? gl.REPEAT : gl.CLAMP_TO_EDGE);
             }
 
-            const texture = this._textures.textures.get(object.material.image.src);
-
-            if (undefined !== texture)
-            {
-                gl.activeTexture(gl.TEXTURE0);
-                gl.bindTexture(gl.TEXTURE_2D, texture.texture);
-                program.uniforms.get('u_texture').set(0);
-            }
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, this._textures.get(object.material.image.src));
+            program.uniforms.get('u_texture').set(1);
         }
 
         if (null !== object.material.normal && program.uniforms.has('u_textureNormal'))
         {
-            if (!this._textures.textures.has(object.material.normal.src))
+            if (!this._textures.has(object.material.normal.src))
             {
                 this._textures.set(gl, object.material.normal.src, object.material.normal, gl.LINEAR, object.material.normalRepeat ? gl.REPEAT : gl.CLAMP_TO_EDGE);
             }
 
-            const texture = this._textures.textures.get(object.material.normal.src);
-
-            if (undefined !== texture)
-            {
-                gl.activeTexture(gl.TEXTURE3);
-                gl.bindTexture(gl.TEXTURE_2D, texture.texture);
-                program.uniforms.get('u_textureNormal').set(3);
-            }
+            gl.activeTexture(gl.TEXTURE2);
+            gl.bindTexture(gl.TEXTURE_2D, this._textures.get(object.material.normal.src));
+            program.uniforms.get('u_textureNormal').set(2);
         }
 
         if (program.uniforms.has('u_depthTexture') && this._framebuffer?.depthTexture)
         {
-            gl.activeTexture(gl.TEXTURE1);
+            gl.activeTexture(gl.TEXTURE3);
             gl.bindTexture(gl.TEXTURE_2D, this._framebuffer.depthTexture);
-            program.uniforms.get('u_depthTexture').set(1);
+            program.uniforms.get('u_depthTexture').set(3);
         }
 
-        if (program.uniforms.has('u_depthCubeMapTexture'))
+        if (program.uniforms.has('u_depthCubeMapTexture') && this._framebuffer?.depthTexture)
         {
-            gl.activeTexture(gl.TEXTURE2);
-            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this._framebuffer!.depthTexture);
-            program.uniforms.get('u_depthCubeMapTexture').set(2);
+            gl.activeTexture(gl.TEXTURE4);
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this._framebuffer.depthTexture);
+            program.uniforms.get('u_depthCubeMapTexture').set(4);
         }
 
         if (program.uniforms.has('u_lightPosition'))
@@ -340,17 +331,17 @@ export class WebGLRenderer implements Renderer
 
         if (object instanceof Line)
         {
-            mode = this._gl.LINES;
+            mode = gl.LINES;
         }
 
         if (object instanceof Mesh)
         {
-            mode = this._gl.TRIANGLES;
+            mode = gl.TRIANGLES;
         }
 
         if (object instanceof Point)
         {
-            mode = this._gl.POINTS;
+            mode = gl.POINTS;
         }
 
         if (null === mode)
@@ -389,8 +380,6 @@ export class WebGLRenderer implements Renderer
 
         gl.viewport(0, 0, Framebuffer.textureSize, Framebuffer.textureSize);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.POLYGON_OFFSET_FILL);
-        gl.polygonOffset(4.0, 100.0);
 
         for (let i = 0, length = scene.drawables.length; i < length; i++)
         {
@@ -402,9 +391,21 @@ export class WebGLRenderer implements Renderer
             }
 
             const geometry = object.geometry;
-            const program = this._programs.depthProgram(gl, object.material, object);
+            const program = this._programs.depthProgram(gl, object);
 
             program.useProgram();
+            this._vertexArrays.bind(gl, geometry.id);
+
+            if (geometry.updateBuffers)
+            {
+                if (geometry.indexed)
+                {
+                    const buffer = gl.createBuffer();
+
+                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+                    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.index, gl.STATIC_DRAW);
+                }
+            }
 
             if (object instanceof SkinnedMesh)
             {
@@ -435,8 +436,6 @@ export class WebGLRenderer implements Renderer
             {
                 throw new Error('Cannot get rendering mode.');
             }
-
-            this._vertexArrays.bind(gl, geometry.id);
 
             if (geometry.indexed)
             {

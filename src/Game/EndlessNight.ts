@@ -25,7 +25,7 @@ export class EndlessNight
     private readonly _keyboard: Keyboard;
     private readonly _mouse: Mouse;
 
-    constructor(windowDecorator: WindowDecorator, assets: Assets)
+    public constructor(windowDecorator: WindowDecorator, assets: Assets)
     {
         this._window = windowDecorator;
         this._assets = assets;

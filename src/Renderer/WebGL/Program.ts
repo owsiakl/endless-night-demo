@@ -4,20 +4,25 @@ import {Shader} from "./Shader";
 
 export class Program
 {
-    private cachedUniforms: Uniforms | null = null;
-    private cachedAttributes: Attributes | null = null;
+    private readonly _gl: WebGL2RenderingContext;
+    private readonly _program: WebGLProgram;
+    private _cachedUniforms: Nullable<Uniforms>;
+    private _cachedAttributes: Nullable<Attributes>;
 
-    public constructor(
-        private readonly gl: WebGL2RenderingContext,
-        private readonly program: WebGLProgram
-    ) {
+    public constructor(gl: WebGL2RenderingContext, program: WebGLProgram)
+    {
+        this._gl = gl;
+        this._program = program;
+        this._cachedUniforms = null;
+        this._cachedAttributes = null;
     }
 
-    public static create(gl: WebGL2RenderingContext, vertexShader: string, fragmentShader: string, feedbackVaryings: Array<string> = []): Program
+    public static create(gl: WebGL2RenderingContext, vertexShader: string, fragmentShader: string, feedbackVaryings: Array<string> = []) : Program
     {
         const program = gl.createProgram();
 
-        if (null === program) {
+        if (null === program)
+        {
             throw new Error('Cannot create webgl program.');
         }
 
@@ -34,39 +39,41 @@ export class Program
 
         gl.linkProgram(program);
 
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS))
+        {
             throw new Error('Unexpected error while creating a program. ' + gl.getProgramInfoLog(program));
         }
 
         return new this(gl, program);
     }
 
-    public get attributes(): Attributes
+    public get attributes() : Attributes
     {
-        if (null === this.cachedAttributes) {
-            this.cachedAttributes = Attributes.create(this.gl, this.program);
+        if (null === this._cachedAttributes)
+        {
+            this._cachedAttributes = Attributes.create(this._gl, this._program);
         }
 
-        return this.cachedAttributes;
+        return this._cachedAttributes;
     }
 
-    public get uniforms(): Uniforms
+    public get uniforms() : Uniforms
     {
-        if (null === this.cachedUniforms) {
-            this.cachedUniforms = Uniforms.create(this.gl, this.program);
+        if (null === this._cachedUniforms)
+        {
+            this._cachedUniforms = Uniforms.create(this._gl, this._program);
         }
 
-        return this.cachedUniforms;
+        return this._cachedUniforms;
     }
 
     public useProgram()
     {
-        this.gl.useProgram(this.program);
+        this._gl.useProgram(this._program);
     }
 
     public stopProgram()
     {
-        this.gl.useProgram(null);
+        this._gl.useProgram(null);
     }
-
 }

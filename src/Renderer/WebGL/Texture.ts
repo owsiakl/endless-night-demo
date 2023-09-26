@@ -1,12 +1,13 @@
-import {Attribute} from "./Attribute";
-
 export class Texture
 {
-    public textures: Map<string, {index: int, texture: WebGLTexture}> = new Map();
+    private readonly _textures: Map<string, WebGLTexture>;
 
-    private currentTextureUnit = 1;
+    public constructor()
+    {
+        this._textures = new Map();
+    }
 
-    public set(gl: WebGL2RenderingContext, name: string, image: HTMLImageElement, filter: GLuint = gl.LINEAR, wrap: GLuint = gl.CLAMP_TO_EDGE)
+    public set(gl: WebGL2RenderingContext, name: string, image: HTMLImageElement, filter: GLuint = gl.LINEAR, wrap: GLuint = gl.CLAMP_TO_EDGE) : void
     {
         const texture = gl.createTexture();
 
@@ -23,16 +24,14 @@ export class Texture
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
         gl.generateMipmap(gl.TEXTURE_2D);
 
-        this.textures.set(name, {index: this.currentTextureUnit, texture: texture});
+        this._textures.set(name, texture);
 
         gl.bindTexture(gl.TEXTURE_2D, null);
-
-        this.currentTextureUnit++;
     }
 
     public has(name: string) : boolean
     {
-        return this.textures.has(name);
+        return this._textures.has(name);
     }
 
     public get(name: string) : WebGLTexture
@@ -42,6 +41,6 @@ export class Texture
             throw new Error(`Texture with name "${name}" doesn't exists.`)
         }
 
-        return this.textures.get(name)!.texture;
+        return this._textures.get(name)!;
     }
 }

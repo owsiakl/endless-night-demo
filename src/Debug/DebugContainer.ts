@@ -62,9 +62,13 @@ export class DebugContainer
 
         // @ts-ignore
         const memory = window.performance.memory;
-        this._jsHeapLimitElement.textContent = Math.round(memory.jsHeapSizeLimit / 1000000).toString().concat(' MB');
-        this._jsHeapAvailableElement.textContent = Math.round(memory.totalJSHeapSize / 1000000).toString().concat(' MB');
-        this._jsHeapUsedElement.textContent = Math.round(memory.usedJSHeapSize / 1000000).toString().concat(' MB');
+
+        if (undefined !== memory)
+        {
+            this._jsHeapLimitElement.textContent = Math.round(memory.jsHeapSizeLimit / 1000000).toString().concat(' MB');
+            this._jsHeapAvailableElement.textContent = Math.round(memory.totalJSHeapSize / 1000000).toString().concat(' MB');
+            this._jsHeapUsedElement.textContent = Math.round(memory.usedJSHeapSize / 1000000).toString().concat(' MB');
+        }
 
         this._lastUpdate = 0;
     }

@@ -5,7 +5,7 @@ export class Framebuffer
     public readonly depthTexture: WebGLTexture;
     public readonly depthFramebuffer: WebGLFramebuffer;
 
-    constructor(depthTexture: WebGLTexture, depthFramebuffer: WebGLFramebuffer)
+    public constructor(depthTexture: WebGLTexture, depthFramebuffer: WebGLFramebuffer)
     {
         this.depthTexture = depthTexture;
         this.depthFramebuffer = depthFramebuffer;
@@ -76,7 +76,7 @@ export class Framebuffer
         return new this(depthTexture, depthFramebuffer);
     }
 
-    public passDirection(gl: WebGL2RenderingContext, pass: int)
+    public passDirection(gl: WebGL2RenderingContext, pass: int) : GLint
     {
         const cameraDirections = [
             gl.TEXTURE_CUBE_MAP_POSITIVE_X,

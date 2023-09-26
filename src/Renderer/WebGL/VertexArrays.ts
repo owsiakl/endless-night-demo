@@ -1,20 +1,29 @@
 export class VertexArrays
 {
-    private vaos: Map<number, WebGLVertexArrayObject> = new Map();
+    private readonly _vaos: Map<number, WebGLVertexArrayObject>;
+
+    public constructor()
+    {
+        this._vaos = new Map();
+    }
 
     public bind(gl: WebGL2RenderingContext, geometryId: number) : void
     {
-        let vao = this.vaos.get(geometryId) ?? null;
+        let vao = this._vaos.get(geometryId) ?? null;
 
-        if (null === vao) {
+        if (null === vao)
+        {
             vao = gl.createVertexArray();
         }
 
-        if (null === vao) {
+        if (null !== vao)
+        {
+            this._vaos.set(geometryId, vao);
+        }
+        else
+        {
             throw new Error(`Cannot create vertex attribute array.`);
         }
-
-        this.vaos.set(geometryId, vao);
 
         gl.bindVertexArray(vao);
     }
