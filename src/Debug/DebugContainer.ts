@@ -1,3 +1,5 @@
+import {WindowDecorator} from "../Core/WindowDecorator";
+
 export class DebugContainer
 {
     private readonly _updateInterval: int = 3;
@@ -20,10 +22,10 @@ export class DebugContainer
     ) {
     }
 
-    public static create(document: Document) : DebugContainer
+    public static create(windowDecorator: WindowDecorator) : DebugContainer
     {
-        const container = document.querySelector('[data-debug-container]')!;
-        const button = document.querySelector('[data-toggle-debug-container]')!;
+        const container = windowDecorator.find('[data-debug-container]')!;
+        const button = windowDecorator.find('[data-toggle-debug-container]')!;
 
         const self =  new this(
             container.querySelector('[data-fps-counter]')!,

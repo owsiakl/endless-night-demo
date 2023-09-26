@@ -1,3 +1,5 @@
+import {WindowDecorator} from "../Core/WindowDecorator";
+
 export class Keyboard
 {
     public forward: boolean;
@@ -6,23 +8,16 @@ export class Keyboard
     public left: boolean;
     public shift: boolean;
 
-    private constructor()
+    public constructor(windowDecorator: WindowDecorator)
     {
+        windowDecorator.addEventListener('keydown', this.bindKeyDown.bind(this));
+        windowDecorator.addEventListener('keyup', this.bindKeyUp.bind(this));
+
         this.forward = false;
         this.right = false;
         this.back = false;
         this.left = false;
         this.shift = false;
-    }
-
-    static create() : Keyboard
-    {
-        const self = new this();
-
-        document.addEventListener('keydown', self.bindKeyDown.bind(self));
-        document.addEventListener('keyup', self.bindKeyUp.bind(self));
-
-        return self;
     }
 
     private bindKeyDown(event: KeyboardEvent) : void

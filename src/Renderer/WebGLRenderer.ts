@@ -5,7 +5,6 @@ import {Programs} from "./WebGL/Programs";
 import {Texture} from "./WebGL/Texture";
 import {VertexArrays} from "./WebGL/VertexArrays";
 import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
-import {Shaders} from "../Assets/Shaders";
 import {ShaderCache} from "./WebGL/ShaderCache";
 import {Camera} from "../Camera/Camera";
 import {mat4} from "gl-matrix";
@@ -18,11 +17,14 @@ import {Light} from "../Light/Light";
 import {Point} from "../Core/Object/Point";
 import {Particle} from "../Core/Object/Particle";
 import {TransformFeedback} from "./WebGL/TransformFeedback";
+import {Assets} from "../Core/Assets";
+import {WindowDecorator} from "../Core/WindowDecorator";
+import {Renderer} from "../Core/Renderer";
 
-export class WebGLRenderer
+export class WebGLRenderer implements Renderer
 {
-    private readonly _gl: WebGL2RenderingContext;
     private readonly _canvas: HTMLCanvasElement;
+    private readonly _gl: WebGL2RenderingContext;
     private readonly _debug: Nullable<DebugContainer>;
     private readonly _programs;
     private readonly _shaderCache;
@@ -33,23 +35,29 @@ export class WebGLRenderer
     private _queryExt: Nullable<any>;
     private _transformFeedback: Nullable<TransformFeedback>;
 
-    public constructor(canvas: HTMLCanvasElement, gl: WebGL2RenderingContext, shaders: Shaders, debug: Nullable<DebugContainer>)
+    public constructor(windowDecorator: WindowDecorator, assets: Assets, debug: Nullable<DebugContainer>)
     {
-        this._gl = gl;
-        this._canvas = canvas;
+        this._canvas = windowDecorator.find('canvas') as HTMLCanvasElement;
+        this._gl = this._canvas.getContext('webgl2', {powerPreference: 'high-performance'}) as WebGL2RenderingContext;
         this._debug = debug;
-        this._shaderCache = new ShaderCache(shaders);
+        this._shaderCache = new ShaderCache(assets);
         this._programs = new Programs(this._shaderCache);
         this._framebuffer = null;
         this._query = null;
         this._transformFeedback = null;
+        this._queryExt = null;
 
-        gl.enable(gl.DEPTH_TEST);
-        gl.enable(gl.CULL_FACE);
+        this._canvas.width = this._canvas.offsetWidth;
+        this._canvas.style.width = `${this._canvas.offsetWidth}px`
+        this._canvas.height = this._canvas.offsetHeight;
+        this._canvas.style.height = `${this._canvas.offsetHeight}px`;
+
+        this._gl.enable(this._gl.DEPTH_TEST);
+        this._gl.enable(this._gl.CULL_FACE);
 
         if (null !== this._debug)
         {
-            this._queryExt = gl.getExtension('EXT_disjoint_timer_query_webgl2');
+            this._queryExt = this._gl.getExtension('EXT_disjoint_timer_query_webgl2');
         }
     }
 
@@ -61,7 +69,7 @@ export class WebGLRenderer
 
         scene.updateMatrixWorld();
 
-        if (null !== this._debug)
+        if (null !== this._queryExt)
         {
             if (null !== this._query)
             {
@@ -71,7 +79,7 @@ export class WebGLRenderer
                 if (available && !disjoint)
                 {
                     const timeElapsed = gl.getQueryParameter(this._query, gl.QUERY_RESULT);
-                    this._debug.gpuTime = timeElapsed * 1e-6;
+                    this._debug!.gpuTime = timeElapsed * 1e-6;
                 }
             }
             else
@@ -156,7 +164,7 @@ export class WebGLRenderer
             gl.disable(gl.SCISSOR_TEST);
         }
 
-        if (null !== this._debug)
+        if (null !== this._queryExt)
         {
             gl.endQuery(this._queryExt.TIME_ELAPSED_EXT);
         }
@@ -444,5 +452,10 @@ export class WebGLRenderer
         }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+
+    public get canvas() : HTMLCanvasElement
+    {
+        return this._canvas;
     }
 }

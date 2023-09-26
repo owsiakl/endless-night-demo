@@ -7,7 +7,7 @@ export class Camera
 {
     public _fov = 45;
     public readonly _near = 0.1;
-    public _far = 30;
+    public _far = 200;
 
     private readonly _zoomFactor = 0.06
     private readonly _rotateFactor = 0.01;

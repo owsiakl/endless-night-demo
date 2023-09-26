@@ -1,14 +1,14 @@
-import {Shaders} from "../../Assets/Shaders";
+import {Assets} from "../../Core/Assets";
 
 const VERSION = '#version 300 es';
 
 export class ShaderCache
 {
-    private readonly _shaders: Shaders;
+    private readonly _assets: Assets;
 
-    public constructor(shaders: Shaders)
+    public constructor(assets: Assets)
     {
-        this._shaders = shaders;
+        this._assets = assets;
     }
 
     public getVertex(defines: string[]) : string
@@ -17,7 +17,7 @@ export class ShaderCache
         
         ${defines.join('\n')}
         
-        ${this._shaders.get('default_vertex').textContent}
+        ${this._assets.getShader('default_vertex')}
         `;
     }
 
@@ -27,7 +27,7 @@ export class ShaderCache
         
         ${defines.join('\n')}
         
-        ${this._shaders.get('default_fragment').textContent}
+        ${this._assets.getShader('default_fragment')}
         `;
     }
 
@@ -37,7 +37,7 @@ export class ShaderCache
             
         ${defines.join('\n')}
     
-        ${this._shaders.get('depth_vertex').textContent}
+        ${this._assets.getShader('depth_vertex')}
         `;
     }
 
@@ -47,7 +47,7 @@ export class ShaderCache
                 
         ${defines.join('\n')}
 
-        ${this._shaders.get('depth_fragment').textContent}
+        ${this._assets.getShader('depth_fragment')}
         `;
     }
 
@@ -55,12 +55,12 @@ export class ShaderCache
     {
         if (pass === 0)
         {
-            return this._shaders.get('particle_emit_vertex').textContent;
+            return this._assets.getShader('particle_emit_vertex');
         }
 
         if (pass === 1)
         {
-            return this._shaders.get('particle_render_vertex').textContent;
+            return this._assets.getShader('particle_render_vertex');
         }
 
         throw new Error(`Unrecognized particle vertex pass "${pass}", available are: [0, 1]`);
@@ -70,12 +70,12 @@ export class ShaderCache
     {
         if (pass === 0)
         {
-            return this._shaders.get('particle_emit_fragment').textContent;
+            return this._assets.getShader('particle_emit_fragment');
         }
 
         if (pass === 1)
         {
-            return this._shaders.get('particle_render_fragment').textContent;
+            return this._assets.getShader('particle_render_fragment');
         }
 
         throw new Error(`Unrecognized particle fragment pass "${pass}", available are: [0, 1]`);

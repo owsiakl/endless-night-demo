@@ -1,5 +1,4 @@
-import {types} from "sass";
-import Null = types.Null;
+import {WindowDecorator} from "../Core/WindowDecorator";
 
 export class Mouse
 {
@@ -14,8 +13,13 @@ export class Mouse
     public _mouseWheelOffset;
     public _lastMouseWheelOffset;
 
-    private constructor()
+    public constructor(windowDecorator: WindowDecorator)
     {
+        windowDecorator.addEventListener('mouseup', this.mouseUp.bind(this));
+        windowDecorator.addEventListener('mousemove', this.mouseMove.bind(this));
+        windowDecorator.addEventListener('mousedown', this.mouseDown.bind(this));
+        windowDecorator.addEventListener('wheel', this.mouseWheel.bind(this));
+
         this._clicked = false;
         this._scrolling = false;
 
@@ -26,18 +30,6 @@ export class Mouse
         this._wheelOffset = 0;
         this._mouseWheelOffset = 0;
         this._lastMouseWheelOffset = 0;
-    }
-
-    static create() : Mouse
-    {
-        const self = new this();
-
-        document.addEventListener('mouseup', self.mouseUp.bind(self));
-        document.addEventListener('mousemove', self.mouseMove.bind(self));
-        document.addEventListener('mousedown', self.mouseDown.bind(self));
-        document.addEventListener('wheel', self.mouseWheel.bind(self));
-
-        return self;
     }
 
     public update()
