@@ -23,5 +23,8 @@ assets.importBinaryModel('akai', '/model/akai.glb');
 assets.importBinaryModel('torch', '/model/torch.glb');
 
 windowDecorator.addEventListener('DOMContentLoaded', () => {
-    assets.load(() => game.bootstrap())
+    assets.load(() => {
+        game.bootstrap();
+        windowDecorator.body.classList.add('initialized');
+    });
 });

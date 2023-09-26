@@ -26,4 +26,9 @@ export class WindowDecorator
     {
         return this.searchParams.has('debug');
     }
+
+    get body() : HTMLElement
+    {
+        return this._window.document.body;
+    }
 }
