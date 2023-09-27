@@ -10,23 +10,28 @@ import {Camera} from "../Camera/Camera";
 
 export class MovementControl extends StateMachine
 {
-    public readonly object: Object3D;
     public readonly animations: AnimationControl;
-    public readonly input: Keyboard;
-    public readonly camera: Camera;
 
-    private readonly acceleration = 7;
-    private readonly deceleration = -4;
-    private velocity = 0.0;
+    private readonly _object: Object3D;
+    private readonly _input: Keyboard;
+    private readonly _camera: Camera;
+
+    private readonly _acceleration = 7.0;
+    private readonly _deceleration = -4.0;
+    private _velocity = 0.0;
+
+    private readonly _rotationTime = 0.5;
+    private _currentRotationTime = 0.0;
+    private _previousAngle = 0.0;
 
     private constructor(object: Object3D, animations: AnimationControl, input: Keyboard, camera: Camera)
     {
         super();
 
-        this.object = object;
         this.animations = animations;
-        this.input = input;
-        this.camera = camera;
+        this._object = object;
+        this._input = input;
+        this._camera = camera;
     }
 
     public static bind(object: Object3D, animations: AnimationControl, input: Keyboard, camera: Camera) : MovementControl
@@ -39,7 +44,7 @@ export class MovementControl extends StateMachine
 
         self.setState('idle');
 
-        self.object.rotation = camera.rotY;
+        self._object.rotation = camera.rotY;
 
         return self;
     }
@@ -55,63 +60,76 @@ export class MovementControl extends StateMachine
             return;
         }
 
-        let forward = vec3.fromValues(0, 0, 0);
-        let cameraRot = this.camera.invertRotY;
+        const forward = vec3.fromValues(0, 0, 1);
+        const rotationDirection = vec3.fromValues(0, 0, 0);
+        const cameraRot = this._camera.invertRotY;
 
-        let frameDeceleration = this.velocity * this.deceleration;
+        let frameDeceleration = this._velocity * this._deceleration;
         frameDeceleration = frameDeceleration * dt;
-        frameDeceleration = Math.sign(frameDeceleration) * Math.min(Math.abs(frameDeceleration), Math.abs(this.velocity));
+        frameDeceleration = Math.sign(frameDeceleration) * Math.min(Math.abs(frameDeceleration), Math.abs(this._velocity));
 
-        this.velocity = this.velocity + frameDeceleration;
-        this.velocity += this.acceleration * dt;
+        this._velocity = this._velocity + frameDeceleration;
+        this._velocity += this._acceleration * dt;
 
-        if (this.input.forward)
+        if (this._input.forward)
         {
-            forward[2] = -1;
+            rotationDirection[2] = -1;
         }
 
-        if (this.input.right)
+        if (this._input.right)
         {
-            forward[0] = 1;
+            rotationDirection[0] = 1;
         }
 
-        if (this.input.back)
+        if (this._input.back)
         {
-            forward[2] = 1;
+            rotationDirection[2] = 1;
         }
 
-        if (this.input.left)
+        if (this._input.left)
         {
-            forward[0] = -1;
+            rotationDirection[0] = -1;
         }
 
-        vec3.normalize(forward, forward);
+        const angle = Math.atan2(rotationDirection[0], rotationDirection[2]);
+        const currentRotation = quat.rotateY(quat.create(), cameraRot, angle);
+
+        if (angle !== this._previousAngle)
+        {
+            // start new rotation
+            this._currentRotationTime = 0.0;
+            this._previousAngle = angle;
+        }
+
+        if (!quat.equals(this._object.rotation, currentRotation))
+        {
+            quat.slerp(this._object.rotation, this._object.rotation, currentRotation, this._currentRotationTime / this._rotationTime);
+
+            this._currentRotationTime += dt;
+
+            if (this._currentRotationTime >= this._rotationTime)
+            {
+                this._object.rotation = currentRotation;
+            }
+        }
 
         if (this.running)
         {
             vec3.scale(forward, forward, 2.5);
         }
 
-        const inputRotAngle = Math.atan2(forward[0], forward[2]);
-        const forwardLength = vec3.length(forward);
-
-        if (forwardLength > 0)
-        {
-            this.object.rotation = quat.rotateY(quat.create(), cameraRot, inputRotAngle);
-
-            vec3.transformQuat(forward, forward, cameraRot);
-            vec3.scale(forward, forward, this.velocity * dt);
-            this.object.translation = vec3.add(vec3.create(), this.object.translation, forward);
-        }
+        vec3.transformQuat(forward, forward, this._object.rotation);
+        vec3.scale(forward, forward, this._velocity * dt);
+        this._object.translation = vec3.add(vec3.create(), this._object.translation, forward);
     }
 
     public get moving() : boolean
     {
-        return this.input.forward || this.input.right || this.input.back || this.input.left;
+        return this._input.forward || this._input.right || this._input.back || this._input.left;
     }
 
     public get running() : boolean
     {
-        return this.input.shift;
+        return this._input.shift;
     }
 }

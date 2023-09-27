@@ -2,7 +2,7 @@ import {Light} from "./Light";
 import {mat4, vec3} from "gl-matrix";
 import {Object3D} from "../Core/Object3D";
 
-const ORTHOGRAPHIC_WIDTH = 1.5;
+const ORTHOGRAPHIC_WIDTH = 2.0;
 const ORTHOGRAPHIC_NEAR = 0;
 const ORTHOGRAPHIC_FAR = 10;
 

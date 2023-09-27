@@ -38,7 +38,7 @@ out vec4 outColor;
             {
                 vec4 offset = vec4 (x * pixelSize * projCoords.w, y * pixelSize * projCoords.w, 0.0, 0.0);
 
-                shadow += inRange ? textureProj(u_depthTexture, projCoords + offset, 1.0) : 1.0;
+                shadow += inRange ? textureProj(u_depthTexture, projCoords + offset) : 1.0;
             }
         }
 
@@ -161,14 +161,14 @@ void main()
         // 3250	    1.0	        0.0014	0.000007
 
         // 20
-        float constant = 1.0;
-        float linear = 0.22;
-        float quadratic = 0.20;
+//        float constant = 1.0;
+//        float linear = 0.22;
+//        float quadratic = 0.20;
 
         // 32
-//        float constant = 1.0;
-//        float linear = 0.14;
-//        float quadratic = 0.07;
+        float constant = 1.0;
+        float linear = 0.14;
+        float quadratic = 0.07;
 
         // 50
 //        float constant = 1.0;

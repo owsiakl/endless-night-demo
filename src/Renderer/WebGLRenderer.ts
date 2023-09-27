@@ -380,6 +380,8 @@ export class WebGLRenderer implements Renderer
 
         gl.viewport(0, 0, Framebuffer.textureSize, Framebuffer.textureSize);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.POLYGON_OFFSET_FILL);
+        gl.polygonOffset(4.0, 100.0);
 
         for (let i = 0, length = scene.drawables.length; i < length; i++)
         {
