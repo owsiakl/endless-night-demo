@@ -49,7 +49,7 @@ out vec4 outColor;
 #endif
 
 #ifdef USE_LIGHT_POINT
-    uniform samplerCube u_depthCubeMapTexture;
+    uniform lowp samplerCubeShadow u_depthCubeMapTexture;
     const float far = 20.0;
     const float near = 0.1;
 
@@ -66,6 +66,13 @@ out vec4 outColor;
         float normalizedDepth = (far + near) / (far - near) - (2.0 * far * near) / (far - near) / maxValue;
 
         return (normalizedDepth + 1.0) * 0.5;
+    }
+
+    float shadowCalculation(vec3 directionToLight)
+    {
+        float depth = directionToDepth(directionToLight);
+
+        return texture(u_depthCubeMapTexture, vec4(directionToLight, depth));
     }
 #endif
 
@@ -183,8 +190,7 @@ void main()
 
         // shadow
         vec3 directionToLight = v_vertex - u_lightPosition;
-        float cubeMapDepth = unpack(texture(u_depthCubeMapTexture, directionToLight));
-        float shadow = (cubeMapDepth + 0.0001 > directionToDepth(directionToLight)) ? 0.8 : 0.2;
+        float shadow = shadowCalculation(directionToLight);
 
         // result
         vec3 light = (ambient + shadow * (diffuse + specular));

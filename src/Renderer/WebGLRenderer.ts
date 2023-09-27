@@ -375,11 +375,11 @@ export class WebGLRenderer implements Renderer
 
         if (null !== pass)
         {
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, this._framebuffer.passDirection(gl, pass), this._framebuffer.depthTexture, 0);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, this._framebuffer.passDirection(gl, pass), this._framebuffer.depthTexture, 0);
         }
 
         gl.viewport(0, 0, Framebuffer.textureSize, Framebuffer.textureSize);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.POLYGON_OFFSET_FILL);
         gl.polygonOffset(4.0, 100.0);
 
