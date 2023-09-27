@@ -5,7 +5,6 @@ export class AnimationClip
 {
     public tracks: Array<TransformTrack>;
 
-    private readonly _loop: boolean;
     public readonly name: string;
     public startTime: float;
     public endTime: float;
@@ -14,7 +13,6 @@ export class AnimationClip
     public constructor(name: string)
     {
         this.name = name;
-        this._loop = true;
         this.tracks = [];
         this.startTime = Infinity;
         this.endTime = 0.0;

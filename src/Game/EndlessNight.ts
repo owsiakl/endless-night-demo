@@ -39,7 +39,7 @@ export class EndlessNight
     public bootstrap() : void
     {
         // ======= CAMERA =======
-        const camera = new Camera(this._renderer.canvas, vec3.fromValues(4, 4, 0), this._mouse);
+        const camera = new Camera(this._renderer.canvas, vec3.fromValues(0, 4.5, 4.5), this._mouse);
 
         // ======= GROUND =======
         const ground = new Ground(this._assets);
@@ -51,6 +51,7 @@ export class EndlessNight
 
         // ======= CHARACTER =======
         const [character, skeleton, animations] = this._assets.model('akai').scene;
+        character.rotation = quat.rotateY(quat.create(), quat.create(), 0.7);
         skeleton?.getBone(31).setChild(torch);
         camera.follow(character);
 

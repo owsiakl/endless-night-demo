@@ -20,7 +20,7 @@ export class MovementControl extends StateMachine
     private readonly _deceleration = -4.0;
     private _velocity = 0.0;
 
-    private readonly _rotationTime = 0.4;
+    private readonly _rotationTime = 0.5;
     private _currentRotationTime = 0.0;
     private _previousAngle = 0.0;
 
@@ -44,8 +44,6 @@ export class MovementControl extends StateMachine
 
         self.setState('idle');
 
-        self._object.rotation = camera.rotY;
-
         return self;
     }
 
@@ -57,6 +55,8 @@ export class MovementControl extends StateMachine
 
         if (!this.moving)
         {
+            this._velocity = 0;
+
             return;
         }
 
@@ -115,7 +115,7 @@ export class MovementControl extends StateMachine
 
         if (this.running)
         {
-            vec3.scale(forward, forward, 2.5);
+            vec3.scale(forward, forward, 2.8);
         }
 
         vec3.transformQuat(forward, forward, this._object.rotation);

@@ -26,7 +26,7 @@ export class IdleState extends State
             return;
         }
 
-        this._parent.animations.fadeTo('idle', true);
+        this._parent.animations.fadeTo('idle');
     }
 
     public exit() : void
@@ -35,14 +35,9 @@ export class IdleState extends State
 
     public update() : void
     {
-        if (this._parent.moving && !this._parent.running)
+        if (this._parent.moving)
         {
             this._parent.setState('walk');
-        }
-
-        if (this._parent.moving && this._parent.running)
-        {
-            this._parent.setState('run');
         }
     }
 }

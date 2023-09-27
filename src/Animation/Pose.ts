@@ -1,5 +1,5 @@
 import {Transform} from "../Core/Transform";
-import {mat4, quat, vec3} from "gl-matrix";
+import {quat, vec3} from "gl-matrix";
 
 export class Pose
 {

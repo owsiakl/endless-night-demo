@@ -1,35 +1,30 @@
 import {AnimationClip} from "./AnimationClip";
-import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
-import {Object3D} from "../Core/Object3D";
 import {Skeleton} from "../Core/Skeleton";
 
 export class AnimationControl
 {
-    private _clip: Nullable<AnimationClip>;
+    private _currentClip: Nullable<AnimationClip>;
     private readonly _clips: {[name: string]: AnimationClip};
     private _time: Nullable<float>;
     private readonly _speed: float;
     private readonly _skeleton: Skeleton;
-
-    private readonly _targets: AnimationClip[];
-    private readonly _targetDuration;
-    private _targetTime;
-    private _targetParallel;
-    private _targetAnimationTime: float;
+    private readonly _fadeTargets: Array<AnimationClip>;
+    private _fadeParallel: boolean;
+    private _fadeTime: float;
+    private readonly _fadeDuration: float;
 
     public constructor(skeleton: Skeleton)
     {
-        this._clip = null;
+        this._currentClip = null;
         this._clips = {};
         this._time = null;
         this._speed = 1;
         this._skeleton = skeleton;
 
-        this._targets = [];
-        this._targetTime = 0.0;
-        this._targetDuration = 0.3;
-        this._targetParallel = false;
-        this._targetAnimationTime = 0.0;
+        this._fadeTargets = [];
+        this._fadeParallel = false;
+        this._fadeTime = 0.0;
+        this._fadeDuration = 0.25;
     }
 
     public addClip(name: string, clip: AnimationClip) : void
@@ -39,98 +34,78 @@ export class AnimationControl
 
     public play(name: string) : void
     {
-        if (this._clip?.name === name)
+        if (this._currentClip?.name === name)
         {
             return;
         }
 
-        this._clip = this._clips[name];
+        this._currentClip = this._clips[name];
         this._time = null;
     }
 
     public fadeTo(name: string, parallel: boolean = false) : void
     {
-        this._targets.push(this._clips[name]);
-        this._targetParallel = parallel;
+        if (this._fadeTargets.length > 0)
+        {
+            this._fadeTargets[1] = this._clips[name];
+
+            return;
+        }
+
+        this._fadeTargets.push(this._clips[name]);
+        this._fadeParallel = parallel;
     }
 
     public update(dt: float) : void
     {
-        if (null === this._clip)
+        if (null === this._currentClip)
         {
             return;
         }
 
         if (null === this._time)
         {
-            this._time = this._clip.startTime;
+            this._time = this._currentClip.startTime;
         }
 
         const elapsed = dt * this._speed;
 
         this._time += elapsed;
 
-        if (this._time > this._clip.endTime)
+        if (this._time > this._currentClip.endTime)
         {
-            this._time = Math.max(this._time % this._clip.duration, this._clip.startTime);
+            this._time = Math.max(this._time % this._currentClip.duration, this._currentClip.startTime);
         }
 
-        if (this._targets.length > 0)
+        let pose = this._currentClip.sample(this._skeleton.bindPose, this._time);
+
+        if (this._fadeTargets.length > 0)
         {
-            const clip = this._targets[0];
+            this._fadeTime += elapsed;
 
-            this._targetTime += elapsed;
-            this._targetAnimationTime += elapsed;
+            const fadeTo = this._fadeTargets[0];
+            let targetTime = this._fadeTime;
 
-            if (this._targetAnimationTime > clip.endTime)
+            if (this._fadeParallel)
             {
-                this._targetAnimationTime = Math.max(this._time % clip.duration, clip.startTime);
+                const normalizedDuration = this._time / this._currentClip.duration;
+                targetTime = normalizedDuration * fadeTo.duration;
             }
 
-            if (this._targetParallel)
+            if (this._fadeTime > this._fadeDuration)
             {
-                const normalizedDuration = this._time / this._clip.duration;
+                this._currentClip = this._fadeTargets.shift()!;
+                this._time = targetTime;
+                this._fadeTime = 0;
 
-                this._targetAnimationTime = normalizedDuration * clip.duration;
-            }
-        }
-
-        this._updateObject();
-    }
-
-    private _updateObject() : void
-    {
-        if (null === this._clip)
-        {
-            return;
-        }
-
-        if (null === this._time)
-        {
-            return;
-        }
-
-        let pose = this._clip.sample(this._skeleton.bindPose, this._time);
-
-        if (this._targets.length > 0)
-        {
-            if (this._targetTime > this._targetDuration)
-            {
-                this._clip = this._targets.shift() as AnimationClip;
-                this._time = this._targetAnimationTime;
-
-                pose = this._clip.sample(this._skeleton.bindPose, this._targetAnimationTime);
-
-                this._targetAnimationTime = 0;
-                this._targetTime = 0;
-                this._targetParallel = false;
+                pose = this._currentClip.sample(this._skeleton.bindPose, targetTime);
             }
             else
             {
-                const fadeTo = this._targets[0].sample(this._skeleton.bindPose, this._targetAnimationTime);
-                const weight = this._targetTime / this._targetDuration;
+                const weight = this._fadeTime / this._fadeDuration;
+                const blendTo = fadeTo.sample(this._skeleton.bindPose, targetTime);
 
-                pose = pose.blendTo(fadeTo, weight);
+                pose = pose.blendTo(blendTo, weight);
             }
         }
 
