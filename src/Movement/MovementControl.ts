@@ -20,7 +20,7 @@ export class MovementControl extends StateMachine
     private readonly _deceleration = -4.0;
     private _velocity = 0.0;
 
-    private readonly _rotationTime = 0.5;
+    private readonly _rotationTime = 0.4;
     private _currentRotationTime = 0.0;
     private _previousAngle = 0.0;
 
@@ -91,8 +91,8 @@ export class MovementControl extends StateMachine
             rotationDirection[0] = -1;
         }
 
-        const angle = Math.atan2(rotationDirection[0], rotationDirection[2]);
-        const currentRotation = quat.rotateY(quat.create(), cameraRot, angle);
+        const currentRotation = quat.rotateY(quat.create(), cameraRot, Math.atan2(rotationDirection[0], rotationDirection[2]));
+        const angle = quat.getAxisAngle(vec3.fromValues(0, 1, 0), currentRotation);
 
         if (angle !== this._previousAngle)
         {
@@ -103,9 +103,9 @@ export class MovementControl extends StateMachine
 
         if (!quat.equals(this._object.rotation, currentRotation))
         {
+            this._currentRotationTime += dt;
             quat.slerp(this._object.rotation, this._object.rotation, currentRotation, this._currentRotationTime / this._rotationTime);
 
-            this._currentRotationTime += dt;
 
             if (this._currentRotationTime >= this._rotationTime)
             {
