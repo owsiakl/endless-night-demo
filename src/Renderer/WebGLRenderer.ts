@@ -92,6 +92,9 @@ export class WebGLRenderer implements Renderer
 
         if (null !== scene.light)
         {
+            gl.enable(gl.POLYGON_OFFSET_FILL);
+            gl.polygonOffset(1.0, 1.0);
+
             if (scene.light instanceof DirectionalLight)
             {
                 if (null === this._framebuffer)
@@ -114,6 +117,8 @@ export class WebGLRenderer implements Renderer
                     this.renderToFramebuffer(scene, scene.light.getFaceProjectionViewMatrix(i), i);
                 }
             }
+
+            gl.disable(gl.POLYGON_OFFSET_FILL);
         }
 
         if (null !== camera.screenPosition)
@@ -380,8 +385,6 @@ export class WebGLRenderer implements Renderer
 
         gl.viewport(0, 0, Framebuffer.textureSize, Framebuffer.textureSize);
         gl.clear(gl.DEPTH_BUFFER_BIT);
-        gl.enable(gl.POLYGON_OFFSET_FILL);
-        gl.polygonOffset(4.0, 100.0);
 
         for (let i = 0, length = scene.drawables.length; i < length; i++)
         {
