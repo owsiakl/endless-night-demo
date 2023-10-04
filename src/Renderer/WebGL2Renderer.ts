@@ -90,7 +90,7 @@ export class WebGL2Renderer implements Renderer
         if (null !== scene.light)
         {
             gl.enable(gl.POLYGON_OFFSET_FILL);
-            gl.polygonOffset(1.0, 1.0);
+            gl.polygonOffset(1.0, 100.0);
 
             if (scene.light instanceof DirectionalLight)
             {
