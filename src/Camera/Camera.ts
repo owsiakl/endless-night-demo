@@ -2,6 +2,7 @@ import {mat4, quat, vec3} from "gl-matrix";
 import {Mouse} from "../Input/Mouse";
 import {Object3D} from "../Core/Object3D";
 import {CameraPosition} from "./CameraPosition";
+import {Keyboard} from "../Input/Keyboard";
 
 export class Camera
 {
@@ -9,7 +10,10 @@ export class Camera
     public readonly _near = 0.1;
     public _far = 200;
 
-    private readonly _zoomFactor = 0.06
+    private readonly _zoomFactor = 0.01
+    private readonly _zoomMin = 4.0;
+    private readonly _zoomMax = 40.0;
+
     private readonly _rotateFactor = 0.01;
 
     private _width: int;
@@ -35,6 +39,8 @@ export class Camera
 
     public screenPosition: Nullable<CameraPosition>;
 
+    private _rotate = true;
+
     public constructor(canvas: HTMLCanvasElement, position: vec3, mouseInput: Mouse)
     {
         this._width = canvas.width;
@@ -50,8 +56,6 @@ export class Camera
         this._projectionViewMatrix = mat4.create();
 
         this._direction = vec3.normalize(vec3.create(), vec3.subtract(vec3.create(), this._position, this._target));
-        const _right = vec3.normalize(vec3.create(), vec3.cross(vec3.create(), this._worldUp, this._direction));
-        const _up = vec3.cross(vec3.create(), this._direction, _right);
 
         this._followTarget = null;
         this._previousTargetPosition = null;
@@ -60,15 +64,28 @@ export class Camera
 
     public update(dt: float) : void
     {
+        if (this._rotate)
+        {
+            vec3.rotateY(this._position, this._position, this._target, 0.1 * dt);
+            this.calculateViewMatrix();
+        }
+
         if (this._mouseInput._scrolling)
         {
             const move = vec3.create();
 
             vec3.scale(move, this._direction, this._mouseInput._wheelOffset * this._zoomFactor);
-            vec3.add(this._position, this._position, move);
-            vec3.normalize(this._direction, vec3.subtract(vec3.create(), this._position, this._target));
+            const nextPosition = vec3.add(vec3.create(), this._position, move);
+            const radius = vec3.length(vec3.subtract(vec3.create(), nextPosition, this._target));
 
-            this.calculateViewMatrix();
+            if (radius > this._zoomMin && radius < this._zoomMax)
+            {
+                vec3.scale(move, this._direction, this._mouseInput._wheelOffset * this._zoomFactor);
+                this._position = nextPosition;
+                vec3.normalize(this._direction, vec3.subtract(vec3.create(), this._position, this._target));
+
+                this.calculateViewMatrix();
+            }
         }
 
         if (this._mouseInput._clicked)
@@ -181,6 +198,11 @@ export class Camera
     public get height() : float
     {
         return this._height;
+    }
+
+    public stopRotation() : void
+    {
+        this._rotate = false;
     }
 
     public splitScreen(position: CameraPosition)

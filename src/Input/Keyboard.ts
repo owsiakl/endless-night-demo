@@ -2,6 +2,7 @@ import {WindowDecorator} from "../Core/WindowDecorator";
 
 export class Keyboard
 {
+    public any: boolean;
     public forward: boolean;
     public right: boolean;
     public back: boolean;
@@ -13,6 +14,7 @@ export class Keyboard
         windowDecorator.addEventListener('keydown', this.bindKeyDown.bind(this));
         windowDecorator.addEventListener('keyup', this.bindKeyUp.bind(this));
 
+        this.any = false;
         this.forward = false;
         this.right = false;
         this.back = false;
@@ -22,6 +24,8 @@ export class Keyboard
 
     private bindKeyDown(event: KeyboardEvent) : void
     {
+        this.any = true;
+
         switch (event.code)
         {
             case 'KeyW':
@@ -52,6 +56,8 @@ export class Keyboard
 
     private bindKeyUp(event: KeyboardEvent) : void
     {
+        this.any = false;
+
         switch (event.code)
         {
             case 'KeyW':

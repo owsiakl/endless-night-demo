@@ -78,6 +78,11 @@ export class EndlessNight
 
         // ======= LOOP =======
         this._loop.start((dt, time) => {
+            if (this._keyboard.any)
+            {
+                camera.stopRotation();
+            }
+
             this._mouse.update();
             camera.update(dt);
             movement.update(dt);
