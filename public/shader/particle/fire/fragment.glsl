@@ -66,7 +66,7 @@ void main()
 
     if (u_windFactor != 0.0)
     {
-        q.x += mix(0.0, u_windFactor, q.y);
+        q.x += mix(0.0, u_windFactor, pow(q.y, 4.0));
     }
 
     float strength = 5.0;
@@ -89,5 +89,5 @@ void main()
     );
 
     float a = c * (1.0 - pow(uv.y , 1.0));
-    outColor = vec4(mix(vec3(0.0), color, a), 0.6);
+    outColor = vec4(mix(vec3(0.0), color, a), 0.8);
 }

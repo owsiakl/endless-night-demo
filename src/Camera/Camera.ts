@@ -173,6 +173,16 @@ export class Camera
         return quat.invert(quat.create(), this.rotY);
     }
 
+    public get width() : float
+    {
+        return this._width;
+    }
+
+    public get height() : float
+    {
+        return this._height;
+    }
+
     public splitScreen(position: CameraPosition)
     {
         if (position === CameraPosition.TOP || position === CameraPosition.BOTTOM)

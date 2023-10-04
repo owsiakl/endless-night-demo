@@ -3,14 +3,17 @@ import {Assets} from "../Core/Assets";
 import {ShaderMaterial} from "../Core/Material/ShaderMaterial";
 import {Point} from "../Core/Object/Point";
 import {Geometry} from "../Core/Geometry";
+import {Camera} from "../Camera/Camera";
 
-const COUNT = 2;
+const COUNT = 1;
 
 export class Fire extends Point
 {
-    public static create(assets: Assets) : Fire
+    public static create(assets: Assets, camera: Camera) : Fire
     {
         const material = new ShaderMaterial(assets.shader('fire_vertex'), assets.shader('fire_fragment'));
+        material.uniforms.set('u_resolution', [camera.width, camera.height])
+
         const geometry = new Geometry();
         geometry.count = COUNT;
         geometry.setEmptyAttribute('a_position', COUNT * 3, COUNT);
@@ -26,11 +29,11 @@ export class Fire extends Point
 
         if (direction < 0)
         {
-            windFactor = velocity * 0.12;
+            windFactor = velocity * 0.25;
         }
         else if (direction > 0)
         {
-            windFactor = -velocity * 0.12;
+            windFactor = -velocity * 0.25;
         }
 
         const material = this.material as ShaderMaterial;

@@ -65,9 +65,9 @@ export class EndlessNight
         torch.setChild(light);
 
         // ======= FIRE =======
-        const fire = Fire.create(this._assets);
+        const fire = Fire.create(this._assets, camera);
         torch.setChild(fire);
-        fire.translation = vec3.fromValues(0, 0.55, 0.0);
+        fire.translation = vec3.fromValues(0, 0.58, 0.0);
 
         // ======= SCENE =======
         const scene = new Scene();
