@@ -2,7 +2,7 @@ import {Mesh as CoreMesh} from "./../../Core/Object/Mesh";
 import {Geometry} from "../../Core/Geometry";
 import {ATTRIBUTES, TYPE_SIZES} from "./Constants";
 import {Accessor} from "./Accessor";
-import {Material} from "../../Core/Material";
+import {Material} from "../../Core/Material/Material";
 
 /**
  * @link https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-mesh

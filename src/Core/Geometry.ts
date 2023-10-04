@@ -22,9 +22,9 @@ export class Geometry
         this.updateBuffers = true;
     }
 
-    public setEmptyAttribute(name: string, itemSize: number, normalized: boolean = false)
+    public setEmptyAttribute(name: string, size: int, itemSize: number, normalized: boolean = false)
     {
-        this.attributes.push(new GeometryAttribute(name, new Float32Array(), itemSize, normalized));
+        this.attributes.push(new GeometryAttribute(name, new Float32Array(size), itemSize, normalized));
 
         this.updateBuffers = true;
     }

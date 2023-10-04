@@ -9,6 +9,7 @@ export class Material
     public color:  Nullable<vec3>;
     public vertexColors;
     public castShadow: boolean;
+    public blending: boolean;
 
     public constructor()
     {
@@ -19,6 +20,7 @@ export class Material
         this.color = null;
         this.vertexColors = false;
         this.castShadow = true;
+        this.blending = false;
     }
 
     public setImage(image: HTMLImageElement, repeat: boolean = false) : this
@@ -54,6 +56,13 @@ export class Material
     public useVertexColors()
     {
         this.vertexColors = true;
+
+        return this;
+    }
+
+    public useBlending()
+    {
+        this.blending = true;
 
         return this;
     }

@@ -1,6 +1,6 @@
 import {Mesh} from "../Core/Object/Mesh";
 import {Plane} from "./Plane";
-import {Material} from "../Core/Material";
+import {Material} from "../Core/Material/Material";
 import {quat, vec3} from "gl-matrix";
 import {Assets} from "../Core/Assets";
 

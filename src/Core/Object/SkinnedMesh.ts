@@ -1,5 +1,5 @@
 import {Geometry} from "../Geometry";
-import {Material} from "../Material";
+import {Material} from "../Material/Material";
 import {Mesh} from "./Mesh";
 import {Skeleton} from "../Skeleton";
 

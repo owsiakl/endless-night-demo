@@ -1,21 +1,22 @@
 import {Assets} from "./Core/Assets";
 import {EndlessNight} from "./Game/EndlessNight";
 import {WindowDecorator} from "./Core/WindowDecorator";
+import {WebGL2Renderer} from "./Renderer/WebGL2Renderer";
+import {DebugContainer} from "./Debug/DebugContainer";
 
 const windowDecorator = new WindowDecorator(window);
+const debug = windowDecorator.debug ? DebugContainer.create(windowDecorator) : null;
 const assets = new Assets();
-const game = new EndlessNight(windowDecorator, assets);
+const renderer = new WebGL2Renderer(windowDecorator, assets, debug);
+const game = new EndlessNight(windowDecorator, assets, renderer, debug);
 
 assets.importShader('default_vertex', '/shader/default/vertex.glsl');
 assets.importShader('default_fragment', '/shader/default/fragment.glsl');
 assets.importShader('depth_vertex', '/shader/depth/vertex.glsl');
 assets.importShader('depth_fragment', '/shader/depth/fragment.glsl');
-assets.importShader('particle_emit_vertex', '/shader/particle/emit/vertex.glsl');
-assets.importShader('particle_emit_fragment', '/shader/particle/emit/fragment.glsl');
-assets.importShader('particle_render_vertex', '/shader/particle/render/vertex.glsl');
-assets.importShader('particle_render_fragment', '/shader/particle/render/fragment.glsl');
+assets.importShader('fire_vertex', '/shader/particle/fire/vertex.glsl');
+assets.importShader('fire_fragment', '/shader/particle/fire/fragment.glsl');
 
-assets.importImage('fire_particle', '/image/fire.png');
 assets.importImage('ground', '/image/ground.jpg');
 assets.importImage('ground_normal', '/image/ground_normal.jpg');
 

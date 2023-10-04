@@ -1,27 +1,26 @@
 import {Scene} from "../Core/Scene";
 import {Line} from "../Core/Object/Line";
 import {Mesh} from "../Core/Object/Mesh";
-import {Programs} from "./WebGL/Programs";
-import {Texture} from "./WebGL/Texture";
-import {VertexArrays} from "./WebGL/VertexArrays";
+import {Programs} from "./WebGL2/Programs";
+import {Texture} from "./WebGL2/Texture";
+import {VertexArrays} from "./WebGL2/VertexArrays";
 import {SkinnedMesh} from "../Core/Object/SkinnedMesh";
-import {ShaderCache} from "./WebGL/ShaderCache";
+import {ShaderCache} from "./WebGL2/ShaderCache";
 import {Camera} from "../Camera/Camera";
 import {mat4} from "gl-matrix";
 import {CameraPosition} from "../Camera/CameraPosition";
-import {Framebuffer} from "./WebGL/Framebuffer";
+import {Framebuffer} from "./WebGL2/Framebuffer";
 import {DebugContainer} from "../Debug/DebugContainer";
 import {DirectionalLight} from "../Light/DirectionalLight";
 import {PointLight} from "../Light/PointLight";
 import {Light} from "../Light/Light";
 import {Point} from "../Core/Object/Point";
-import {Particle} from "../Core/Object/Particle";
-import {TransformFeedback} from "./WebGL/TransformFeedback";
 import {Assets} from "../Core/Assets";
 import {WindowDecorator} from "../Core/WindowDecorator";
 import {Renderer} from "../Core/Renderer";
+import {ShaderMaterial} from "../Core/Material/ShaderMaterial";
 
-export class WebGLRenderer implements Renderer
+export class WebGL2Renderer implements Renderer
 {
     private readonly _canvas: HTMLCanvasElement;
     private readonly _gl: WebGL2RenderingContext;
@@ -33,7 +32,6 @@ export class WebGLRenderer implements Renderer
     private _framebuffer: Nullable<Framebuffer>;
     private _query: Nullable<WebGLQuery>;
     private readonly _queryExt: Nullable<any>;
-    private _transformFeedback: Nullable<TransformFeedback>;
 
     public constructor(windowDecorator: WindowDecorator, assets: Assets, debug: Nullable<DebugContainer>)
     {
@@ -44,7 +42,6 @@ export class WebGLRenderer implements Renderer
         this._programs = new Programs(this._shaderCache);
         this._framebuffer = null;
         this._query = null;
-        this._transformFeedback = null;
         this._queryExt = null;
 
         this._canvas.width = this._canvas.offsetWidth;
@@ -159,11 +156,6 @@ export class WebGLRenderer implements Renderer
             this.renderObject(gl, scene.drawables[i], camera, scene.light);
         }
 
-        if (null !== scene.particles)
-        {
-            this.renderParticle(gl, scene.particles, camera);
-        }
-
         if (null !== camera.screenPosition)
         {
             gl.disable(gl.SCISSOR_TEST);
@@ -175,59 +167,7 @@ export class WebGLRenderer implements Renderer
         }
     }
 
-    public renderParticle(gl: WebGL2RenderingContext, object: Particle, camera: Camera)
-    {
-        const emitProgram = this._programs.particleProgram(gl, 0, [
-            'v_position',
-            'v_spawnTime',
-            'v_life',
-            'v_size',
-            'v_velocity',
-            'v_textureUnit',
-            'v_color',
-        ]);
-
-        const renderProgram = this._programs.particleProgram(gl, 1);
-
-        if (null === this._transformFeedback)
-        {
-            this._transformFeedback = TransformFeedback.create(gl, object, emitProgram, renderProgram);
-        }
-
-        // ===== UPDATE PASS =====
-        this._transformFeedback.preUpdate(gl);
-
-        emitProgram.uniforms.get('u_time').set(object.time);
-
-        gl.drawArrays(gl.POINTS, 0, object.geometry.count);
-
-        this._transformFeedback.postUpdate(gl);
-
-        // ===== RENDER PASS =====
-        this._transformFeedback.preRender(gl);
-
-        if (null !== object.material.image)
-        {
-            if (!this._textures.has(object.material.image.src))
-            {
-                this._textures.set(gl, object.material.image.src, object.material.image);
-            }
-
-            gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this._textures.get(object.material.image.src));
-            renderProgram.uniforms.get('u_texture').set(0);
-        }
-
-        renderProgram.uniforms.get('u_time').set(object.time);
-        renderProgram.uniforms.get('u_projectionView').set(camera.projectionViewMatrix);
-        renderProgram.uniforms.get('u_model').set(object.worldTranslation);
-
-        gl.drawArrays(gl.POINTS, 0, object.geometry.count);
-
-        this._transformFeedback.postRender(gl);
-    }
-
-    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line, camera: Camera, light: Nullable<Light>)
+    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line | Point, camera: Camera, light: Nullable<Light>)
     {
         const geometry = object.geometry;
         const program = this._programs.initProgram(gl, object, light);
@@ -332,6 +272,19 @@ export class WebGLRenderer implements Renderer
             program.uniforms.get('u_color').set(object.material.color)
         }
 
+        if (object.material instanceof ShaderMaterial)
+        {
+            object.material.uniforms.forEach(
+                function (value: any, name: string) : void
+                {
+                    if (program.uniforms.has(name))
+                    {
+                        program.uniforms.get(name).set(value);
+                    }
+                }
+            );
+        }
+
         let mode = null;
 
         if (object instanceof Line)
@@ -354,6 +307,13 @@ export class WebGLRenderer implements Renderer
             throw new Error('Cannot get rendering mode.');
         }
 
+        if (object.material.blending)
+        {
+            gl.disable(gl.DEPTH_TEST);
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+        }
+
         if (geometry.indexed)
         {
             gl.drawElements(mode, geometry.count, gl.UNSIGNED_SHORT, 0);
@@ -361,6 +321,12 @@ export class WebGLRenderer implements Renderer
         else
         {
             gl.drawArrays(mode, 0, geometry.count);
+        }
+
+        if (object.material.blending)
+        {
+            gl.blendFunc(gl.SRC_ALPHA, gl.ZERO);
+            gl.enable(gl.DEPTH_TEST);
         }
 
         this._vertexArrays.unbind(gl);

@@ -47,7 +47,7 @@ export class MovementControl extends StateMachine
         return self;
     }
 
-    update(dt: float)
+    public update(dt: float) : void
     {
         super.update(dt);
 
@@ -91,8 +91,8 @@ export class MovementControl extends StateMachine
             rotationDirection[0] = -1;
         }
 
-        const currentRotation = quat.rotateY(quat.create(), cameraRot, Math.atan2(rotationDirection[0], rotationDirection[2]));
-        const angle = quat.getAxisAngle(vec3.fromValues(0, 1, 0), currentRotation);
+        const angle = Math.atan2(rotationDirection[0], rotationDirection[2]);
+        const currentRotation = quat.rotateY(quat.create(), cameraRot, angle);
 
         if (angle !== this._previousAngle)
         {
@@ -131,5 +131,15 @@ export class MovementControl extends StateMachine
     public get running() : boolean
     {
         return this._input.shift;
+    }
+
+    public get velocity() : float
+    {
+        return this._velocity;
+    }
+
+    public get previousAngle() : float
+    {
+        return this._previousAngle;
     }
 }

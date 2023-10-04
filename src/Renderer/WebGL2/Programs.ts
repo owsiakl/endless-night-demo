@@ -8,6 +8,8 @@ import {SkinnedMesh} from "../../Core/Object/SkinnedMesh";
 import {Light} from "../../Light/Light";
 import {DirectionalLight} from "../../Light/DirectionalLight";
 import {PointLight} from "../../Light/PointLight";
+import {Point} from "../../Core/Object/Point";
+import {ShaderMaterial} from "../../Core/Material/ShaderMaterial";
 
 export class Programs
 {
@@ -26,6 +28,22 @@ export class Programs
 
     public initProgram(gl: WebGL2RenderingContext, object: Object3D, light: Nullable<Light>) : Program
     {
+        if (object instanceof Point && object.material instanceof ShaderMaterial)
+        {
+            const hash = Hash.create(object.material.vertex + object.material.fragment);
+
+            if (this._programs.has(hash))
+            {
+                return this._programs.get(hash)!;
+            }
+
+            const program = Program.create(gl, object.material.vertex, object.material.fragment);
+
+            this._programs.set(hash, program);
+
+            return program;
+        }
+
         let properties = [];
 
         if (object instanceof Mesh || object instanceof Line)

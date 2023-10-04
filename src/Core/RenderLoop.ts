@@ -5,7 +5,7 @@ export class RenderLoop
     private readonly _debug: Nullable<DebugContainer>;
     private _oldTimestamp: number;
     private _active: boolean;
-    private _onRender: (time: number) => void;
+    private _onRender: (dt: float, time: float) => void;
 
     public constructor(debug: Nullable<DebugContainer>)
     {
@@ -15,7 +15,7 @@ export class RenderLoop
         this._onRender = () => null;
     }
 
-    public start(onRender: (time: number) => void) : void
+    public start(onRender: (dt: float, time: float) => void) : void
     {
         this._onRender = onRender;
         this._active = true;
@@ -35,7 +35,7 @@ export class RenderLoop
 
         this._oldTimestamp = timestamp;
 
-        this._onRender(secondsPassed);
+        this._onRender(secondsPassed, timestamp / 1000);
 
         if (null !== this._debug)
         {

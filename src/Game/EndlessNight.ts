@@ -1,6 +1,5 @@
 import {DebugContainer} from "../Debug/DebugContainer";
 import {RenderLoop} from "../Core/RenderLoop";
-import {WebGLRenderer} from "../Renderer/WebGLRenderer";
 import {WindowDecorator} from "../Core/WindowDecorator";
 import {Keyboard} from "../Input/Keyboard";
 import {Mouse} from "../Input/Mouse";
@@ -9,7 +8,7 @@ import {quat, vec3} from "gl-matrix";
 import {AnimationControl} from "../Animation/AnimationControl";
 import {MovementControl} from "../Movement/MovementControl";
 import {PointLight} from "../Light/PointLight";
-import {Particle} from "../Core/Object/Particle";
+import {Fire} from "../Model/Fire";
 import {Scene} from "../Core/Scene";
 import {Assets} from "../Core/Assets";
 import {Ground} from "../Model/Ground";
@@ -17,7 +16,6 @@ import {Renderer} from "../Core/Renderer";
 
 export class EndlessNight
 {
-    private readonly _window: WindowDecorator;
     private readonly _assets: Assets;
     private readonly _debug: Nullable<DebugContainer>;
     private readonly _loop: RenderLoop;
@@ -25,15 +23,14 @@ export class EndlessNight
     private readonly _keyboard: Keyboard;
     private readonly _mouse: Mouse;
 
-    public constructor(windowDecorator: WindowDecorator, assets: Assets)
+    public constructor(window: WindowDecorator, assets: Assets, renderer: Renderer, debug: Nullable<DebugContainer>)
     {
-        this._window = windowDecorator;
         this._assets = assets;
-        this._debug = this._window.debug ? DebugContainer.create(this._window) : null;
-        this._loop = new RenderLoop(this._debug);
-        this._renderer = new WebGLRenderer(this._window, this._assets, this._debug);
-        this._keyboard = new Keyboard(this._window);
-        this._mouse = new Mouse(this._window);
+        this._debug = debug;
+        this._loop = new RenderLoop(debug);
+        this._renderer = renderer;
+        this._keyboard = new Keyboard(window);
+        this._mouse = new Mouse(window);
     }
 
     public bootstrap() : void
@@ -67,25 +64,26 @@ export class EndlessNight
         light.translation = vec3.fromValues(0, 0.8, 0.2);
         torch.setChild(light);
 
-        // ======= PARTICLE =======
-        const particle = new Particle(this._assets.image('fire_particle'), 1_000);
-        torch.setChild(particle);
-        particle.translation = vec3.fromValues(0, 0.36, 0.0);
+        // ======= FIRE =======
+        const fire = Fire.create(this._assets);
+        torch.setChild(fire);
+        fire.translation = vec3.fromValues(0, 0.55, 0.0);
 
         // ======= SCENE =======
         const scene = new Scene();
         scene.addLight(light);
         scene.add(...ground.tiles);
         scene.add(character);
+        scene.add(fire);
 
         // ======= LOOP =======
-        this._loop.start(dt => {
+        this._loop.start((dt, time) => {
             this._mouse.update();
             camera.update(dt);
             movement.update(dt);
             ground.update(character.translation);
             scene.light?.update(dt);
-            scene.particles?.update(dt);
+            fire.update(time, movement);
 
             this._renderer.render(scene, camera);
 

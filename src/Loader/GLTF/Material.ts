@@ -1,5 +1,5 @@
 import {vec3} from "gl-matrix";
-import {Material as CoreMaterial} from "./../../Core/Material";
+import {Material as CoreMaterial} from "../../Core/Material/Material";
 
 /**
  * @link https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#reference-material

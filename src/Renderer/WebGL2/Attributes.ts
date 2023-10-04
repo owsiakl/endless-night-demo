@@ -84,14 +84,16 @@ export class Attributes
             {
                 const location = this.get(attribute.name).location;
 
+                console.log(location, attribute.itemSize, type, attribute.normalized);
+
                 gl.enableVertexAttribArray(location);
-                gl.vertexAttribPointer(location, attribute.itemSize, type, attribute.normalized, stride, offset);
+                gl.vertexAttribPointer(location, attribute.itemSize, type, attribute.normalized, 0, 0);
 
                 offset += (data.BYTES_PER_ELEMENT * attribute.itemSize);
             }
             else
             {
-                throw new Error(`Program doesn't have attribute "${attribute.name}" so it cannot be set.`);
+                // throw new Error(`Program doesn't have attribute "${attribute.name}" so it cannot be set.`);
             }
         }
 
