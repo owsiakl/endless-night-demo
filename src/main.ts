@@ -10,18 +10,18 @@ const assets = new Assets();
 const renderer = new WebGL2Renderer(windowDecorator, assets, debug);
 const game = new EndlessNight(windowDecorator, assets, renderer, debug);
 
-assets.importShader('default_vertex', '/shader/default/vertex.glsl');
-assets.importShader('default_fragment', '/shader/default/fragment.glsl');
-assets.importShader('depth_vertex', '/shader/depth/vertex.glsl');
-assets.importShader('depth_fragment', '/shader/depth/fragment.glsl');
-assets.importShader('fire_vertex', '/shader/particle/fire/vertex.glsl');
-assets.importShader('fire_fragment', '/shader/particle/fire/fragment.glsl');
+assets.importShader('default_vertex', 'shader/default/vertex.glsl');
+assets.importShader('default_fragment', 'shader/default/fragment.glsl');
+assets.importShader('depth_vertex', 'shader/depth/vertex.glsl');
+assets.importShader('depth_fragment', 'shader/depth/fragment.glsl');
+assets.importShader('fire_vertex', 'shader/particle/fire/vertex.glsl');
+assets.importShader('fire_fragment', 'shader/particle/fire/fragment.glsl');
 
-assets.importImage('ground', '/image/ground.jpg');
-assets.importImage('ground_normal', '/image/ground_normal.jpg');
+assets.importImage('ground', 'image/ground.jpg');
+assets.importImage('ground_normal', 'image/ground_normal.jpg');
 
-assets.importBinaryModel('akai', '/model/akai.glb');
-assets.importBinaryModel('torch', '/model/torch.glb');
+assets.importBinaryModel('akai', 'model/akai.glb');
+assets.importBinaryModel('torch', 'model/torch.glb');
 
 windowDecorator.addEventListener('DOMContentLoaded', () => {
     assets.load(() => {
