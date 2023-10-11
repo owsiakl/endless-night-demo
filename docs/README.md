@@ -1,5 +1,7 @@
 ![header.gif](header.gif)
 
+Play it here: [endless-night-demo](https://owsiakl.github.io/endless-night-demo/).
+
 Endless Night is a demo I've made strictly for learning purposes,
 so I could learn topics like 3d space, shaders, skinning, skeletal animation, textures, shadows, etc.
 
