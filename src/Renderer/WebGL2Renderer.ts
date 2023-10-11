@@ -58,7 +58,7 @@ export class WebGL2Renderer implements Renderer
         }
     }
 
-    public render(scene: Scene, camera: Camera)
+    public render(scene: Scene, camera: Camera) : void
     {
         const gl = this._gl;
         const width = this._canvas.width;
@@ -167,10 +167,11 @@ export class WebGL2Renderer implements Renderer
         }
     }
 
-    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line | Point, camera: Camera, light: Nullable<Light>)
+    public renderObject(gl: WebGL2RenderingContext, object: Mesh | Line | Point, camera: Camera, light: Nullable<Light>) : void
     {
         const geometry = object.geometry;
-        const program = this._programs.initProgram(gl, object, light);
+        const material = object.material;
+        const program = this._programs.fromMaterial(gl, object, material, light);
 
         program.useProgram();
         this._vertexArrays.bind(gl, geometry.id);
@@ -367,7 +368,7 @@ export class WebGL2Renderer implements Renderer
             }
 
             const geometry = object.geometry;
-            const program = this._programs.depthProgram(gl, object);
+            const program = this._programs.depthPass(gl, object);
 
             program.useProgram();
             this._vertexArrays.bind(gl, geometry.id);

@@ -2,113 +2,97 @@ import {Hash} from "../../Core/Hash";
 import {Program} from "./Program";
 import {ShaderCache} from "./ShaderCache";
 import {Object3D} from "../../Core/Object3D";
-import {Mesh} from "../../Core/Object/Mesh";
-import {Line} from "../../Core/Object/Line";
 import {SkinnedMesh} from "../../Core/Object/SkinnedMesh";
 import {Light} from "../../Light/Light";
 import {DirectionalLight} from "../../Light/DirectionalLight";
 import {PointLight} from "../../Light/PointLight";
-import {Point} from "../../Core/Object/Point";
 import {ShaderMaterial} from "../../Core/Material/ShaderMaterial";
+import {Material} from "../../Core/Material/Material";
 
 export class Programs
 {
     private readonly _shaderCache: ShaderCache;
     private readonly _programs: Map<number, Program>;
     private readonly _depthPrograms: Map<number, Program>;
-    private readonly _particlePrograms: Map<number, Program>;
 
     public constructor(shaderCache: ShaderCache)
     {
         this._shaderCache = shaderCache;
         this._programs = new Map();
         this._depthPrograms = new Map();
-        this._particlePrograms = new Map();
     }
 
-    public initProgram(gl: WebGL2RenderingContext, object: Object3D, light: Nullable<Light>) : Program
+    public fromMaterial(gl: WebGL2RenderingContext, object: Object3D, material: Material, light: Nullable<Light>) : Program
     {
-        if (object instanceof Point && object.material instanceof ShaderMaterial)
+        if (material instanceof ShaderMaterial)
         {
-            const hash = Hash.create(object.material.vertex + object.material.fragment);
-
-            if (this._programs.has(hash))
-            {
-                return this._programs.get(hash)!;
-            }
-
-            const program = Program.create(gl, object.material.vertex, object.material.fragment);
-
-            this._programs.set(hash, program);
-
-            return program;
+            return this.fromShader(gl, material.vertex, material.fragment);
         }
 
-        let properties = [];
+        const defines = [];
 
-        if (object instanceof Mesh || object instanceof Line)
-        {
-            properties.push(object.material.image ? '#define USE_TEXTURE' : '');
-            properties.push(object.material.vertexColors ? '#define USE_COLOR_ATTRIBUTE' : '');
-            properties.push(object.material.color ? '#define USE_STATIC_COLOR_ATTRIBUTE' : '');
-            properties.push(object.material.normal ? '#define USE_NORMAL_MAPPING' : '');
-            properties.push(light instanceof DirectionalLight ? '#define USE_LIGHT_DIRECTIONAL' : '');
-            properties.push(light instanceof PointLight ? '#define USE_LIGHT_POINT' : '');
-            properties.push((light instanceof DirectionalLight || light instanceof PointLight) ? '#define USE_LIGHT' : '');
-        }
+        defines.push(material.image ? '#define USE_TEXTURE' : '');
+        defines.push(material.vertexColors ? '#define USE_COLOR_ATTRIBUTE' : '');
+        defines.push(material.color ? '#define USE_STATIC_COLOR_ATTRIBUTE' : '');
+        defines.push(material.normal ? '#define USE_NORMAL_MAPPING' : '');
+        defines.push(light instanceof DirectionalLight ? '#define USE_LIGHT_DIRECTIONAL' : '');
+        defines.push(light instanceof PointLight ? '#define USE_LIGHT_POINT' : '');
+        defines.push((light instanceof DirectionalLight || light instanceof PointLight) ? '#define USE_LIGHT' : '');
 
         if (object instanceof SkinnedMesh)
         {
-            properties.push('#define USE_SKINNING');
+            defines.push('#define USE_SKINNING');
         }
 
-        const hash = Hash.create(properties.join(''));
+        const hash = Hash.create(defines.join(''));
 
         if (this._programs.has(hash))
         {
             return this._programs.get(hash)!;
         }
 
-        const program = Program.create(gl, this._shaderCache.getVertex(properties), this._shaderCache.getFragment(properties));
+        const program = Program.create(gl, this._shaderCache.getVertex(defines), this._shaderCache.getFragment(defines));
 
         this._programs.set(hash, program);
 
         return program;
     }
 
-    public depthProgram(gl: WebGL2RenderingContext, object: Object3D) : Program
+    public fromShader(gl: WebGL2RenderingContext, vShader: string, fShader: string) : Program
     {
-        let properties = [];
+        const hash = Hash.create(vShader + fShader);
+
+        if (this._programs.has(hash))
+        {
+            return this._programs.get(hash)!;
+        }
+
+        const program = Program.create(gl, vShader, fShader);
+
+        this._programs.set(hash, program);
+
+        return program;
+    }
+
+    public depthPass(gl: WebGL2RenderingContext, object: Object3D) : Program
+    {
+        let defines = [];
 
         if (object instanceof SkinnedMesh)
         {
-            properties.push('#define USE_SKINNING');
+            defines.push('#define USE_SKINNING');
         }
 
-        const hash = Hash.create(properties.join(''));
+        const hash = Hash.create(defines.join(''));
 
         if (this._depthPrograms.has(hash))
         {
             return this._depthPrograms.get(hash)!;
         }
 
-        const program = Program.create(gl, this._shaderCache.getDepthVertex(properties), this._shaderCache.getDepthFragment(properties));
+        const program = Program.create(gl, this._shaderCache.getDepthVertex(defines), this._shaderCache.getDepthFragment(defines));
 
         this._depthPrograms.set(hash, program);
-
-        return program;
-    }
-
-    public particleProgram(gl: WebGL2RenderingContext, pass: int, feedbackVaryings: Array<string> = []) : Program
-    {
-        if (this._particlePrograms.has(pass))
-        {
-            return this._particlePrograms.get(pass)!;
-        }
-
-        const program = Program.create(gl, this._shaderCache.getParticleVertex(pass), this._shaderCache.getParticleFragment(pass), feedbackVaryings);
-
-        this._particlePrograms.set(pass, program);
 
         return program;
     }

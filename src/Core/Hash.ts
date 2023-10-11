@@ -1,6 +1,6 @@
 export class Hash
 {
-    static create(string: string): number
+    static create(string: string) : number
     {
         let h1 = 0xdeadbeef,
             h2 = 0x41c6ce57;

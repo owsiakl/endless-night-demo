@@ -50,34 +50,4 @@ export class ShaderCache
         ${this._assets.shader('depth_fragment')}
         `;
     }
-
-    public getParticleVertex(pass: int) : string
-    {
-        if (pass === 0)
-        {
-            return this._assets.shader('particle_emit_vertex');
-        }
-
-        if (pass === 1)
-        {
-            return this._assets.shader('particle_render_vertex');
-        }
-
-        throw new Error(`Unrecognized particle vertex pass "${pass}", available are: [0, 1]`);
-    }
-
-    public getParticleFragment(pass: int) : string
-    {
-        if (pass === 0)
-        {
-            return this._assets.shader('particle_emit_fragment');
-        }
-
-        if (pass === 1)
-        {
-            return this._assets.shader('particle_render_fragment');
-        }
-
-        throw new Error(`Unrecognized particle fragment pass "${pass}", available are: [0, 1]`);
-    }
 }

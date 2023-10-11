@@ -67,12 +67,12 @@ export class Program
         return this._cachedUniforms;
     }
 
-    public useProgram()
+    public useProgram() : void
     {
         this._gl.useProgram(this._program);
     }
 
-    public stopProgram()
+    public stopProgram() : void
     {
         this._gl.useProgram(null);
     }
