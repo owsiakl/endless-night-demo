@@ -50,6 +50,7 @@ out vec4 outColor;
 
 #ifdef USE_LIGHT_POINT
     uniform lowp samplerCubeShadow u_depthCubeMapTexture;
+    uniform float u_lightIntensity;
     const float far = 20.0;
     const float near = 0.1;
 
@@ -109,11 +110,23 @@ void main()
     #endif
 
     #ifdef USE_LIGHT_POINT
-        vec3 lightColor = vec3(.5);
+        vec3 lightColor = vec3(u_lightIntensity);
 
         // ambient
-        float ambientStrength = 0.1;
-        vec3 ambient = ambientStrength * lightColor;
+        float ambientStrength = 0.5;
+        vec3 ambient = ambientStrength * vec3(0.4);
+
+        #ifdef USE_TEXTURE
+            ambient = texture(u_texture, v_texcoord).rgb * ambientStrength;
+        #endif
+
+        #ifdef USE_COLOR_ATTRIBUTE
+            ambient = v_color.rgb * ambientStrength;
+        #endif
+
+        #ifdef USE_STATIC_COLOR_ATTRIBUTE
+            ambient = u_color.rgb * ambientStrength;
+        #endif
 
         vec3 normal = v_normal;
         vec3 lightPosition = u_lightPosition;
@@ -134,19 +147,19 @@ void main()
         vec3 diffuse = diff * lightColor;
 
         #ifdef USE_TEXTURE
-            diffuse = texture(u_texture, v_texcoord).rgb;
+            diffuse = texture(u_texture, v_texcoord).rgb * lightColor;
         #endif
 
         #ifdef USE_COLOR_ATTRIBUTE
-            diffuse = v_color.rgb;
+            diffuse = v_color.rgb * lightColor;
         #endif
 
         #ifdef USE_STATIC_COLOR_ATTRIBUTE
-            diffuse = u_color.rgb;
+            diffuse = u_color.rgb * lightColor;
         #endif
 
         // specular
-        float specularStrength = 0.5;
+        float specularStrength = 0.0;
         vec3 viewDir = normalize(cameraPosition - vertex);
         vec3 reflectDir = reflect(-lightDir, normal);
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
@@ -168,7 +181,7 @@ void main()
         float shadow = shadowCalculation(directionToLight);
 
         // result
-        vec3 light = (ambient + mix(vec3(0.4), vec3(1.0, 1.0, 1.0), shadow) * (diffuse + specular));
+        vec3 light = (ambient + mix(vec3(0.5), vec3(1.0), shadow) * (diffuse + specular));
 
         outColor = vec4(light, 1.0);
     #endif

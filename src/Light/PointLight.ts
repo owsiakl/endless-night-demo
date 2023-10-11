@@ -4,12 +4,14 @@ import {Object3D} from "../Core/Object3D";
 
 export class PointLight extends Object3D implements Light
 {
-    private _directions: Array<{ target: vec3, up: vec3 }> = [];
+    private readonly _directions: Array<{ target: vec3, up: vec3 }> = [];
+    private _intensity: float;
 
     constructor()
     {
         super();
 
+        this._intensity = 1.0;
         this._directions = [
             { target: vec3.fromValues(1, 0, 0), up: vec3.fromValues(0, -1, 0) },
             { target: vec3.fromValues(-1, 0, 0), up: vec3.fromValues(0, -1, 0) },
@@ -32,6 +34,16 @@ export class PointLight extends Object3D implements Light
     get faces() : int
     {
         return this._directions.length;
+    }
+
+    public get intensity() : float
+    {
+        return this._intensity;
+    }
+
+    public set intensity(value: float)
+    {
+        this._intensity = value;
     }
 
     getFaceProjectionViewMatrix(index: int) : mat4

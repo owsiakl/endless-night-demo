@@ -11,7 +11,7 @@ export class Camera
     public _far = 200;
 
     private readonly _zoomFactor = 0.01
-    private readonly _zoomMin = 4.0;
+    private readonly _zoomMin = 5.0;
     private readonly _zoomMax = 40.0;
 
     private readonly _rotateFactor = 0.01;
@@ -39,7 +39,7 @@ export class Camera
 
     public screenPosition: Nullable<CameraPosition>;
 
-    private _rotate = true;
+    private _orbit = true;
 
     public constructor(canvas: HTMLCanvasElement, position: vec3, mouseInput: Mouse)
     {
@@ -64,7 +64,7 @@ export class Camera
 
     public update(dt: float) : void
     {
-        if (this._rotate)
+        if (this._orbit)
         {
             vec3.rotateY(this._position, this._position, this._target, 0.1 * dt);
             this.calculateViewMatrix();
@@ -200,9 +200,9 @@ export class Camera
         return this._height;
     }
 
-    public stopRotation() : void
+    public stopOrbiting() : void
     {
-        this._rotate = false;
+        this._orbit = false;
     }
 
     public splitScreen(position: CameraPosition)

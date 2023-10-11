@@ -13,6 +13,7 @@ import {Scene} from "../Core/Scene";
 import {Assets} from "../Core/Assets";
 import {Ground} from "../Model/Ground";
 import {Renderer} from "../Core/Renderer";
+import {Wiggle} from "../Core/Wiggle";
 
 export class EndlessNight
 {
@@ -63,6 +64,8 @@ export class EndlessNight
         const light = new PointLight();
         light.translation = vec3.fromValues(0, 0.8, 0.2);
         torch.setChild(light);
+        const lightIntensity = new Wiggle(0.9, 4, 0.15);
+        const lightPositionY = new Wiggle(light.translation[1], 4, 0.1);
 
         // ======= FIRE =======
         const fire = Fire.create(this._assets, camera);
@@ -80,7 +83,7 @@ export class EndlessNight
         this._loop.start((dt, time) => {
             if (this._keyboard.any)
             {
-                camera.stopRotation();
+                camera.stopOrbiting();
             }
 
             this._mouse.update();
@@ -88,6 +91,15 @@ export class EndlessNight
             movement.update(dt);
             ground.update(character.translation);
             scene.light?.update(dt);
+
+            if (scene.light instanceof PointLight)
+            {
+                lightIntensity.update(dt);
+                lightPositionY.update(dt)
+                scene.light.intensity = lightIntensity.value;
+                scene.light.translation = vec3.fromValues(light.translation[0], lightPositionY.value, light.translation[2]);
+            }
+
             fire.update(time, movement);
 
             this._renderer.render(scene, camera);

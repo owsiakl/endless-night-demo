@@ -18,7 +18,7 @@ export class Fire extends Point
         geometry.count = COUNT;
         geometry.setEmptyAttribute('a_position', COUNT * 3, COUNT);
 
-        return new Fire(geometry, material.useBlending());
+        return new Fire(geometry, material.useBlending().disableShadows());
     }
 
     public update(time: float, movement: MovementControl) : void

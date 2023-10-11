@@ -36,7 +36,7 @@ export class WebGL2Renderer implements Renderer
     public constructor(windowDecorator: WindowDecorator, assets: Assets, debug: Nullable<DebugContainer>)
     {
         this._canvas = windowDecorator.find('canvas') as HTMLCanvasElement;
-        this._gl = this._canvas.getContext('webgl2', {powerPreference: 'high-performance'}) as WebGL2RenderingContext;
+        this._gl = this._canvas.getContext('webgl2', {powerPreference: 'high-performance', antialias: true}) as WebGL2RenderingContext;
         this._debug = debug;
         this._shaderCache = new ShaderCache(assets);
         this._programs = new Programs(this._shaderCache);
@@ -90,7 +90,7 @@ export class WebGL2Renderer implements Renderer
         if (null !== scene.light)
         {
             gl.enable(gl.POLYGON_OFFSET_FILL);
-            gl.polygonOffset(1.0, 100.0);
+            gl.polygonOffset(1.0, 1.0);
 
             if (scene.light instanceof DirectionalLight)
             {
@@ -242,6 +242,11 @@ export class WebGL2Renderer implements Renderer
         if (light && program.uniforms.has('u_lightPosition'))
         {
             program.uniforms.get('u_lightPosition').set(light.worldTranslation);
+        }
+
+        if (light instanceof PointLight)
+        {
+            if (program.uniforms.has('u_lightIntensity')) program.uniforms.get('u_lightIntensity').set(light.intensity);
         }
 
         if (light && program.uniforms.has('u_lightProjectionViewMatrix'))
