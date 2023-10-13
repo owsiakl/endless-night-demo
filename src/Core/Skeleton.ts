@@ -30,7 +30,7 @@ export class Skeleton
         this._inverseBindPose.push(ibm);
     }
 
-    public get jointMatrix() : mat4
+    public get jointMatrix() : Float32Array
     {
         const size = this._joints.length;
         const matrix = new Float32Array(size * 16);
@@ -44,5 +44,10 @@ export class Skeleton
         }
 
         return matrix;
+    }
+
+    public get jointCount() : int
+    {
+        return this._joints.length
     }
 }

@@ -7,7 +7,7 @@ export class Texture
         this._textures = new Map();
     }
 
-    public set(gl: WebGL2RenderingContext, name: string, image: HTMLImageElement, filter: GLuint = gl.LINEAR, wrap: GLuint = gl.CLAMP_TO_EDGE) : void
+    public set(gl: WebGL2RenderingContext, name: string, image: Nullable<HTMLImageElement>, filter: GLuint = gl.LINEAR, wrap: GLuint = gl.CLAMP_TO_EDGE) : void
     {
         const texture = gl.createTexture();
 
@@ -17,12 +17,17 @@ export class Texture
         }
 
         gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+        if (null !== image)
+        {
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+            gl.generateMipmap(gl.TEXTURE_2D);
+        }
+
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
-        gl.generateMipmap(gl.TEXTURE_2D);
 
         this._textures.set(name, texture);
 

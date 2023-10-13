@@ -36,18 +36,14 @@ export class EndlessNight
 
     public bootstrap() : void
     {
-        // ======= CAMERA =======
         const camera = new Camera(this._renderer.canvas, vec3.fromValues(0, 4.5, 4.5), this._mouse);
 
-        // ======= GROUND =======
         const ground = new Ground(this._assets);
 
-        // ======= TORCH =======
         const [torch] = this._assets.model('torch').scene;
         torch.translation = vec3.fromValues(0, -0.05, 0);
         torch.rotation = quat.rotateY(quat.create(), quat.create(), Math.PI / 2);
 
-        // ======= CHARACTER =======
         const [character, skeleton, animations] = this._assets.model('akai').scene;
         character.rotation = quat.rotateY(quat.create(), quat.create(), 0.7);
         skeleton?.getBone(31).setChild(torch);
@@ -60,26 +56,22 @@ export class EndlessNight
 
         const movement = MovementControl.bind(character, animationControl, this._keyboard, camera);
 
-        // ======= LIGHT =======
         const light = new PointLight();
         light.translation = vec3.fromValues(0, 0.8, 0.2);
         torch.setChild(light);
         const lightIntensity = new Wiggle(0.9, 4, 0.15);
         const lightPositionY = new Wiggle(light.translation[1], 4, 0.1);
 
-        // ======= FIRE =======
         const fire = Fire.create(this._assets, camera);
         torch.setChild(fire);
         fire.translation = vec3.fromValues(0, 0.58, 0.0);
 
-        // ======= SCENE =======
         const scene = new Scene();
         scene.addLight(light);
         scene.add(...ground.tiles);
         scene.add(character);
         scene.add(fire);
 
-        // ======= LOOP =======
         this._loop.start((dt, time) => {
             if (this._keyboard.any)
             {

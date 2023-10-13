@@ -270,7 +270,17 @@ export class WebGL2Renderer implements Renderer
 
         if (object instanceof SkinnedMesh)
         {
-            program.uniforms.get('u_jointMat').set(object.skeleton.jointMatrix)
+            const textureId = `skin_${object.geometry.id}`;
+
+            if (!this._textures.has(textureId))
+            {
+                this._textures.set(gl, textureId, null, gl.NEAREST, gl.CLAMP_TO_EDGE);
+            }
+
+            gl.activeTexture(gl.TEXTURE5);
+            gl.bindTexture(gl.TEXTURE_2D, this._textures.get(textureId));
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 4, object.skeleton.jointCount, 0, gl.RGBA, gl.FLOAT, object.skeleton.jointMatrix);
+            program.uniforms.get('u_jointTexture').set(5);
         }
 
         if (null !== object.material.color)
@@ -386,7 +396,17 @@ export class WebGL2Renderer implements Renderer
 
             if (object instanceof SkinnedMesh)
             {
-                program.uniforms.get('u_jointMat').set(object.skeleton.jointMatrix)
+                const textureId = `skin_${object.geometry.id}`;
+
+                if (!this._textures.has(textureId))
+                {
+                    this._textures.set(gl, textureId, null, gl.NEAREST, gl.CLAMP_TO_EDGE);
+                }
+
+                gl.activeTexture(gl.TEXTURE5);
+                gl.bindTexture(gl.TEXTURE_2D, this._textures.get(textureId));
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 4, object.skeleton.jointCount, 0, gl.RGBA, gl.FLOAT, object.skeleton.jointMatrix);
+                program.uniforms.get('u_jointTexture').set(5);
             }
 
             program.uniforms.get('u_model').set(object.worldTransform);
