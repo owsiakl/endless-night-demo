@@ -4,8 +4,8 @@ import {Material} from "../Core/Material/Material";
 import {quat, vec3} from "gl-matrix";
 import {Assets} from "../Core/Assets";
 
-const SIZE: int = 10;
-const SEGMENTS: int = 1;
+const SIZE: int = 20;
+const SEGMENTS: int = 2;
 
 export class Ground
 {

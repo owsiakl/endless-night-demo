@@ -181,7 +181,7 @@ void main()
         float shadow = shadowCalculation(directionToLight);
 
         // result
-        vec3 light = (ambient + mix(vec3(0.5), vec3(1.0), shadow) * (diffuse + specular));
+        vec3 light = (ambient + mix(vec3(0.4), vec3(1.0), shadow) * (diffuse + specular));
 
         outColor = vec4(light, 1.0);
     #endif
