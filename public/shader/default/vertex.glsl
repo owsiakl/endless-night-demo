@@ -5,8 +5,8 @@ uniform mat4 u_projectionView;
 uniform mat4 u_model;
 
 #ifdef USE_SKINNING
-    in vec4 a_joints;
-    in vec4 a_weights;
+    layout (location = 1) in vec4 a_joints;
+    layout (location = 2) in vec4 a_weights;
     uniform sampler2D u_jointTexture;
 
     mat4 getBoneMatrix(int joint)
