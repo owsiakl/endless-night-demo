@@ -3,7 +3,7 @@ precision highp float;
 uniform mat4 u_lightSpace;
 uniform mat4 u_model;
 
-in vec4 a_position;
+layout (location = 0) in vec4 a_position;
 
 #ifdef USE_SKINNING
     in vec4 a_joints;

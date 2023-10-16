@@ -1,7 +1,7 @@
 #version 300 es
 #define PI 3.1415926535
 
-precision mediump float;
+precision highp float;
 
 // slightly modified shader from https://www.shadertoy.com/view/Xd3GD4.
 

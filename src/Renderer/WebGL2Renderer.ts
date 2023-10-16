@@ -403,10 +403,10 @@ export class WebGL2Renderer implements Renderer
                     this._textures.set(gl, textureId, null, gl.NEAREST, gl.CLAMP_TO_EDGE);
                 }
 
-                gl.activeTexture(gl.TEXTURE5);
+                gl.activeTexture(gl.TEXTURE0);
                 gl.bindTexture(gl.TEXTURE_2D, this._textures.get(textureId));
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, 4, object.skeleton.jointCount, 0, gl.RGBA, gl.FLOAT, object.skeleton.jointMatrix);
-                program.uniforms.get('u_jointTexture').set(5);
+                program.uniforms.get('u_jointTexture').set(0);
             }
 
             program.uniforms.get('u_model').set(object.worldTransform);

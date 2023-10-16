@@ -1,7 +1,5 @@
 #version 300 es
 
-precision mediump float;
-
 uniform float u_time;
 uniform mat4 u_projectionView;
 uniform mat4 u_model;
