@@ -37,6 +37,12 @@ export class WebGL2Renderer implements Renderer
     {
         this._canvas = windowDecorator.find('canvas') as HTMLCanvasElement;
         this._gl = this._canvas.getContext('webgl2', {powerPreference: 'high-performance', antialias: true}) as WebGL2RenderingContext;
+
+        if (null === this._gl)
+        {
+            throw new Error(`Unsupported browser or a device: WebGL 2 is unavailable.`);
+        }
+
         this._debug = debug;
         this._shaderCache = new ShaderCache(assets);
         this._programs = new Programs(this._shaderCache);

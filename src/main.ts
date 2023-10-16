@@ -4,6 +4,8 @@ import {WindowDecorator} from "./Core/WindowDecorator";
 import {WebGL2Renderer} from "./Renderer/WebGL2Renderer";
 import {DebugContainer} from "./Debug/DebugContainer";
 
+window.addEventListener('error', error => alert(error.message));
+
 const windowDecorator = new WindowDecorator(window);
 const debug = windowDecorator.debug ? DebugContainer.create(windowDecorator) : null;
 const assets = new Assets();
