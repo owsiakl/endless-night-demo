@@ -26,7 +26,7 @@ npm ci
 
 then compile stylesheets: 
 ```shell
-npm sass:build
+npm run sass:build
 ```
 
 and then start webpack dev server:
