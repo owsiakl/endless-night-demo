@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Endless Night - a 3D game demo written in typescript and vanilla WebGL 2.">
     <title>Endless Night</title>
     <link rel="stylesheet" href="dist/main.css">
+    <script defer src="dist/main.js"></script>
 </head>
 <body>
     <header>
         <a class="logo" href=".">endless night.</a>
 
         <a href="https://github.com/owsiakl/endless-night" target="_blank" title="Navigate to github project.">
-            <img src="image/icon/github.png" alt="github icon">
+            <img src="image/icon/github.svg" width="20" height="20" alt="github icon">
         </a>
 
         <button class="open-debug-container" title="Open debug panel." data-toggle-debug-container>
-            <img src="image/icon/bug.png" alt="debug icon">
+            <img loading="lazy" src="image/icon/bug.svg" width="20" height="20" alt="debug icon">
         </button>
 
         <aside id="debug-container" data-debug-container>
@@ -49,7 +51,5 @@
     <canvas class="scene"></canvas>
 
     <span class="loader"></span>
-
-    <script src="dist/main.js"></script>
 </body>
 </html>
